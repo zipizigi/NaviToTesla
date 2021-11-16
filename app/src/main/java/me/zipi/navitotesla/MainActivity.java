@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -93,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         executor.execute(() -> {
                     try {
                         naviToTeslaService.clearPoiCache();
+                        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                                .putBoolean("prefAppUpdaterShow", true).apply();
                     } catch (Exception e) {
                         Log.w(MainActivity.class.getName(), "clear poi cache error", e);
                     }
