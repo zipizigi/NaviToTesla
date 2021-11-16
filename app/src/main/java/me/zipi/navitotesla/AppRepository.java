@@ -109,4 +109,8 @@ public class AppRepository {
             database.runInTransaction(() -> database.poiAddressDao().delete(entity));
         }
     }
+
+    public void clearAllPoi() {
+        database.runInTransaction(() -> database.poiAddressDao().deleteAll());
+    }
 }

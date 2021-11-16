@@ -173,4 +173,8 @@ public class NaviToTeslaService {
     public Long loadVehicleId() {
         return PreferencesUtil.getLong(context, "vehicleId", 0L);
     }
+
+    public void clearPoiCache(){
+        appRepository.clearAllPoi();
+    }
 }

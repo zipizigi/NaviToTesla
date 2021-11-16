@@ -88,6 +88,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
+    public void onBtnPoiCacheClearClick(View view) {
+        this.runOnUiThread(() -> findViewById(R.id.btnPoiCacheClear).setEnabled(false));
+        executor.execute(() -> {
+                    try {
+                        naviToTeslaService.clearPoiCache();
+                    } catch (Exception e) {
+                        Log.w(MainActivity.class.getName(), "clear poi cache error", e);
+                    }
+                    this.runOnUiThread(() -> findViewById(R.id.btnPoiCacheClear).setEnabled(true));
+                }
+        );
+    }
+
     public void onBtnSaveClick(View view) {
         String refreshToken = ((EditText) findViewById(R.id.txtRefreshToken)).getText().toString().trim();
 

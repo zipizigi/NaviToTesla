@@ -26,4 +26,7 @@ public interface PoiAddressDao {
 
     @Delete
     void delete(PoiAddressEntity poiAddressEntity);
+
+    @Query("DELETE FROM poi_address")
+    void deleteAll();
 }
