@@ -26,7 +26,6 @@ import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
-import me.zipi.navitotesla.util.TMapSdk;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -39,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TMapSdk.init(this);
+
         executor = Executors.newSingleThreadExecutor();
         vehicleListLiveData = new MutableLiveData<>();
         tokenLiveData = new MutableLiveData<>();
@@ -88,6 +87,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+
+    public void onBtnPoiCacheClearClick(View view) {
+        this.runOnUiThread(() -> findViewById(R.id.btnPoiCacheClear).setEnabled(false));
+        executor.execute(() -> {
+                    try {
+                        naviToTeslaService.clearPoiCache();
+                    } catch (Exception e) {
+                        Log.w(MainActivity.class.getName(), "clear poi cache error", e);
+                    }
+                    this.runOnUiThread(() -> findViewById(R.id.btnPoiCacheClear).setEnabled(true));
+                }
+        );
+    }
 
     public void onBtnSaveClick(View view) {
         String refreshToken = ((EditText) findViewById(R.id.txtRefreshToken)).getText().toString().trim();

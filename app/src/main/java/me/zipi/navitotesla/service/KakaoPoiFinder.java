@@ -3,21 +3,32 @@ package me.zipi.navitotesla.service;
 import android.util.Log;
 
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.AppRepository;
+import me.zipi.navitotesla.api.KakaoMapApi;
 import me.zipi.navitotesla.model.KakaoMap;
+import okhttp3.OkHttpClient;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class KakaoPoiFinder implements PoiFinder {
+    private static final KakaoMapApi kakaoMapApi = new Retrofit.Builder()
+            .baseUrl("https://dapi.kakao.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(new OkHttpClient.Builder()
+                    .connectTimeout(1, TimeUnit.MINUTES)
+                    .readTimeout(1, TimeUnit.MINUTES)
+                    .build())
+            .build().create(KakaoMapApi.class);
+
     @Override
     public String findPoiAddress(String poiName) {
-        if (AppRepository.getInstance() == null) {
-            return "";
-        }
         String address = "";
 
         try {
-            Response<KakaoMap.Response<KakaoMap.Place>> response = AppRepository.getInstance().getKakaoMapApi().search(poiName).execute();
+            Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
 
             if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
                 int sameCount = 0;

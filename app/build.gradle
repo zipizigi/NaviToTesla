@@ -74,8 +74,6 @@ dependencies {
 
     implementation "android.arch.lifecycle:extensions:1.1.1"
 
-    implementation files('libs/com.skt.Tmap_1.69.jar')
-
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

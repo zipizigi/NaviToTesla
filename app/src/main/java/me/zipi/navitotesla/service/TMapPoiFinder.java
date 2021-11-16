@@ -2,36 +2,51 @@ package me.zipi.navitotesla.service;
 
 import android.util.Log;
 
-import com.skt.Tmap.TMapData;
-import com.skt.Tmap.poi_item.TMapPOIItem;
-
-import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+import me.zipi.navitotesla.api.TMapApi;
+import me.zipi.navitotesla.model.TMap;
+import okhttp3.OkHttpClient;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class TMapPoiFinder implements PoiFinder {
+    private static final TMapApi tMapApi = new Retrofit.Builder()
+            .baseUrl("https://apis.openapi.sk.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(new OkHttpClient.Builder()
+                    .connectTimeout(1, TimeUnit.MINUTES)
+                    .readTimeout(1, TimeUnit.MINUTES)
+                    .build())
+            .build().create(TMapApi.class);
+
     @Override
     public String findPoiAddress(String poiName) {
         String address = "";
         try {
-            TMapData tMapData = new TMapData();
-            List<TMapPOIItem> items = tMapData.findTitlePOI(poiName);
+            Response<TMap.SearchPoiResponse> response = tMapApi.search(poiName).execute();
+
+            if (!response.isSuccessful() || response.body() == null) {
+                Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
+                return "";
+            }
+
             int sameCount = 0;
 
-            for (TMapPOIItem poi : items) {
-                if (poi.getPOIName().equals(poiName)) {
+            for (TMap.PoiItem poi : response.body().getSearchPoiInfo().getPois().getPoi()) {
+                if (poi.getName().equalsIgnoreCase(poiName)) {
                     sameCount++;
-                    if (poi.newAddressList.size() > 0 && poi.newAddressList.get(0).roadName.trim().length() > 0
-                            && poi.newAddressList.get(0).bldNo1.trim().length() > 0) {
+                    if (!poi.getRoadAddress().equals("")) {
                         // 도로명
-                        address = poi.newAddressList.get(0).fullAddressRoad;
-
-                    } else if (getOldAddress(poi).length() > 0) {
+                        address = poi.getRoadAddress();
+                    } else if (!poi.getAddress().equals("")) {
                         // 지번
-                        address = getOldAddress(poi);
+                        address = poi.getAddress();
                     } else {
                         // gps
-                        address = String.format(Locale.getDefault(), "%s,%s", ((Double) poi.getPOIPoint().getLatitude()).toString(),
-                                ((Double) poi.getPOIPoint().getLongitude()).toString());
+                        address = String.format(Locale.getDefault(), "%s,%s", poi.getLatitude(), poi.getLongitude());
                     }
 
                 }
@@ -66,31 +81,4 @@ public class TMapPoiFinder implements PoiFinder {
         return notificationText.equals("안심주행");
     }
 
-    private String getOldAddress(TMapPOIItem poiItem) {
-        //upperAddrName : 경기, middleAddrName : 화성시, lowerAddrName : 영천동, detailAddrName : null, firstNo : 24, secondNo : 1
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(poiItem.upperAddrName).append(" ").append(poiItem.middleAddrName);
-        if (poiItem.lowerAddrName.length() > 0) {
-            sb.append(" ").append(poiItem.lowerAddrName);
-        }
-        if (poiItem.detailAddrName.length() > 0) {
-            sb.append(" ").append(poiItem.detailAddrName);
-        }
-        if (poiItem.mlClass != null && poiItem.mlClass.equals("2")) {
-            sb.append(" ").append("산");
-        }
-        if (poiItem.firstNo.length() > 0) {
-            sb.append(" ").append(poiItem.firstNo);
-        } else {
-            // 지번 첫부분이 없을 경우 (~~동, ~~리) gps 좌표 이용
-            return "";
-        }
-        if (poiItem.secondNo != null && poiItem.secondNo.length() > 0 && !poiItem.secondNo.equals("0")) {
-            sb.append("-").append(poiItem.secondNo);
-        }
-
-
-        return sb.toString();
-    }
 }

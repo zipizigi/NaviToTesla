@@ -23,6 +23,5 @@
 -keep @androidx.room.Entity class *
 -dontwarn androidx.room.paging.**
 -keep class me.zipi.navitotesla.model.** { *; }
--keep class com.skt.Tmap.** { *; }
 -keep,includedescriptorclasses class net.sqlcipher.** { *; }
 -keep,includedescriptorclasses interface net.sqlcipher.** { *; }

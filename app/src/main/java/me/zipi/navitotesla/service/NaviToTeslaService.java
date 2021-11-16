@@ -98,6 +98,7 @@ public class NaviToTeslaService {
                     }
                 }
             }
+            appRepository.clearExpiredPoi();
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
         }
@@ -171,5 +172,9 @@ public class NaviToTeslaService {
 
     public Long loadVehicleId() {
         return PreferencesUtil.getLong(context, "vehicleId", 0L);
+    }
+
+    public void clearPoiCache(){
+        appRepository.clearAllPoi();
     }
 }
