@@ -26,7 +26,6 @@ import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
-import me.zipi.navitotesla.util.TMapSdk;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -39,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        TMapSdk.init(this);
+
         executor = Executors.newSingleThreadExecutor();
         vehicleListLiveData = new MutableLiveData<>();
         tokenLiveData = new MutableLiveData<>();

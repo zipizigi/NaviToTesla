@@ -98,6 +98,7 @@ public class NaviToTeslaService {
                     }
                 }
             }
+            appRepository.clearExpiredPoi();
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
         }

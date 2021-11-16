@@ -19,6 +19,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PoiAddressEntity {
+    public static Integer expireDay = 10;
+
     @PrimaryKey(autoGenerate = true)
     private Integer id;
 
@@ -29,7 +31,7 @@ public class PoiAddressEntity {
 
     public boolean isExpire() {
         long diff = created.getTime() - Calendar.getInstance().getTime().getTime();
-        return Math.abs(diff) / 1000L / 60L / 60L / 24L >= 10;
+        return Math.abs(diff) / 1000L / 60L / 60L / 24L >= expireDay;
     }
 
 }

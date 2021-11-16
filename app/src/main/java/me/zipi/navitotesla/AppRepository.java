@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.lifecycle.LiveData;
 import lombok.Getter;
-import me.zipi.navitotesla.api.KakaoMapApi;
 import me.zipi.navitotesla.api.TeslaApi;
 import me.zipi.navitotesla.api.TeslaAuthApi;
 import me.zipi.navitotesla.db.AppDatabase;
@@ -29,8 +28,6 @@ public class AppRepository {
     @Getter
     private final TeslaAuthApi teslaAuthApi;
 
-    @Getter
-    private final KakaoMapApi kakaoMapApi;
 
     private AppRepository(final Context context, final AppDatabase database) {
         this.database = database;
@@ -71,18 +68,6 @@ public class AppRepository {
                         .build())
                 .build().create(TeslaAuthApi.class);
 
-        kakaoMapApi = new Retrofit.Builder()
-                .baseUrl("https://dapi.kakao.com")
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(new OkHttpClient.Builder()
-                        .addInterceptor(chain -> {
-                            Request request = chain.request().newBuilder()
-                                    .addHeader("Authorization", "KakaoAK " + BuildConfig.KAKAO_API_KEY)
-                                    .build();
-                            return chain.proceed(request);
-                        })
-                        .build())
-                .build().create(KakaoMapApi.class);
     }
 
     public static AppRepository getInstance(final Context context, final AppDatabase database) {
@@ -96,10 +81,6 @@ public class AppRepository {
         return instance;
     }
 
-    public static AppRepository getInstance() {
-        // null check!!
-        return instance;
-    }
 
     public LiveData<PoiAddressEntity> getPoi(String poiName) {
         return database.poiAddressDao().findPoi(poiName);
@@ -119,5 +100,13 @@ public class AppRepository {
                         .build())
         );
 
+    }
+
+    public void clearExpiredPoi() {
+        // remove expire poi. (20% over)
+        long expireDate = (long) (Calendar.getInstance().getTime().getTime() - PoiAddressEntity.expireDay * 1000 * 60 * 60 * 24 * 1.2);
+        for (PoiAddressEntity entity : database.poiAddressDao().findExpired(expireDate)) {
+            database.runInTransaction(() -> database.poiAddressDao().delete(entity));
+        }
     }
 }
