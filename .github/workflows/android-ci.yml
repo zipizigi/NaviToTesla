@@ -10,7 +10,7 @@ on:
       releaseBody:
         description: 'Release description'
         required: true
-        default: ${{ github.event.head_commit.message }}
+        default: 'Description release' 
         
 jobs:
   build:
