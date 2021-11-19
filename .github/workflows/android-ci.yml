@@ -1,11 +1,17 @@
 name: Android CI
 
 on:
-  push:
-    branches: [ main ]
+#  push:
+#    branches: [ main ]
 #  pull_request:
 #    branches: [ main ]
-
+  workflow_dispatch:
+    inputs:
+      releaseBody:
+        description: 'Release description'
+        required: true
+        default: ${{ github.event.head_commit.message }}
+        
 jobs:
   build:
 
@@ -55,7 +61,7 @@ jobs:
       with:
         tag_name: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
         release_name: Release 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
-        body: ${{ github.event.head_commit.message }}
+        body: ${{ github.event.inputs.releaseBody }}
         draft: false
         prerelease: false
 
