@@ -28,11 +28,13 @@ jobs:
       id: slug
       run: echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
 
+    - name: create google-services.json
+      run: |
+        echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+        
     - name: build
       env:
         RELEASE: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
-        TMAP_API_KEY: ${{ secrets.TMAP_API_KEY }}
-        KAKAO_API_KEY: ${{ secrets.KAKAO_API_KEY }}
       run: |
         chmod +x gradlew
         ./gradlew assembleRelease --stacktrace
