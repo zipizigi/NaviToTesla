@@ -5,10 +5,11 @@ import android.util.Log;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import me.zipi.navitotesla.AppRepository;
 import me.zipi.navitotesla.api.KakaoMapApi;
 import me.zipi.navitotesla.model.KakaoMap;
+import me.zipi.navitotesla.util.RemoteConfigUtil;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -20,6 +21,12 @@ public class KakaoPoiFinder implements PoiFinder {
             .client(new OkHttpClient.Builder()
                     .connectTimeout(1, TimeUnit.MINUTES)
                     .readTimeout(1, TimeUnit.MINUTES)
+                    .addInterceptor(chain -> {
+                        Request request = chain.request().newBuilder()
+                                .addHeader("Authorization", "KakaoAK " + RemoteConfigUtil.getConfig("kakaoApiKey"))
+                                .build();
+                        return chain.proceed(request);
+                    })
                     .build())
             .build().create(KakaoMapApi.class);
 

@@ -1,6 +1,8 @@
 package me.zipi.navitotesla;
 
 import me.zipi.navitotesla.db.AppDatabase;
+import me.zipi.navitotesla.util.AnalysisUtil;
+import me.zipi.navitotesla.util.RemoteConfigUtil;
 
 public class Application extends android.app.Application {
 
@@ -9,6 +11,9 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         getRepository();
+
+        RemoteConfigUtil.initialize();
+        AnalysisUtil.initialize(this);
     }
 
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- START xml_defaults -->
+<defaultsMap>
+    <entry>
+        <key>kakaoApiKey</key>
+        <value>paste here default kakao api key</value>
+    </entry>
+    <entry>
+        <key>tmapApiKey</key>
+        <value>paste here default tmap api key</value>
+    </entry>
+</defaultsMap>
+    <!-- END xml_defaults -->

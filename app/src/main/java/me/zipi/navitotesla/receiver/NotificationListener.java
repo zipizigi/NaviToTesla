@@ -9,9 +9,11 @@ import android.util.Log;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import me.zipi.navitotesla.service.PoiFinderFactory;
 import me.zipi.navitotesla.service.NaviToTeslaService;
+import me.zipi.navitotesla.service.PoiFinderFactory;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
+import me.zipi.navitotesla.util.RemoteConfigUtil;
 
 public class NotificationListener extends NotificationListenerService {
     NaviToTeslaService naviToTeslaService;
@@ -37,7 +39,9 @@ public class NotificationListener extends NotificationListenerService {
             Log.d(this.getClass().getName(), "onNotificationRemoved ~ " +
                     " packageName: " + sbn.getPackageName());
             executor.execute(() -> naviToTeslaService.notificationClear());
-
+            Bundle param = new Bundle();
+            param.putString("package", sbn.getPackageName());
+            AnalysisUtil.getFirebaseAnalytics().logEvent("notification_removed", param);
         }
     }
 
@@ -58,7 +62,11 @@ public class NotificationListener extends NotificationListenerService {
                     " text : " + text +
                     " subText: " + subText);
             executor.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text.toString()));
+            executor.execute(RemoteConfigUtil::initialize);
             AppUpdaterUtil.notification(this);
+            Bundle param = new Bundle();
+            param.putString("package", sbn.getPackageName());
+            AnalysisUtil.getFirebaseAnalytics().logEvent("notification_received", param);
         }
     }
 
