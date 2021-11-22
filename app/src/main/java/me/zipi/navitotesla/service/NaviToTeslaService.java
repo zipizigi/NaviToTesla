@@ -1,6 +1,7 @@
 package me.zipi.navitotesla.service;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -18,6 +19,7 @@ import me.zipi.navitotesla.model.TeslaApiResponse;
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 import retrofit2.Response;
 
@@ -65,16 +67,22 @@ public class NaviToTeslaService {
                 PreferencesUtil.put(context, "lastAddress", "");
             }
 
+            Bundle eventParam = new Bundle();
+            eventParam.putString("package", packageName);
+
             PoiAddressEntity poiAddressEntity = appRepository.getPoiSync(poiName);
             // 10 days cache
             String address;
             if (poiAddressEntity != null && !poiAddressEntity.isExpire()) {
                 address = poiAddressEntity.getAddress();
+                AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_cache", eventParam);
             } else if (isAddress(poiName)) {
                 address = poiName;
+                AnalysisUtil.getFirebaseAnalytics().logEvent("address_direct", eventParam);
             } else {
                 address = poiFinder.findPoiAddress(poiName);
                 appRepository.savePoi(poiName, address);
+                AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_api", eventParam);
             }
             String lastAddress = PreferencesUtil.getString(context, "lastAddress", "");
 
@@ -92,9 +100,15 @@ public class NaviToTeslaService {
                     }
                     if (result != null && result.getError() == null && result.getResponse() != null && result.getResponse().getResult()) {
                         makeToast("목적지 전송 성공\n" + address);
+                        AnalysisUtil.getFirebaseAnalytics().logEvent("send_success", eventParam);
                     } else {
                         Log.w(NaviToTeslaService.class.getName(), response.toString());
                         makeToast("목적지 전송 실패" + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
+                        eventParam.putString("notification_title", notificationText);
+                        eventParam.putString("notification_text", notificationText);
+                        eventParam.putString("address", address);
+                        AnalysisUtil.getFirebaseAnalytics().logEvent("send_fail", eventParam);
+
                     }
                 }
             }
@@ -174,7 +188,7 @@ public class NaviToTeslaService {
         return PreferencesUtil.getLong(context, "vehicleId", 0L);
     }
 
-    public void clearPoiCache(){
+    public void clearPoiCache() {
         appRepository.clearAllPoi();
     }
 }

@@ -7,7 +7,11 @@ import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.api.TMapApi;
 import me.zipi.navitotesla.model.TMap;
+import me.zipi.navitotesla.model.Token;
+import me.zipi.navitotesla.util.PreferencesUtil;
+import me.zipi.navitotesla.util.RemoteConfigUtil;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -19,6 +23,15 @@ public class TMapPoiFinder implements PoiFinder {
             .client(new OkHttpClient.Builder()
                     .connectTimeout(1, TimeUnit.MINUTES)
                     .readTimeout(1, TimeUnit.MINUTES)
+                    .addInterceptor(chain -> {
+                        Request request = chain.request().newBuilder()
+                                .url(chain.request().url().newBuilder()
+                                        .addQueryParameter("version", "1")
+                                        .addQueryParameter("appKey", RemoteConfigUtil.getConfig("tmapApiKey"))
+                                        .build())
+                                .build();
+                        return chain.proceed(request);
+                    })
                     .build())
             .build().create(TMapApi.class);
 

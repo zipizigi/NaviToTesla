@@ -39,8 +39,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        executor = Executors.newSingleThreadExecutor();
+        executor = Executors.newFixedThreadPool(2);
         vehicleListLiveData = new MutableLiveData<>();
         tokenLiveData = new MutableLiveData<>();
         setContentView(R.layout.activity_main);
