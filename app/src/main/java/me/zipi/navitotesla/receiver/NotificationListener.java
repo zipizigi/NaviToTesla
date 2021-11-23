@@ -19,6 +19,8 @@ public class NotificationListener extends NotificationListenerService {
     NaviToTeslaService naviToTeslaService;
     Executor executor = Executors.newSingleThreadExecutor();
 
+    private static Long lastNotificationPosted = System.currentTimeMillis();
+    
     @Override
     public void onCreate() {
         super.onCreate();
@@ -35,8 +37,9 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
         super.onNotificationRemoved(sbn);
-        if (PoiFinderFactory.isNaviSupport(sbn.getPackageName())) {
-            Log.d(this.getClass().getName(), "onNotificationRemoved ~ " +
+        if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
+            lastNotificationPosted = sbn.getPostTime();
+            Log.i(this.getClass().getName(), "onNotificationRemoved ~ " +
                     " packageName: " + sbn.getPackageName());
             executor.execute(() -> naviToTeslaService.notificationClear());
             Bundle param = new Bundle();
@@ -45,16 +48,18 @@ public class NotificationListener extends NotificationListenerService {
         }
     }
 
+
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
-        if (PoiFinderFactory.isNaviSupport(sbn.getPackageName())) {
+        if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
+            lastNotificationPosted = sbn.getPostTime();
             Bundle extras = sbn.getNotification().extras;
             String title = extras.getString(Notification.EXTRA_TITLE);
             CharSequence text = extras.getCharSequence(Notification.EXTRA_TEXT);
             CharSequence subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT);
 
-            Log.d(this.getClass().getName(), "onNotificationPosted ~ " +
+            Log.i(this.getClass().getName(), "onNotificationPosted ~ " +
                     " packageName: " + sbn.getPackageName() +
                     " id: " + sbn.getId() +
                     " postTime: " + sbn.getPostTime() +

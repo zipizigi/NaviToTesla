@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -116,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         this.runOnUiThread(() -> {
                     findViewById(R.id.btnSave).setEnabled(false);
+                    ((Button) findViewById(R.id.btnSave)).setText("확인중");
                     View focusView = this.getCurrentFocus();
                     if (focusView != null) {
                         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -141,7 +143,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (tokenLiveData.getValue() == null || !tokenLiveData.getValue().equals(token)) {
                     tokenLiveData.postValue(token);
                 }
-                context.runOnUiThread(() -> findViewById(R.id.btnSave).setEnabled(true));
+                context.runOnUiThread(() -> {
+                    findViewById(R.id.btnSave).setEnabled(true);
+                    ((Button) findViewById(R.id.btnSave)).setText("저장");
+                });
             } catch (Exception e) {
                 Log.e(MainActivity.class.getName(), "thread inside error", e);
             }
