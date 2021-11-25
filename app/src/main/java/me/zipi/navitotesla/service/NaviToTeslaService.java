@@ -7,6 +7,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.perf.metrics.AddTrace;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -14,6 +16,7 @@ import java.util.regex.Pattern;
 import me.zipi.navitotesla.AppRepository;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
+import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.ShareRequest;
 import me.zipi.navitotesla.model.TeslaApiResponse;
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest;
@@ -27,6 +30,7 @@ import retrofit2.Response;
 public class NaviToTeslaService {
 
     private final Context context;
+    private final static String duplicateAddress = "___DUPLICATED_ADDRESS___";
     private final Pattern pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|세종시\\s[가-힣\\d]+[읍면동로])");
     AppRepository appRepository;
 
@@ -41,7 +45,7 @@ public class NaviToTeslaService {
 
     private void makeToast(String text) {
         try {
-            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_SHORT).show());
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,11 +59,19 @@ public class NaviToTeslaService {
         PreferencesUtil.put(context, "lastAddress", "");
     }
 
+    @AddTrace(name = "share")
     public void share(String packageName, String notificationTitle, String notificationText) {
+        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", packageName);
+        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("notificationTitle", notificationTitle);
+        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("notificationText", notificationText);
+        Bundle eventParam = new Bundle();
+        eventParam.putString("package", packageName);
+
         try {
             PoiFinder poiFinder = PoiFinderFactory.getPoiFinder(packageName);
             if (poiFinder == null) {
                 makeToast("지원하지 않는 내비입니다.");
+                AnalysisUtil.getFirebaseCrashlytics().log("unsupported navi");
                 return;
             }
             String poiName = poiFinder.parseDestination(notificationText);
@@ -67,8 +79,6 @@ public class NaviToTeslaService {
                 PreferencesUtil.put(context, "lastAddress", "");
             }
 
-            Bundle eventParam = new Bundle();
-            eventParam.putString("package", packageName);
 
             PoiAddressEntity poiAddressEntity = appRepository.getPoiSync(poiName);
             // 10 days cache
@@ -80,15 +90,28 @@ public class NaviToTeslaService {
                 address = poiName;
                 AnalysisUtil.getFirebaseAnalytics().logEvent("address_direct", eventParam);
             } else {
-                address = poiFinder.findPoiAddress(poiName);
-                appRepository.savePoi(poiName, address);
-                AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_api", eventParam);
+                try {
+                    address = poiFinder.findPoiAddress(poiName);
+                    AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_api", eventParam);
+                    appRepository.savePoi(poiName, address);
+                } catch (DuplicatePoiException e) {
+
+                    address = duplicateAddress;
+                    appRepository.savePoi(poiName, address);
+                } catch (Exception e) {
+                    address = "";
+                    AnalysisUtil.getFirebaseCrashlytics().log("POI Api call error");
+                    AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+                    makeToast("목적지 전송 실패\nAPI 호출 실패");
+                }
+
+
             }
             String lastAddress = PreferencesUtil.getString(context, "lastAddress", "");
 
             if (!lastAddress.equals(address)) {
                 PreferencesUtil.put(context, "lastAddress", address);
-                if (address.length() > 0) {
+                if (address.length() > 0 && !address.equals(duplicateAddress)) {
                     makeToast("목적지 전송 요청\n" + address);
 
                     refreshToken();
@@ -104,17 +127,26 @@ public class NaviToTeslaService {
                     } else {
                         Log.w(NaviToTeslaService.class.getName(), response.toString());
                         makeToast("목적지 전송 실패" + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
-                        eventParam.putString("notification_title", notificationText);
-                        eventParam.putString("notification_text", notificationText);
-                        eventParam.putString("address", address);
+
                         AnalysisUtil.getFirebaseAnalytics().logEvent("send_fail", eventParam);
+
+                        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("address", address);
+                        AnalysisUtil.getFirebaseCrashlytics().log("sendFail");
 
                     }
                 }
+            } else if (address.equals(duplicateAddress)) {
+                AnalysisUtil.getFirebaseAnalytics().logEvent("duplicated_address", eventParam);
+                makeToast("목적지 전송 실패\n목적지 중복");
+            } else {
+                // 마지막 전송 주소와 동일
+                makeToast("목적지 전송 무시\n이전에 전송 요청한 주소와 동일함.");
+                AnalysisUtil.getFirebaseAnalytics().logEvent("previous_request_address", eventParam);
             }
             appRepository.clearExpiredPoi();
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
         }
     }
 
@@ -153,6 +185,7 @@ public class NaviToTeslaService {
     }
 
 
+    @AddTrace(name = "getVehicles")
     public List<Vehicle> getVehicles() {
         Token token = PreferencesUtil.loadToken(context);
 
