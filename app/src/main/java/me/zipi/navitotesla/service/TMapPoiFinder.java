@@ -2,10 +2,12 @@ package me.zipi.navitotesla.service;
 
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.api.TMapApi;
+import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.TMap;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.util.PreferencesUtil;
@@ -36,41 +38,36 @@ public class TMapPoiFinder implements PoiFinder {
             .build().create(TMapApi.class);
 
     @Override
-    public String findPoiAddress(String poiName) {
+    public String findPoiAddress(String poiName) throws DuplicatePoiException, IOException {
         String address = "";
-        try {
-            Response<TMap.SearchPoiResponse> response = tMapApi.search(poiName).execute();
+        Response<TMap.SearchPoiResponse> response = tMapApi.search(poiName).execute();
 
-            if (!response.isSuccessful() || response.body() == null) {
-                Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
-                return "";
-            }
+        if (!response.isSuccessful() || response.body() == null) {
+            Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
+            return "";
+        }
 
-            int sameCount = 0;
+        int sameCount = 0;
 
-            for (TMap.PoiItem poi : response.body().getSearchPoiInfo().getPois().getPoi()) {
-                if (poi.getName().equalsIgnoreCase(poiName)) {
-                    sameCount++;
-                    if (!poi.getRoadAddress().equals("")) {
-                        // 도로명
-                        address = poi.getRoadAddress();
-                    } else if (!poi.getAddress().equals("")) {
-                        // 지번
-                        address = poi.getAddress();
-                    } else {
-                        // gps
-                        address = String.format(Locale.getDefault(), "%s,%s", poi.getLatitude(), poi.getLongitude());
-                    }
-
+        for (TMap.PoiItem poi : response.body().getSearchPoiInfo().getPois().getPoi()) {
+            if (poi.getName().equalsIgnoreCase(poiName)) {
+                sameCount++;
+                if (!poi.getRoadAddress().equals("")) {
+                    // 도로명
+                    address = poi.getRoadAddress();
+                } else if (!poi.getAddress().equals("")) {
+                    // 지번
+                    address = poi.getAddress();
+                } else {
+                    // gps
+                    address = String.format(Locale.getDefault(), "%s,%s", poi.getLatitude(), poi.getLongitude());
                 }
-            }
-            if (sameCount > 1) {
-                // 중복지명이 있으므로 전송 안함.
-                return "";
-            }
 
-        } catch (Exception e) {
-            Log.w(this.getClass().getName(), "TMap Api call fail", e);
+            }
+        }
+        if (sameCount > 1) {
+            // 중복지명이 있으므로 전송 안함.
+            throw new DuplicatePoiException(poiName);
         }
 
         return address;

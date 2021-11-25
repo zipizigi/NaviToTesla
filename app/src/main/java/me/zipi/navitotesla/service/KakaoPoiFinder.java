@@ -2,10 +2,12 @@ package me.zipi.navitotesla.service;
 
 import android.util.Log;
 
+import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.api.KakaoMapApi;
+import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.KakaoMap;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 import okhttp3.OkHttpClient;
@@ -31,38 +33,34 @@ public class KakaoPoiFinder implements PoiFinder {
             .build().create(KakaoMapApi.class);
 
     @Override
-    public String findPoiAddress(String poiName) {
+    public String findPoiAddress(String poiName) throws DuplicatePoiException, IOException {
         String address = "";
 
-        try {
-            Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
+        Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
 
-            if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
-                int sameCount = 0;
-                for (KakaoMap.Place place : response.body().getDocuments()) {
-                    if (place.getPlaceName().equalsIgnoreCase(poiName)) {
-                        sameCount++;
+        if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
+            int sameCount = 0;
+            for (KakaoMap.Place place : response.body().getDocuments()) {
+                if (place.getPlaceName().equalsIgnoreCase(poiName)) {
+                    sameCount++;
 
-                        if (!place.getRoadAddressName().equals("")) {
-                            // 도로명
-                            address = place.getRoadAddressName();
-                        } else if (!place.getAddressName().equals("")) {
-                            // 지번
-                            address = place.getAddressName();
-                        } else {
-                            // gps
-                            address = String.format(Locale.getDefault(), "%s,%s", place.getLatitude(), place.getLongitude());
-                        }
+                    if (!place.getRoadAddressName().equals("")) {
+                        // 도로명
+                        address = place.getRoadAddressName();
+                    } else if (!place.getAddressName().equals("")) {
+                        // 지번
+                        address = place.getAddressName();
+                    } else {
+                        // gps
+                        address = String.format(Locale.getDefault(), "%s,%s", place.getLatitude(), place.getLongitude());
                     }
                 }
-
-                if (sameCount > 1) {
-                    // 중복지명 전송 안함
-                    return "";
-                }
             }
-        } catch (Exception e) {
-            Log.w(this.getClass().getName(), "kakao api call fail", e);
+
+            if (sameCount > 1) {
+                // 중복지명 전송 안함
+                throw new DuplicatePoiException(poiName);
+            }
         }
 
         return address;

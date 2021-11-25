@@ -20,7 +20,7 @@ public class NotificationListener extends NotificationListenerService {
     Executor executor = Executors.newSingleThreadExecutor();
 
     private static Long lastNotificationPosted = System.currentTimeMillis();
-    
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -37,8 +37,7 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
         super.onNotificationRemoved(sbn);
-        if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
-            lastNotificationPosted = sbn.getPostTime();
+        if (PoiFinderFactory.isNaviSupport(sbn.getPackageName())) {
             Log.i(this.getClass().getName(), "onNotificationRemoved ~ " +
                     " packageName: " + sbn.getPackageName());
             executor.execute(() -> naviToTeslaService.notificationClear());
