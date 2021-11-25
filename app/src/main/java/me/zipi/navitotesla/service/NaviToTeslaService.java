@@ -45,6 +45,7 @@ public class NaviToTeslaService {
 
     private void makeToast(String text) {
         try {
+            Log.i(this.getClass().getName(), text);
             new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,10 +135,10 @@ public class NaviToTeslaService {
                         AnalysisUtil.getFirebaseCrashlytics().log("sendFail");
 
                     }
+                } else if (address.equals(duplicateAddress)) {
+                    AnalysisUtil.getFirebaseAnalytics().logEvent("duplicated_address", eventParam);
+                    makeToast("목적지 전송 실패\n목적지 중복");
                 }
-            } else if (address.equals(duplicateAddress)) {
-                AnalysisUtil.getFirebaseAnalytics().logEvent("duplicated_address", eventParam);
-                makeToast("목적지 전송 실패\n목적지 중복");
             } else {
                 // 마지막 전송 주소와 동일
                 makeToast("목적지 전송 무시\n이전에 전송 요청한 주소와 동일함.");

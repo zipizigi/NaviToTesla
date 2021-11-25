@@ -2,7 +2,9 @@ package me.zipi.navitotesla;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -21,12 +23,14 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.MutableLiveData;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -49,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         vehicleListLiveData.observe(this, vehicles -> updateSpinner());
         tokenLiveData.observe(this, this::updateToken);
+
+        ((TextView) findViewById(R.id.txtVersion)).setText(getPackageVersion());
     }
 
     @Override
@@ -88,6 +94,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    public void onTxtVersionClicked(View view) {
+        new AlertDialog.Builder(this)
+                .setTitle("최신버전 다운로드")
+                .setMessage("최신버전 다운로드 페이지로 이동하시겠습니까?")
+                // .setIcon(R.drawable.ic_launcher_background)
+                .setPositiveButton("예", (dialog, which) -> {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/zipizigi/NaviToTesla/releases/latest")));
+                })
+                .setNegativeButton("아니오", (dialog, which) -> {
+
+                })
+                .show();
+    }
 
     public void onBtnPoiCacheClearClick(View view) {
         this.runOnUiThread(() -> findViewById(R.id.btnPoiCacheClear).setEnabled(false));
@@ -189,5 +208,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
+    }
+
+    private String getPackageVersion() {
+        String version = "1.0";
+        try {
+            version = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+        }
+        return version;
     }
 }
