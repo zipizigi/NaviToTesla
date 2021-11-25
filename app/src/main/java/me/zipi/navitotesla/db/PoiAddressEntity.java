@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor = @__({@Ignore}))
 public class PoiAddressEntity {
     public static Integer expireDay = 10;
 
