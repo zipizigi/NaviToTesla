@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.google.firebase.perf.metrics.AddTrace;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -17,6 +18,8 @@ import me.zipi.navitotesla.AppRepository;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
+import me.zipi.navitotesla.exception.IgnorePoiException;
+import me.zipi.navitotesla.exception.NotSupportedNaviException;
 import me.zipi.navitotesla.model.ShareRequest;
 import me.zipi.navitotesla.model.TeslaApiResponse;
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest;
@@ -30,7 +33,6 @@ import retrofit2.Response;
 public class NaviToTeslaService {
 
     private final Context context;
-    private final static String duplicateAddress = "___DUPLICATED_ADDRESS___";
     private final Pattern pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|세종시\\s[가-힣\\d]+[읍면동로])");
     AppRepository appRepository;
 
@@ -65,54 +67,18 @@ public class NaviToTeslaService {
         AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", packageName);
         AnalysisUtil.getFirebaseCrashlytics().setCustomKey("notificationTitle", notificationTitle);
         AnalysisUtil.getFirebaseCrashlytics().setCustomKey("notificationText", notificationText);
+
         Bundle eventParam = new Bundle();
         eventParam.putString("package", packageName);
 
         try {
-            PoiFinder poiFinder = PoiFinderFactory.getPoiFinder(packageName);
-            if (poiFinder == null) {
-                makeToast("지원하지 않는 내비입니다.");
-                AnalysisUtil.getFirebaseCrashlytics().log("unsupported navi");
-                return;
-            }
-            String poiName = poiFinder.parseDestination(notificationText);
-            if (poiName.length() == 0 || poiFinder.isIgnore(notificationTitle, notificationText)) {
-                PreferencesUtil.put(context, "lastAddress", "");
-            }
+            String address = getAddress(packageName, notificationTitle, notificationText);
 
-
-            PoiAddressEntity poiAddressEntity = appRepository.getPoiSync(poiName);
-            // 10 days cache
-            String address;
-            if (poiAddressEntity != null && !poiAddressEntity.isExpire()) {
-                address = poiAddressEntity.getAddress();
-                AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_cache", eventParam);
-            } else if (isAddress(poiName)) {
-                address = poiName;
-                AnalysisUtil.getFirebaseAnalytics().logEvent("address_direct", eventParam);
-            } else {
-                try {
-                    address = poiFinder.findPoiAddress(poiName);
-                    AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_api", eventParam);
-                    appRepository.savePoi(poiName, address);
-                } catch (DuplicatePoiException e) {
-
-                    address = duplicateAddress;
-                    appRepository.savePoi(poiName, address);
-                } catch (Exception e) {
-                    address = "";
-                    AnalysisUtil.getFirebaseCrashlytics().log("POI Api call error");
-                    AnalysisUtil.getFirebaseCrashlytics().recordException(e);
-                    makeToast("목적지 전송 실패\nAPI 호출 실패");
-                }
-
-
-            }
             String lastAddress = PreferencesUtil.getString(context, "lastAddress", "");
 
             if (!lastAddress.equals(address)) {
                 PreferencesUtil.put(context, "lastAddress", address);
-                if (address.length() > 0 && !address.equals(duplicateAddress)) {
+                if (address.length() > 0) {
                     makeToast("목적지 전송 요청\n" + address);
 
                     refreshToken();
@@ -135,9 +101,6 @@ public class NaviToTeslaService {
                         AnalysisUtil.getFirebaseCrashlytics().log("sendFail");
 
                     }
-                } else if (address.equals(duplicateAddress)) {
-                    AnalysisUtil.getFirebaseAnalytics().logEvent("duplicated_address", eventParam);
-                    makeToast("목적지 전송 실패\n목적지 중복");
                 }
             } else {
                 // 마지막 전송 주소와 동일
@@ -145,12 +108,52 @@ public class NaviToTeslaService {
                 AnalysisUtil.getFirebaseAnalytics().logEvent("previous_request_address", eventParam);
             }
             appRepository.clearExpiredPoi();
+        } catch (DuplicatePoiException e) {
+            AnalysisUtil.getFirebaseAnalytics().logEvent("duplicated_address", eventParam);
+            makeToast("목적지 전송 실패\n목적지 중복");
+        } catch (NotSupportedNaviException e) {
+            AnalysisUtil.getFirebaseAnalytics().logEvent("unsupported_navi", eventParam);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            makeToast("목적지 전송 실패\n미지원 내비");
+        } catch (IgnorePoiException e) {
+            AnalysisUtil.getFirebaseAnalytics().logEvent("ignore_address", eventParam);
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
+            makeToast("목적지 전송 실패\n내부 또는 API 오류");
             AnalysisUtil.getFirebaseCrashlytics().recordException(e);
         }
     }
 
+    @AddTrace(name = "getAddress")
+    private String getAddress(String packageName, String notificationTitle, String notificationText)
+            throws NotSupportedNaviException, DuplicatePoiException, IgnorePoiException, IOException {
+        Bundle eventParam = new Bundle();
+        eventParam.putString("package", packageName);
+
+        PoiFinder poiFinder = PoiFinderFactory.getPoiFinder(packageName);
+
+        String poiName = poiFinder.parseDestination(notificationText);
+        if (poiName.length() == 0 || poiFinder.isIgnore(notificationTitle, notificationText)) {
+            AnalysisUtil.getFirebaseAnalytics().logEvent("address_ignore_or_not_found", eventParam);
+            throw new IgnorePoiException(packageName);
+        }
+
+
+        PoiAddressEntity poiAddressEntity = appRepository.getPoiSync(poiName);
+        // 10 days cache
+        String address;
+        if (poiAddressEntity != null && !poiAddressEntity.isExpire()) {
+            address = poiAddressEntity.getAddress();
+            AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_cache", eventParam);
+        } else if (isAddress(poiName)) {
+            address = poiName;
+            AnalysisUtil.getFirebaseAnalytics().logEvent("address_direct", eventParam);
+        } else {
+            address = poiFinder.findPoiAddress(poiName);
+            AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_api", eventParam);
+        }
+        return address;
+    }
 
     public Token getToken() {
         return PreferencesUtil.loadToken(context);
