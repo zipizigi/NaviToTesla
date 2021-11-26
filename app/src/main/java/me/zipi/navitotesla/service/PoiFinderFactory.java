@@ -2,6 +2,7 @@ package me.zipi.navitotesla.service;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import me.zipi.navitotesla.exception.NotSupportedNaviException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PoiFinderFactory {
@@ -15,12 +16,12 @@ public class PoiFinderFactory {
                 || packageName.equalsIgnoreCase(kakaoPackage);
     }
 
-    public static PoiFinder getPoiFinder(String packageName) {
+    public static PoiFinder getPoiFinder(String packageName) throws NotSupportedNaviException {
         if (packageName.equalsIgnoreCase(tmapPackage) || packageName.equalsIgnoreCase(tmapSKPackage)) {
             return new TMapPoiFinder();
         } else if (packageName.equalsIgnoreCase(kakaoPackage)) {
             return new KakaoPoiFinder();
         }
-        return null;
+        throw new NotSupportedNaviException(packageName);
     }
 }

@@ -2,7 +2,6 @@ package me.zipi.navitotesla;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -99,9 +98,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 .setTitle("최신버전 다운로드")
                 .setMessage("최신버전 다운로드 페이지로 이동하시겠습니까?")
                 // .setIcon(R.drawable.ic_launcher_background)
-                .setPositiveButton("예", (dialog, which) -> {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/zipizigi/NaviToTesla/releases/latest")));
-                })
+                .setPositiveButton("예", (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/zipizigi/NaviToTesla/releases/latest"))))
                 .setNegativeButton("아니오", (dialog, which) -> {
 
                 })

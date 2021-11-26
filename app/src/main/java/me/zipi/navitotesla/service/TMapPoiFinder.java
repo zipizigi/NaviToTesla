@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 import me.zipi.navitotesla.api.TMapApi;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.TMap;
-import me.zipi.navitotesla.model.Token;
-import me.zipi.navitotesla.util.PreferencesUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
