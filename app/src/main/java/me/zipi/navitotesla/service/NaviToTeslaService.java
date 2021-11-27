@@ -104,7 +104,7 @@ public class NaviToTeslaService {
                 }
             } else {
                 // 마지막 전송 주소와 동일
-                makeToast("목적지 전송 무시\n이전에 전송 요청한 주소와 동일함.");
+                // makeToast("목적지 전송 무시\n이전에 전송 요청한 주소와 동일함.");
                 AnalysisUtil.getFirebaseAnalytics().logEvent("previous_request_address", eventParam);
             }
             appRepository.clearExpiredPoi();

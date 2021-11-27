@@ -86,7 +86,7 @@ public class TMapPoiFinder implements PoiFinder {
 
     @Override
     public boolean isIgnore(String notificationTitle, String notificationText) {
-        return notificationText.equals("안심주행");
+        return notificationText.equals("안심주행") || !notificationTitle.equals("경로주행");
     }
 
 }
