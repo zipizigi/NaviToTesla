@@ -6,6 +6,8 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -51,12 +53,13 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
+        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", sbn.getPackageName());
         if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
             lastNotificationPosted = sbn.getPostTime();
             Bundle extras = sbn.getNotification().extras;
-            String title = extras.getString(Notification.EXTRA_TITLE);
-            CharSequence text = extras.getCharSequence(Notification.EXTRA_TEXT);
-            CharSequence subText = extras.getCharSequence(Notification.EXTRA_SUB_TEXT);
+            String title = StringUtils.defaultString(extras.getString(Notification.EXTRA_TITLE), "");
+            String text = StringUtils.defaultString(extras.getString(Notification.EXTRA_TEXT), "");
+            String subText = StringUtils.defaultString(extras.getString(Notification.EXTRA_SUB_TEXT), "");
 
             Log.i(this.getClass().getName(), "onNotificationPosted ~ " +
                     " packageName: " + sbn.getPackageName() +
@@ -65,7 +68,7 @@ public class NotificationListener extends NotificationListenerService {
                     " title: " + title +
                     " text : " + text +
                     " subText: " + subText);
-            executor.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text.toString()));
+            executor.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text));
             executor.execute(RemoteConfigUtil::initialize);
             AppUpdaterUtil.notification(this);
             Bundle param = new Bundle();
