@@ -192,9 +192,10 @@ public class NaviToTeslaService {
 
 
     @AddTrace(name = "getVehicles")
-    public List<Vehicle> getVehicles() {
-        Token token = PreferencesUtil.loadToken(context);
-
+    public List<Vehicle> getVehicles(Token token) {
+        if (token == null) {
+            token = PreferencesUtil.loadToken(context);
+        }
         if (token == null || token.getRefreshToken() == null) {
             makeToast("Token 설정이 필요합니다.");
             return new ArrayList<>();
