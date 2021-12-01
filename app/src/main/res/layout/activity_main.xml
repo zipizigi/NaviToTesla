@@ -16,33 +16,39 @@
         android:onClick="onBtnSaveClick"
         android:text="저장"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtRefreshToken" />
+        app:layout_constraintStart_toEndOf="@+id/btnPaste"
+        app:layout_constraintTop_toBottomOf="@+id/txtRefreshToken"
+        app:icon="@drawable/ic_baseline_save_24"
+        style="@style/Widget.MaterialComponents.Button.Icon"/>
 
     <Button
         android:id="@+id/btnPoiCacheClear"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="6dp"
         android:layout_marginTop="36dp"
         android:onClick="onBtnPoiCacheClearClick"
         android:text="주소 캐시 삭제"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/vehicleSelector" />
+        app:layout_constraintStart_toEndOf="@+id/btnTokenClear"
+        app:layout_constraintTop_toBottomOf="@+id/vehicleSelector"
+        app:icon="@drawable/ic_baseline_clear_24"
+        style="@style/Widget.MaterialComponents.Button.Icon"/>
 
     <EditText
         android:id="@+id/txtRefreshToken"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
-        android:layout_marginStart="48dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="14dp"
         android:ems="10"
         android:hint="Refresh Token"
-        android:inputType="textPersonName"
+        android:inputType="textMultiLine"
+        android:maxLines="5"
+        android:minLines="1"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/defaultLabel"
         app:layout_constraintTop_toTopOf="parent" />
@@ -114,5 +120,33 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="1.0" />s
+        tools:text="1.0" />
+
+    <Button
+        android:id="@+id/btnPaste"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="24dp"
+        android:onClick="onBtnPasteClick"
+        android:text="붙여넣기"
+        app:icon="@drawable/ic_baseline_content_paste_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtRefreshToken" />
+
+    <Button
+        android:id="@+id/btnTokenClear"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="36dp"
+        android:onClick="onBtnTokenClearClick"
+        android:text="토큰 삭제"
+        app:icon="@drawable/ic_baseline_clear_24"
+        app:layout_constraintEnd_toStartOf="@+id/btnPoiCacheClear"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/vehicleSelector" />
 </androidx.constraintlayout.widget.ConstraintLayout>
