@@ -225,7 +225,8 @@ public class NaviToTeslaService {
     }
 
     public Long loadVehicleId() {
-        return PreferencesUtil.getLong(context, "vehicleId", 0L);
+        Long vid = PreferencesUtil.getLong(context, "vehicleId", 0L);
+        return vid == null ? 0L : vid;
     }
 
     public void clearPoiCache() {
