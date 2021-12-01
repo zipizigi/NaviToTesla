@@ -1,6 +1,7 @@
 package me.zipi.navitotesla;
 
 import android.app.Activity;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -31,6 +32,7 @@ import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
+import me.zipi.navitotesla.util.PreferencesUtil;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -120,6 +122,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         );
     }
 
+    public void onBtnPasteClick(View view) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard.getPrimaryClip().getItemAt(0) != null) {
+            String pasteData = clipboard.getPrimaryClip().getItemAt(0).getText().toString().trim();
+            if (pasteData.matches("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)")) {
+                ((EditText) findViewById(R.id.txtRefreshToken)).setText(pasteData);
+            }
+        }
+    }
+
+    public void onBtnTokenClearClick(View view) {
+        ((EditText) findViewById(R.id.txtRefreshToken)).setText("");
+        ((TextView) findViewById(R.id.txtAccessToken)).setText("");
+        vehicleListLiveData.postValue(new ArrayList<>());
+
+        executor.execute(() -> {
+            PreferencesUtil.clear(this);
+            tokenLiveData.postValue(naviToTeslaService.getToken());
+        });
+
+    }
+
     public void onBtnSaveClick(View view) {
         String refreshToken = ((EditText) findViewById(R.id.txtRefreshToken)).getText().toString().trim();
 
@@ -165,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
             } catch (Exception e) {
                 Log.e(MainActivity.class.getName(), "thread inside error", e);
+                AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             }
         });
     }

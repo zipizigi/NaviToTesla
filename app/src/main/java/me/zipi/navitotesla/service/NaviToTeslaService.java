@@ -50,6 +50,7 @@ public class NaviToTeslaService {
             Log.i(this.getClass().getName(), text);
             new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
         } catch (Exception e) {
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             e.printStackTrace();
         }
 
@@ -184,6 +185,7 @@ public class NaviToTeslaService {
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "refresh token fail", e);
             makeToast("Token 갱신에 실패하였습니다.");
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
         }
         return token;
     }
@@ -210,6 +212,7 @@ public class NaviToTeslaService {
             }
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "get vehicle error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
         }
         if (vehicles.size() == 0) {
             makeToast("등록된 차량이 없습니다.");

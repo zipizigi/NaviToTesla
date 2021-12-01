@@ -38,7 +38,20 @@ public class PreferencesUtil {
             return true;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "remove  error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             return false;
+        }
+    }
+
+    public static void clear(Context context) {
+        try {
+            SharedPreferences sharedPreferences = getSharedPreferences(context);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();
+            editor.apply();
+        } catch (Exception e) {
+            Log.w(PreferencesUtil.class.getName(), "clear error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
         }
     }
 
@@ -52,6 +65,7 @@ public class PreferencesUtil {
             return true;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "put string error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             return false;
         }
     }
@@ -61,6 +75,7 @@ public class PreferencesUtil {
             return getSharedPreferences(context).getString(key, defaultValue);
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "get string error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             return defaultValue;
         }
     }
@@ -79,6 +94,7 @@ public class PreferencesUtil {
             return true;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "put long error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             return false;
         }
     }
@@ -89,6 +105,7 @@ public class PreferencesUtil {
             return result == -1 ? null : result;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "get long error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             return null;
         }
     }
@@ -98,6 +115,7 @@ public class PreferencesUtil {
             return getSharedPreferences(context).getLong(key, defaultValue);
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "get long error", e);
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
             return defaultValue;
         }
     }
