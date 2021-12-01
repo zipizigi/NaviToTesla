@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -56,24 +57,33 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         tokenLiveData.observe(this, this::updateToken);
 
         ((TextView) findViewById(R.id.txtVersion)).setText(getPackageVersion());
+        ((TextView) findViewById(R.id.txtAccessToken)).setMovementMethod(new ScrollingMovementMethod());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        permissionGrantedCheck();
 
-        if (!permissionGranted()) {
-            Intent intent = new Intent(
-                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-            startActivity(intent);
-        }
         executor.execute(() -> tokenLiveData.postValue(naviToTeslaService.getToken()));
         AppUpdaterUtil.dialog(this);
+
     }
 
-    private boolean permissionGranted() {
+    private void permissionGrantedCheck() {
         Set<String> sets = NotificationManagerCompat.getEnabledListenerPackages(this);
-        return sets.contains(getPackageName());
+        if (!sets.contains(getPackageName())) {
+            new AlertDialog.Builder(this)
+                    .setTitle("권한 요청")
+                    .setMessage("Navi To Tesla를 이용하려면 알림 접근 권한이 필요합니다.\nNavi To Telsa에 권한을 허용해주세요.")
+                    // .setIcon(R.drawable.ic_launcher_background)
+                    .setPositiveButton("확인", (dialog, which) ->
+                            startActivity(new Intent(
+                                    "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+                    )
+                    .setCancelable(false)
+                    .show();
+        }
     }
 
     @Override
@@ -171,8 +181,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         executor.execute(() -> {
             try {
                 Token token = naviToTeslaService.refreshToken(refreshToken);
+                if (tokenLiveData.getValue() == null || !tokenLiveData.getValue().equals(token)) {
+                    tokenLiveData.postValue(token);
+                }
 
-                List<Vehicle> vehicleList = naviToTeslaService.getVehicles();
+                List<Vehicle> vehicleList = naviToTeslaService.getVehicles(token);
 
                 if (vehicleList.size() > 0) {
                     if (naviToTeslaService.loadVehicleId().equals(0L)) {
@@ -180,9 +193,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
                 vehicleListLiveData.postValue(vehicleList);
-                if (tokenLiveData.getValue() == null || !tokenLiveData.getValue().equals(token)) {
-                    tokenLiveData.postValue(token);
-                }
+
                 context.runOnUiThread(() -> {
                     findViewById(R.id.btnSave).setEnabled(true);
                     ((Button) findViewById(R.id.btnSave)).setText("저장");

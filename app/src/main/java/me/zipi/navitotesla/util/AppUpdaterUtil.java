@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AppUpdaterUtil {
 
+    private static long lastShow = 0L;
+
     public static void notification(final Context context) {
         appUpdater(context, Display.NOTIFICATION);
     }
@@ -25,6 +27,10 @@ public class AppUpdaterUtil {
     }
 
     private static void appUpdater(Context context, Display display) {
+        if (lastShow > 0 && Math.abs(System.currentTimeMillis() - lastShow) < 5 * 60 * 1000) {
+            return;
+        }
+        lastShow = System.currentTimeMillis();
         new AppUpdater(context)
                 .setDisplay(display)
                 .setUpdateFrom(UpdateFrom.GITHUB)
