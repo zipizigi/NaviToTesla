@@ -134,7 +134,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void onBtnPasteClick(View view) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboard.getPrimaryClip().getItemAt(0) != null) {
+        if (clipboard != null && clipboard.getPrimaryClip() != null
+                && clipboard.getPrimaryClip().getItemAt(0) != null) {
             String pasteData = clipboard.getPrimaryClip().getItemAt(0).getText().toString().trim();
             if (pasteData.matches("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)")) {
                 ((EditText) findViewById(R.id.txtRefreshToken)).setText(pasteData);
