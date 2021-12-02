@@ -53,8 +53,8 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
-        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", sbn.getPackageName());
         if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
+            AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", sbn.getPackageName());
             lastNotificationPosted = sbn.getPostTime();
             Bundle extras = sbn.getNotification().extras;
             String title = StringUtils.defaultString(extras.getString(Notification.EXTRA_TITLE), "");

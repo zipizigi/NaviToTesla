@@ -4,37 +4,58 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Calendar;
 
 import androidx.security.crypto.EncryptedSharedPreferences;
-import androidx.security.crypto.MasterKeys;
+import androidx.security.crypto.MasterKey;
 import me.zipi.navitotesla.model.Token;
 
 public class PreferencesUtil {
-    private final static String preferencesFileName = "settings.xml";
-
+    private final static String preferencesFileName = "settings";
+    private final static String oldPreferencesFileName = "settings.xml";
 
     private static SharedPreferences getSharedPreferences(Context context) throws GeneralSecurityException, IOException {
-        String mainKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
-
+        if (!isFileCheck) {
+            removeXmlExtension(context);
+        }
+        MasterKey masterKey = new MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
         return EncryptedSharedPreferences.create(
-                preferencesFileName,
-                mainKeyAlias,
                 context,
+                preferencesFileName,
+                masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        );
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
+    }
+
+    private static boolean isFileCheck = false;
+
+    private static void removeXmlExtension(Context context) {
+        isFileCheck = true;
+        try {
+            File file = new File(context.getFilesDir().getParent() + "/shared_prefs/" + oldPreferencesFileName + ".xml");
+            if (file.exists()) {
+                boolean result = file.renameTo(new File(context.getFilesDir().getParent() + "/shared_prefs/" + preferencesFileName + ".xml"));
+                if (result) {
+                    dummySetting(context);
+                }
+            }
+        } catch (Exception e) {
+            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+        }
+    }
+
+    public static void dummySetting(Context context) {
+        put(context, "_file_name_changed", "true");
+        remove(context, "_file_name_changed");
     }
 
     public static boolean remove(Context context, String key) {
         try {
-            SharedPreferences sharedPreferences = getSharedPreferences(context);
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.remove(key);
-            editor.apply();
+            getSharedPreferences(context).edit().remove(key).apply();
             return true;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "remove  error", e);
@@ -43,25 +64,20 @@ public class PreferencesUtil {
         }
     }
 
+
     public static void clear(Context context) {
         try {
-            SharedPreferences sharedPreferences = getSharedPreferences(context);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.clear();
-            editor.apply();
+            getSharedPreferences(context).edit().clear().apply();
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "clear error", e);
             AnalysisUtil.getFirebaseCrashlytics().recordException(e);
         }
+
     }
 
     public static boolean put(Context context, String key, String value) {
         try {
-            SharedPreferences sharedPreferences = getSharedPreferences(context);
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(key, value);
-            editor.apply();
+            getSharedPreferences(context).edit().putString(key, value).apply();
             return true;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "put string error", e);
@@ -86,11 +102,7 @@ public class PreferencesUtil {
 
     public static boolean put(Context context, String key, Long value) {
         try {
-            SharedPreferences sharedPreferences = getSharedPreferences(context);
-
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putLong(key, value);
-            editor.apply();
+            getSharedPreferences(context).edit().putLong(key, value).apply();
             return true;
         } catch (Exception e) {
             Log.w(PreferencesUtil.class.getName(), "put long error", e);
