@@ -15,12 +15,8 @@ import me.zipi.navitotesla.model.Token;
 
 public class PreferencesUtil {
     private final static String preferencesFileName = "settings";
-    private final static String oldPreferencesFileName = "settings.xml";
 
     private static SharedPreferences getSharedPreferences(Context context) throws GeneralSecurityException, IOException {
-        if (!isFileCheck) {
-            removeXmlExtension(context);
-        }
         MasterKey masterKey = new MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build();
         return EncryptedSharedPreferences.create(
@@ -29,28 +25,6 @@ public class PreferencesUtil {
                 masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM);
-    }
-
-    private static boolean isFileCheck = false;
-
-    private static void removeXmlExtension(Context context) {
-        isFileCheck = true;
-        try {
-            File file = new File(context.getFilesDir().getParent() + "/shared_prefs/" + oldPreferencesFileName + ".xml");
-            if (file.exists()) {
-                boolean result = file.renameTo(new File(context.getFilesDir().getParent() + "/shared_prefs/" + preferencesFileName + ".xml"));
-                if (result) {
-                    dummySetting(context);
-                }
-            }
-        } catch (Exception e) {
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
-        }
-    }
-
-    public static void dummySetting(Context context) {
-        put(context, "_file_name_changed", "true");
-        remove(context, "_file_name_changed");
     }
 
     public static boolean remove(Context context, String key) {

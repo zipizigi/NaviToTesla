@@ -33,6 +33,7 @@ import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
+import me.zipi.navitotesla.util.PreferencesMigrationUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        PreferencesMigrationUtil.migration(this);
         executor = Executors.newFixedThreadPool(2);
         vehicleListLiveData = new MutableLiveData<>();
         tokenLiveData = new MutableLiveData<>();
