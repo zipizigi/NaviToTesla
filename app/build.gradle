@@ -15,7 +15,7 @@ android {
 
         versionCode Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1") ?: 1
         versionName System.getenv("RELEASE") ?: "1.0"
-
+        
     }
 
     buildTypes {
@@ -46,7 +46,6 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
     implementation 'com.github.javiersantos:AppUpdater:2.7'
     implementation 'com.google.code.gson:gson:2.8.9'
-    // implementation "net.zetetic:android-database-sqlcipher:4.5.0"
     implementation "androidx.sqlite:sqlite:2.1.0"
 
     // noinspection AnnotationProcessorOnCompilePath

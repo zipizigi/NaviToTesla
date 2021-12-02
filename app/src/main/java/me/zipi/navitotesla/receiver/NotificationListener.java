@@ -6,6 +6,8 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.concurrent.Executor;
@@ -36,6 +38,7 @@ public class NotificationListener extends NotificationListenerService {
         executor = null;
     }
 
+
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
         super.onNotificationRemoved(sbn);
@@ -54,6 +57,11 @@ public class NotificationListener extends NotificationListenerService {
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
         if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "NotificationListener");
+            bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "NotificationListener");
+            AnalysisUtil.getFirebaseAnalytics().logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
+
             AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", sbn.getPackageName());
             lastNotificationPosted = sbn.getPostTime();
             Bundle extras = sbn.getNotification().extras;
