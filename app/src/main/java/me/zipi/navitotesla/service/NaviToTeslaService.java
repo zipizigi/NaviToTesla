@@ -100,6 +100,7 @@ public class NaviToTeslaService {
 
                         AnalysisUtil.getFirebaseCrashlytics().setCustomKey("address", address);
                         AnalysisUtil.getFirebaseCrashlytics().log("sendFail");
+                        AnalysisUtil.getFirebaseCrashlytics().recordException(new RuntimeException("Send address fail"));
 
                     }
                 }
