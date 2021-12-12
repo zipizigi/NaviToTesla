@@ -99,6 +99,15 @@ public class NaviToTeslaService {
                         AnalysisUtil.getFirebaseAnalytics().logEvent("send_fail", eventParam);
 
                         AnalysisUtil.getFirebaseCrashlytics().setCustomKey("address", address);
+                        if (result != null && result.getErrorDescription() != null) {
+                            AnalysisUtil.getFirebaseCrashlytics().log("errorDescription: " + result.getErrorDescription());
+                        }
+                        if (!response.isSuccessful()) {
+                            AnalysisUtil.getFirebaseCrashlytics().log("Http response code: " + response.code());
+                            if (response.errorBody() != null) {
+                                AnalysisUtil.getFirebaseCrashlytics().log("Http error response: " + response.errorBody().string());
+                            }
+                        }
                         AnalysisUtil.getFirebaseCrashlytics().log("sendFail");
                         AnalysisUtil.getFirebaseCrashlytics().recordException(new RuntimeException("Send address fail"));
 
