@@ -48,7 +48,7 @@ public class NotificationListener extends NotificationListenerService {
             executor.execute(() -> naviToTeslaService.notificationClear());
             Bundle param = new Bundle();
             param.putString("package", sbn.getPackageName());
-            AnalysisUtil.getFirebaseAnalytics().logEvent("notification_removed", param);
+            AnalysisUtil.logEvent("notification_removed", param);
         }
     }
 
@@ -60,9 +60,9 @@ public class NotificationListener extends NotificationListenerService {
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "NotificationListener");
             bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "NotificationListener");
-            AnalysisUtil.getFirebaseAnalytics().logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
+            AnalysisUtil.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
 
-            AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", sbn.getPackageName());
+            AnalysisUtil.setCustomKey("packageName", sbn.getPackageName());
             lastNotificationPosted = sbn.getPostTime();
             Bundle extras = sbn.getNotification().extras;
             String title = StringUtils.defaultString(extras.getString(Notification.EXTRA_TITLE), "");
@@ -81,7 +81,7 @@ public class NotificationListener extends NotificationListenerService {
             AppUpdaterUtil.notification(this);
             Bundle param = new Bundle();
             param.putString("package", sbn.getPackageName());
-            AnalysisUtil.getFirebaseAnalytics().logEvent("notification_received", param);
+            AnalysisUtil.logEvent("notification_received", param);
         }
     }
 

@@ -125,10 +125,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         executor.execute(() -> {
                     try {
                         naviToTeslaService.clearPoiCache();
-                        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                                .putBoolean("prefAppUpdaterShow", true).apply();
+                        AppUpdaterUtil.clearDoNoyShow(this);
                     } catch (Exception e) {
                         Log.w(MainActivity.class.getName(), "clear poi cache error", e);
+                        AnalysisUtil.recordException(e);
                     }
                     this.runOnUiThread(() -> findViewById(R.id.btnPoiCacheClear).setEnabled(true));
                 }
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 });
             } catch (Exception e) {
                 Log.e(MainActivity.class.getName(), "thread inside error", e);
-                AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+                AnalysisUtil.recordException(e);
             }
         });
     }
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try {
             version = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
         } catch (Exception e) {
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.recordException(e);
         }
         return version;
     }

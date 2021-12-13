@@ -48,9 +48,10 @@ public class NaviToTeslaService {
     private void makeToast(String text) {
         try {
             Log.i(this.getClass().getName(), text);
+            AnalysisUtil.log(text);
             new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
         } catch (Exception e) {
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.recordException(e);
             e.printStackTrace();
         }
 
@@ -65,9 +66,9 @@ public class NaviToTeslaService {
 
     @AddTrace(name = "share")
     public void share(String packageName, String notificationTitle, String notificationText) {
-        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("packageName", packageName);
-        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("notificationTitle", notificationTitle);
-        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("notificationText", notificationText);
+        AnalysisUtil.setCustomKey("packageName", packageName);
+        AnalysisUtil.setCustomKey("notificationTitle", notificationTitle);
+        AnalysisUtil.setCustomKey("notificationText", notificationText);
 
         Bundle eventParam = new Bundle();
         eventParam.putString("package", packageName);
@@ -91,47 +92,47 @@ public class NaviToTeslaService {
                     }
                     if (result != null && result.getError() == null && result.getResponse() != null && result.getResponse().getResult()) {
                         makeToast("목적지 전송 성공\n" + address);
-                        AnalysisUtil.getFirebaseAnalytics().logEvent("send_success", eventParam);
+                        AnalysisUtil.logEvent("send_success", eventParam);
                     } else {
                         Log.w(NaviToTeslaService.class.getName(), response.toString());
                         makeToast("목적지 전송 실패" + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
 
-                        AnalysisUtil.getFirebaseAnalytics().logEvent("send_fail", eventParam);
+                        AnalysisUtil.logEvent("send_fail", eventParam);
 
-                        AnalysisUtil.getFirebaseCrashlytics().setCustomKey("address", address);
+                        AnalysisUtil.setCustomKey("address", address);
                         if (result != null && result.getErrorDescription() != null) {
-                            AnalysisUtil.getFirebaseCrashlytics().log("errorDescription: " + result.getErrorDescription());
+                            AnalysisUtil.log("errorDescription: " + result.getErrorDescription());
                         }
                         if (!response.isSuccessful()) {
-                            AnalysisUtil.getFirebaseCrashlytics().log("Http response code: " + response.code());
+                            AnalysisUtil.log("Http response code: " + response.code());
                             if (response.errorBody() != null) {
-                                AnalysisUtil.getFirebaseCrashlytics().log("Http error response: " + response.errorBody().string());
+                                AnalysisUtil.log("Http error response: " + response.errorBody().string());
                             }
                         }
-                        AnalysisUtil.getFirebaseCrashlytics().log("sendFail");
-                        AnalysisUtil.getFirebaseCrashlytics().recordException(new RuntimeException("Send address fail"));
+                        AnalysisUtil.log("sendFail");
+                        AnalysisUtil.recordException(new RuntimeException("Send address fail"));
 
                     }
                 }
             } else {
                 // 마지막 전송 주소와 동일
                 // makeToast("목적지 전송 무시\n이전에 전송 요청한 주소와 동일함.");
-                AnalysisUtil.getFirebaseAnalytics().logEvent("previous_request_address", eventParam);
+                AnalysisUtil.logEvent("previous_request_address", eventParam);
             }
             appRepository.clearExpiredPoi();
         } catch (DuplicatePoiException e) {
-            AnalysisUtil.getFirebaseAnalytics().logEvent("duplicated_address", eventParam);
+            AnalysisUtil.logEvent("duplicated_address", eventParam);
             makeToast("목적지 전송 실패\n목적지 중복");
         } catch (NotSupportedNaviException e) {
-            AnalysisUtil.getFirebaseAnalytics().logEvent("unsupported_navi", eventParam);
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.logEvent("unsupported_navi", eventParam);
+            AnalysisUtil.recordException(e);
             makeToast("목적지 전송 실패\n미지원 내비");
         } catch (IgnorePoiException e) {
-            AnalysisUtil.getFirebaseAnalytics().logEvent("ignore_address", eventParam);
+            AnalysisUtil.logEvent("ignore_address", eventParam);
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
             makeToast("목적지 전송 실패\n내부 또는 API 오류");
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.recordException(e);
         }
     }
 
@@ -145,7 +146,7 @@ public class NaviToTeslaService {
 
         String poiName = poiFinder.parseDestination(notificationText);
         if (poiName.length() == 0 || poiFinder.isIgnore(notificationTitle, notificationText)) {
-            AnalysisUtil.getFirebaseAnalytics().logEvent("address_ignore_or_not_found", eventParam);
+            AnalysisUtil.logEvent("address_ignore_or_not_found", eventParam);
             throw new IgnorePoiException(packageName);
         }
 
@@ -155,13 +156,13 @@ public class NaviToTeslaService {
         String address;
         if (poiAddressEntity != null && !poiAddressEntity.isExpire()) {
             address = poiAddressEntity.getAddress();
-            AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_cache", eventParam);
+            AnalysisUtil.logEvent("address_parse_cache", eventParam);
         } else if (isAddress(poiName)) {
             address = poiName;
-            AnalysisUtil.getFirebaseAnalytics().logEvent("address_direct", eventParam);
+            AnalysisUtil.logEvent("address_direct", eventParam);
         } else {
             address = poiFinder.findPoiAddress(poiName);
-            AnalysisUtil.getFirebaseAnalytics().logEvent("address_parse_api", eventParam);
+            AnalysisUtil.logEvent("address_parse_api", eventParam);
         }
         return address;
     }
@@ -170,6 +171,7 @@ public class NaviToTeslaService {
         return PreferencesUtil.loadToken(context);
     }
 
+    @AddTrace(name = "refreshToken")
     public Token refreshToken() {
         return this.refreshToken(null);
     }
@@ -195,7 +197,7 @@ public class NaviToTeslaService {
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "refresh token fail", e);
             makeToast("Token 갱신에 실패하였습니다.");
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.recordException(e);
         }
         return token;
     }
@@ -223,7 +225,10 @@ public class NaviToTeslaService {
             }
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "get vehicle error", e);
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.recordException(e);
+        }
+        if (vehicles == null) {
+            vehicles = new ArrayList<>();
         }
         if (vehicles.size() == 0) {
             makeToast("등록된 차량이 없습니다.");

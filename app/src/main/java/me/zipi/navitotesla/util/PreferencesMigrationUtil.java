@@ -41,9 +41,6 @@ public class PreferencesMigrationUtil {
         }
         Log.i(PreferencesMigrationUtil.class.getName(), "migration start..");
         if (new File(filePrefix + preferencesFileName + ".xml").exists()) {
-            AnalysisUtil.getFirebaseCrashlytics().log("migration warning. file already exists");
-            AnalysisUtil.getFirebaseCrashlytics()
-                    .recordException(new Exception("File already exists: " + preferencesFileName + ".xml"));
             return;
         }
         try {
@@ -68,8 +65,8 @@ public class PreferencesMigrationUtil {
             file.delete();
         } catch (Exception e) {
             Log.w(PreferencesMigrationUtil.class.getName(), "error migration", e);
-            AnalysisUtil.getFirebaseCrashlytics().log("error in migration");
-            AnalysisUtil.getFirebaseCrashlytics().recordException(e);
+            AnalysisUtil.log("error in migration");
+            AnalysisUtil.recordException(e);
         }
     }
 

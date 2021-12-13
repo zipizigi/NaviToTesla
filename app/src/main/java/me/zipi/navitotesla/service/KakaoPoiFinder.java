@@ -1,5 +1,7 @@
 package me.zipi.navitotesla.service;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -7,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import me.zipi.navitotesla.api.KakaoMapApi;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.KakaoMap;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -35,6 +38,11 @@ public class KakaoPoiFinder implements PoiFinder {
         String address = "";
 
         Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
+        if (!response.isSuccessful() || response.body() == null) {
+            Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
+            AnalysisUtil.log("Kakao api error: " + response.errorBody());
+        }
+
 
         if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
             int sameCount = 0;
