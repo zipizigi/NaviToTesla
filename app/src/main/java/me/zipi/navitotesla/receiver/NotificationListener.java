@@ -78,7 +78,7 @@ public class NotificationListener extends NotificationListenerService {
                     " subText: " + subText);
             executor.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text));
             executor.execute(RemoteConfigUtil::initialize);
-            AppUpdaterUtil.notification(this);
+            executor.execute(() -> AppUpdaterUtil.notification(this));
             Bundle param = new Bundle();
             param.putString("package", sbn.getPackageName());
             AnalysisUtil.logEvent("notification_received", param);

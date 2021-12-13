@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +17,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         PreferencesMigrationUtil.migration(this);
         executor = Executors.newFixedThreadPool(2);
@@ -59,17 +62,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         vehicleListLiveData.observe(this, vehicles -> updateSpinner());
         tokenLiveData.observe(this, this::updateToken);
 
-        ((TextView) findViewById(R.id.txtVersion)).setText(getPackageVersion());
+        ((TextView) findViewById(R.id.txtVersion)).setText(AppUpdaterUtil.getCurrentVersion(this));
         ((TextView) findViewById(R.id.txtAccessToken)).setMovementMethod(new ScrollingMovementMethod());
+
+        KeyboardVisibilityEvent.setEventListener(
+                this,
+                isOpen -> findViewById(R.id.txtVersion).setVisibility(isOpen ? View.INVISIBLE : View.VISIBLE));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         permissionGrantedCheck();
-
         executor.execute(() -> tokenLiveData.postValue(naviToTeslaService.getToken()));
-        AppUpdaterUtil.dialog(this);
+        executor.execute(() -> AppUpdaterUtil.dialog(this));
+        executor.execute(this::updateCheck);
 
     }
 
@@ -87,7 +94,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     .setCancelable(false)
                     .show();
         }
+
     }
+
 
     @Override
     protected void onDestroy() {
@@ -109,15 +118,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void onTxtVersionClicked(View view) {
-        new AlertDialog.Builder(this)
-                .setTitle("최신버전 다운로드")
-                .setMessage("최신버전 다운로드 페이지로 이동하시겠습니까?")
-                // .setIcon(R.drawable.ic_launcher_background)
-                .setPositiveButton("예", (dialog, which) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/zipizigi/NaviToTesla/releases/latest"))))
-                .setNegativeButton("아니오", (dialog, which) -> {
-
-                })
-                .show();
+        executor.execute(() -> AppUpdaterUtil.dialog(this, true));
     }
 
     public void onBtnPoiCacheClearClick(View view) {
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         executor.execute(() -> {
                     try {
                         naviToTeslaService.clearPoiCache();
-                        AppUpdaterUtil.clearDoNoyShow(this);
+                        AppUpdaterUtil.clearDoNotShow(this);
                     } catch (Exception e) {
                         Log.w(MainActivity.class.getName(), "clear poi cache error", e);
                         AnalysisUtil.recordException(e);
@@ -247,13 +248,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    private String getPackageVersion() {
-        String version = "1.0";
-        try {
-            version = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
-        } catch (Exception e) {
-            AnalysisUtil.recordException(e);
+    public void updateCheck() {
+        if (AppUpdaterUtil.isUpdateAvailable(this)) {
+            runOnUiThread(() -> {
+                TextView version = ((TextView) findViewById(R.id.txtVersion));
+                version.setTextColor(Color.RED);
+                if (!version.getText().toString().contains("\n")) {
+                    version.setText(version.getText() + "\n(업데이트가능)");
+                }
+            });
         }
-        return version;
     }
 }
