@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import me.zipi.navitotesla.api.TMapApi;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.TMap;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -33,6 +34,7 @@ public class TMapPoiFinder implements PoiFinder {
                         return chain.proceed(request);
                     })
                     .build())
+
             .build().create(TMapApi.class);
 
     @Override
@@ -42,6 +44,7 @@ public class TMapPoiFinder implements PoiFinder {
 
         if (!response.isSuccessful() || response.body() == null) {
             Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
+            AnalysisUtil.log("Tmap api error: " + response.errorBody());
             return "";
         }
 

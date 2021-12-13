@@ -4,10 +4,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 
 import com.github.javiersantos.appupdater.AppUpdater;
 import com.github.javiersantos.appupdater.enums.Display;
 import com.github.javiersantos.appupdater.enums.UpdateFrom;
+
+import org.kohsuke.github.GHAsset;
+import org.kohsuke.github.GitHub;
+
+import java.util.List;
 
 import androidx.appcompat.app.AlertDialog;
 import lombok.AccessLevel;
@@ -26,8 +32,13 @@ public class AppUpdaterUtil {
         appUpdater(context, Display.DIALOG);
     }
 
+    public static void clearDoNoyShow(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean("prefAppUpdaterShow", true).apply();
+    }
+
     private static void appUpdater(Context context, Display display) {
-        if (lastShow > 0 && Math.abs(System.currentTimeMillis() - lastShow) < 5 * 60 * 1000) {
+        if (!display.equals(Display.NOTIFICATION) && Math.abs(System.currentTimeMillis() - lastShow) < 5 * 60 * 1000) {
             return;
         }
         lastShow = System.currentTimeMillis();
@@ -52,4 +63,5 @@ public class AppUpdaterUtil {
                                 .show())
                 .start();
     }
+
 }
