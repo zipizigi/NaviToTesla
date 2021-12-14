@@ -66,17 +66,17 @@ public class AppUpdaterUtil {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putBoolean("prefAppUpdaterShow", true).apply();
 
-        PreferencesUtil.remove(context, "updateUntilCheck");
+        PreferencesUtil.remove(context, "updateDoNotShow");
     }
 
     private static void doNotShow(Context context) {
         Long until = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
-        PreferencesUtil.put(context, "updateUntilCheck", until);
+        PreferencesUtil.put(context, "updateDoNotShow", until);
     }
 
     private static boolean isDoNotShow(Context context) {
-        Long until = PreferencesUtil.getLong(context, "updateUntilCheck", 0L);
-        return Math.abs(until - System.currentTimeMillis()) < 7 * 24 * 60 * 60 * 1000;
+        Long until = PreferencesUtil.getLong(context, "updateDoNotShow", 0L);
+        return System.currentTimeMillis() - until < 0;
     }
 
     public static void dialog(Activity activity) {

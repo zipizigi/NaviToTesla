@@ -83,7 +83,9 @@ public class NaviToTeslaService {
                 if (address.length() > 0) {
                     makeToast("목적지 전송 요청\n" + address);
 
-                    refreshToken();
+                    if (refreshToken() == null) {
+                        return;
+                    }
                     Long id = loadVehicleId();
                     Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> response = appRepository.getTeslaApi().share(id, new ShareRequest(address)).execute();
                     TeslaApiResponse.ObjectType<TeslaApiResponse.Result> result = null;
@@ -179,13 +181,17 @@ public class NaviToTeslaService {
     public Token refreshToken(String refreshToken) {
         if (refreshToken == null) {
             Token token = PreferencesUtil.loadToken(context);
-            if (token == null || !token.isExpire()) {
+            if (token == null) {
+                makeToast("Token 정보가 없습니다.");
                 return null;
+            } else if (!token.isExpire()) {
+                return token;
             } else {
                 refreshToken = token.getRefreshToken();
             }
         }
 
+        AnalysisUtil.log("Start refresh access token");
         Token token = null;
         try {
             Response<Token> newToken = appRepository.getTeslaAuthApi().refreshAccessToken(new TeslaRefreshTokenRequest(refreshToken)).execute();
@@ -198,6 +204,9 @@ public class NaviToTeslaService {
             Log.w(this.getClass().getName(), "refresh token fail", e);
             makeToast("Token 갱신에 실패하였습니다.");
             AnalysisUtil.recordException(e);
+        }
+        if (token == null) {
+            AnalysisUtil.log("fail refresh access token. token is null");
         }
         return token;
     }
@@ -214,7 +223,9 @@ public class NaviToTeslaService {
         }
         List<Vehicle> vehicles = new ArrayList<>();
         try {
-            refreshToken();
+            if (refreshToken() == null) {
+                return vehicles;
+            }
             Response<TeslaApiResponse.ListType<Vehicle>> response = appRepository.getTeslaApi().vehicles().execute();
             if (response.code() == 401) {
                 makeToast("Token이 잘못되었습니다.");

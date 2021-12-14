@@ -28,7 +28,7 @@ public class Token {
 
     public boolean isExpire() {
         return this.updated == null || this.accessToken == null
-                || Math.abs(this.updated - Calendar.getInstance().getTime().getTime()) / 1000L / 60L / 60L > 5;
+                || Math.abs(this.updated - Calendar.getInstance().getTime().getTime()) / 1000L / 60L / 60L > 7; // expire in 8 hours
     }
 
 }
