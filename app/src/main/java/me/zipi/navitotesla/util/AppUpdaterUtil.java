@@ -15,48 +15,33 @@ import android.util.Log;
 
 import com.dcastalia.localappupdate.DownloadApk;
 
-import org.kohsuke.github.GHAsset;
-import org.kohsuke.github.GHRelease;
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GitHubBuilder;
-import org.kohsuke.github.GitHubRateLimitHandler;
-import org.kohsuke.github.connector.GitHubConnectorResponse;
-import org.kohsuke.github.extras.okhttp3.OkHttpGitHubConnector;
-
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import me.zipi.navitotesla.R;
-import me.zipi.navitotesla.exception.RateLimitException;
+import me.zipi.navitotesla.api.GithubApi;
+import me.zipi.navitotesla.model.Github;
 import okhttp3.OkHttpClient;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AppUpdaterUtil {
-    private static GitHub github;
-
-    static {
-        try {
-            github = GitHubBuilder.fromEnvironment()
-                    .withConnector(new OkHttpGitHubConnector(new OkHttpClient(), 600))
-                    .withRateLimitHandler(new GitHubRateLimitHandler() {
-                        @Override
-                        public void onError(@NonNull GitHubConnectorResponse connectorResponse) throws RuntimeException {
-                            throw new RateLimitException("github http request error. code : " + connectorResponse.statusCode());
-                        }
-                    }).build();
-        } catch (Exception e) {
-            Log.e(AppUpdaterUtil.class.getName(), "init fail");
-            AnalysisUtil.recordException(e);
-        }
-    }
+    private static final GithubApi githubApi = new Retrofit.Builder()
+            .baseUrl("https://api.github.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .build())
+            .build().create(GithubApi.class);
 
     private static long dialogLastCheck = 0L;
     private static long notificationLastCheck = 0L;
@@ -93,17 +78,25 @@ public class AppUpdaterUtil {
                 return;
             }
             try {
-                List<GHAsset> assets = new ArrayList<>();
-                GHRelease release = null;
-                try {
-                    release = github.getRepository("zipizigi/NaviToTesla").getLatestRelease();
-                    // final String apkUrl = "https://github.com/zipizigi/NaviToTesla/releases/download/1.17.06197eca/navi-to-tesla.1.17.apk";
-                    assets = release.listAssets().toList();
-                } catch (RateLimitException e) {
+                Github.Release release = null;
+
+                Response<List<Github.Release>> response = githubApi.getReleases("zipizigi", "NaviToTesla").execute();
+                if (response.code() == 403) {
                     AnalysisUtil.log("github api rate limit exceed");
-                    AnalysisUtil.recordException(e);
+                } else if (!response.isSuccessful() || response.body() == null) {
+                    AnalysisUtil.log("github api call fail. Http code: " + response.code());
+                    if (response.errorBody() != null) {
+                        AnalysisUtil.log(response.errorBody().string());
+                        AnalysisUtil.recordException(new RuntimeException());
+                    }
+                } else {
+                    if (response.body().size() > 0) {
+                        release = response.body().get(0);
+                    }
                 }
-                final String apkUrl = getLatestApkUrl(assets);
+
+
+                final String apkUrl = getLatestApkUrl(release);
                 final String releaseDescription = release == null ? "" : release.getTagName() + "\n" + release.getBody();
                 activity.runOnUiThread(() -> new AlertDialog.Builder(activity)
                         .setCancelable(true)
@@ -163,18 +156,18 @@ public class AppUpdaterUtil {
         }
     }
 
-    public static String getLatestApkUrl(List<GHAsset> assets) {
+    public static String getLatestApkUrl(Github.Release release) {
         String apkUrl = "https://github.com/zipizigi/NaviToTesla/releases/latest";
-        try {
-            for (int i = 0; i < assets.size(); i++) {
-                if (assets.get(i).getContentType().equals("application/vnd.android.package-archive")) {
-                    apkUrl = assets.get(i).getBrowserDownloadUrl();
-                }
-            }
-        } catch (Exception e) {
-            AnalysisUtil.log("fail get latest apk url");
-            AnalysisUtil.recordException(e);
+        if (release == null || release.getAssets() == null || release.getAssets().size() == 0) {
+            return apkUrl;
         }
+
+        for (int i = 0; i < release.getAssets().size(); i++) {
+            if (release.getAssets().get(i).getContentType().equals("application/vnd.android.package-archive")) {
+                apkUrl = release.getAssets().get(i).getDownloadUrl();
+            }
+        }
+
         return apkUrl;
     }
 

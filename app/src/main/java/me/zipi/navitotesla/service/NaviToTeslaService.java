@@ -199,6 +199,7 @@ public class NaviToTeslaService {
             if (newToken.isSuccessful() && newToken.body() != null) {
                 PreferencesUtil.saveToken(context, newToken.body());
                 token = newToken.body();
+                AnalysisUtil.log("Success refresh access token");
             }
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "refresh token fail", e);
