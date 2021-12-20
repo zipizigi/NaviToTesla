@@ -183,7 +183,8 @@ public class AppUpdaterUtil {
     }
 
     public static boolean isUpdateAvailable(Context context) {
-        return !getCurrentVersion(context).equals(getLatestVersion());
+        String latestVersion = getLatestVersion();
+        return !latestVersion.equals("1.0") && !getCurrentVersion(context).equals(latestVersion);
     }
 
     private static boolean permissionCheck(Activity activity) {
