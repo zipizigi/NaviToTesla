@@ -30,6 +30,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.MutableLiveData;
+import me.zipi.navitotesla.background.TokenWorker;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
@@ -155,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         executor.execute(() -> {
             PreferencesUtil.clear(this);
             tokenLiveData.postValue(naviToTeslaService.getToken());
+            TokenWorker.cancelBackgroundWork(this);
         });
 
     }
@@ -188,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Token token = naviToTeslaService.refreshToken(refreshToken);
                 if (tokenLiveData.getValue() == null || !tokenLiveData.getValue().equals(token)) {
                     tokenLiveData.postValue(token);
+                    TokenWorker.startBackgroundWork(context);
                 }
 
                 List<Vehicle> vehicleList = naviToTeslaService.getVehicles(token);
