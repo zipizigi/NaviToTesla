@@ -12,6 +12,7 @@ import com.google.firebase.perf.metrics.AddTrace;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import me.zipi.navitotesla.AppRepository;
@@ -27,6 +28,7 @@ import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
+import me.zipi.navitotesla.util.ResponseCloser;
 import retrofit2.Response;
 
 
@@ -115,6 +117,7 @@ public class NaviToTeslaService {
                         AnalysisUtil.recordException(new RuntimeException("Send address fail"));
 
                     }
+                    ResponseCloser.closeAll(response);
                 }
             } else {
                 // 마지막 전송 주소와 동일
@@ -165,6 +168,7 @@ public class NaviToTeslaService {
         } else {
             address = poiFinder.findPoiAddress(poiName);
             AnalysisUtil.logEvent("address_parse_api", eventParam);
+            appRepository.savePoi(poiName, address, false);
         }
         return address;
     }
@@ -201,6 +205,7 @@ public class NaviToTeslaService {
                 token = newToken.body();
                 AnalysisUtil.log("Success refresh access token");
             }
+            ResponseCloser.closeAll(newToken);
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "refresh token fail", e);
             makeToast("Token 갱신에 실패하였습니다.");
@@ -235,6 +240,8 @@ public class NaviToTeslaService {
             } else {
                 Log.w(this.getClass().getName(), "get vehicle error: " + response.toString());
             }
+            ResponseCloser.closeAll(response);
+
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "get vehicle error", e);
             AnalysisUtil.recordException(e);
