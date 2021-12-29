@@ -7,6 +7,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,12 +28,18 @@ public class PoiAddressEntity {
 
     private String poi;
     private String address;
-
+    @Getter(AccessLevel.NONE)
+    private Boolean registered;
     private Date created;
 
     public boolean isExpire() {
         long diff = created.getTime() - Calendar.getInstance().getTime().getTime();
-        return Math.abs(diff) / 1000L / 60L / 60L / 24L >= expireDay;
+        return registered != null && !registered && Math.abs(diff) / 1000L / 60L / 60L / 24L >= expireDay;
+    }
+
+
+    public Boolean isRegistered() {
+        return registered != null && registered;
     }
 
 }

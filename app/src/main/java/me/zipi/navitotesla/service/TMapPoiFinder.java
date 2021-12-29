@@ -3,14 +3,18 @@ package me.zipi.navitotesla.service;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.api.TMapApi;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
+import me.zipi.navitotesla.model.Poi;
 import me.zipi.navitotesla.model.TMap;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
+import me.zipi.navitotesla.util.ResponseCloser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Response;
@@ -39,35 +43,17 @@ public class TMapPoiFinder implements PoiFinder {
 
     @Override
     public String findPoiAddress(String poiName) throws DuplicatePoiException, IOException {
+        List<Poi> listPoi = listPoiAddress(poiName);
         String address = "";
-        Response<TMap.SearchPoiResponse> response = tMapApi.search(poiName).execute();
-
-        if (!response.isSuccessful() || response.body() == null) {
-            Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
-            AnalysisUtil.log("Tmap api error: " + response.errorBody());
-            return "";
-        }
-
         int sameCount = 0;
-
-        for (TMap.PoiItem poi : response.body().getSearchPoiInfo().getPois().getPoi()) {
-            if (poi.getName().equalsIgnoreCase(poiName)) {
+        for (Poi poi : listPoi) {
+            if (poi.getPoiName().equalsIgnoreCase(poiName)) {
                 sameCount++;
-                if (!poi.getRoadAddress().equals("")) {
-                    // 도로명
-                    address = poi.getRoadAddress();
-                } else if (!poi.getAddress().equals("")) {
-                    // 지번
-                    address = poi.getAddress();
-                } else {
-                    // gps
-                    address = String.format(Locale.getDefault(), "%s,%s", poi.getLatitude(), poi.getLongitude());
-                }
-
+                address = poi.getFinalAddress();
             }
         }
         if (sameCount > 1) {
-            // 중복지명이 있으므로 전송 안함.
+            // 중복지명 전송 안함
             throw new DuplicatePoiException(poiName);
         }
 
@@ -85,6 +71,36 @@ public class TMapPoiFinder implements PoiFinder {
          */
         return notificationText.split(">")[notificationText.split(">").length - 1].trim();
 
+    }
+
+    @Override
+    public List<Poi> listPoiAddress(String poiName) throws IOException {
+
+        List<Poi> listPoi = new ArrayList<>();
+        Response<TMap.SearchPoiResponse> response = tMapApi.search(poiName).execute();
+
+        if (!response.isSuccessful() || response.body() == null) {
+            Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
+            AnalysisUtil.log("Tmap api error: " + response.errorBody());
+
+        }
+
+        if (response.isSuccessful() && response.body() != null && response.body().getSearchPoiInfo() != null) {
+            for (TMap.PoiItem item : response.body().getSearchPoiInfo().getPois().getPoi()) {
+                Poi poi = Poi.builder()
+                        .poiName(item.getName())
+                        .address(item.getAddress())
+                        .roadAddress(item.getRoadAddress())
+                        .latitude(item.getLatitude())
+                        .longitude(item.getLongitude())
+                        .build();
+                listPoi.add(poi);
+            }
+        }
+
+        ResponseCloser.closeAll(response);
+
+        return listPoi;
     }
 
     @Override

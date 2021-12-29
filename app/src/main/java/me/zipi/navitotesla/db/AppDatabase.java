@@ -5,15 +5,16 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.room.AutoMigration;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
-import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
-@Database(entities = {PoiAddressEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {PoiAddressEntity.class}, version = 2,
+        autoMigrations = {@AutoMigration(from = 1, to = 2)})
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase instance;
@@ -73,13 +74,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public LiveData<Boolean> getDatabaseCreated() {
         return mIsDatabaseCreated;
     }
-/*
-    private static final Migration MIGRATION_2_3 = new Migration(2, 2) {
-        @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
-            database.execSQL("DROP TABLE if exists token");
-        }
-    };
 
- */
+
 }

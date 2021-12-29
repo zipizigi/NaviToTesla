@@ -1,5 +1,7 @@
 package me.zipi.navitotesla;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
 import me.zipi.navitotesla.background.TokenWorker;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.util.AnalysisUtil;
@@ -16,6 +18,8 @@ public class Application extends android.app.Application {
         RemoteConfigUtil.initialize();
         AnalysisUtil.initialize(this);
         TokenWorker.startBackgroundWork(this);
+
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
     }
 
 

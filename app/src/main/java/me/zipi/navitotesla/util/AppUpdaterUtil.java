@@ -115,6 +115,7 @@ public class AppUpdaterUtil {
 
                 permissionCheck(activity);
                 dialogLastCheck = System.currentTimeMillis();
+                ResponseCloser.closeAll(response);
             } catch (Exception e) {
                 Log.w(AppUpdaterUtil.class.getName(), "error update dialog show", e);
                 AnalysisUtil.log("fail update");

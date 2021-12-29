@@ -16,6 +16,11 @@ android {
         versionCode Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1") ?: 1
         versionName System.getenv("RELEASE") ?: "1.0"
 
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     buildTypes {
@@ -35,6 +40,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -50,6 +58,11 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation "androidx.sqlite:sqlite:2.2.0"
     implementation "androidx.work:work-runtime:2.7.1"
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
+    implementation 'androidx.navigation:navigation-fragment:2.3.5'
+    implementation 'androidx.navigation:navigation-ui:2.3.5'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // noinspection AnnotationProcessorOnCompilePath
     compileOnly 'org.projectlombok:lombok:1.18.22'
