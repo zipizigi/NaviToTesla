@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:context=".ui.favorite.FavoriteDialogFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="wrap_content"
+        android:layout_height="340dp"
+        android:minWidth="300dp">
+
+        <Button
+            android:id="@+id/btnDestSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="검색"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtDest" />
+
+        <Button
+            android:id="@+id/btnFavoriteSave"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="8dp"
+            android:text="저장"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtAddress" />
+
+        <Button
+            android:id="@+id/btnFavoriteDismiss"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="8dp"
+            android:text="취소"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintEnd_toStartOf="@+id/btnFavoriteSave"
+            app:layout_constraintTop_toBottomOf="@+id/txtAddress" />
+
+        <EditText
+            android:id="@+id/txtAddress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:hint="주소 또는 좌표"
+            android:inputType="textPersonName"
+            android:minHeight="48dp"
+            android:singleLine="false"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/labelAddress"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+        <EditText
+            android:id="@+id/txtDest"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:hint="목적지"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/labelDest"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:checkedButton="@id/radioAddress"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/addressSelector">
+
+            <RadioButton
+                android:id="@+id/radioAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="주소" />
+
+            <RadioButton
+                android:id="@+id/radioGps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="GPS" />
+
+        </RadioGroup>
+
+        <Spinner
+            android:id="@+id/addressSelector"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:minHeight="48dp"
+            android:minWidth="100dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/labelSearchList"
+            app:layout_constraintTop_toBottomOf="@+id/btnDestSearch"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <TextView
+            android:id="@+id/labelAddress"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="20dp"
+            android:text="주소"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
+
+        <TextView
+            android:id="@+id/labelDest"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="20dp"
+            android:text="목적지"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/labelSearchList"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="24dp"
+            android:text="검색결과"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnDestSearch" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

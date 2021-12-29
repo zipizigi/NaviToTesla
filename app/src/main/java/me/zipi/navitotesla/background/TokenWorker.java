@@ -48,7 +48,7 @@ public class TokenWorker extends Worker {
             return;
         }
         AnalysisUtil.log("Add background refresh token");
-        PeriodicWorkRequest sendLogsWorkRequest = new PeriodicWorkRequest.Builder(TokenWorker.class, 350, TimeUnit.MINUTES)
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(TokenWorker.class, 15, TimeUnit.MINUTES)
                 .setConstraints(new Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build())
@@ -56,7 +56,7 @@ public class TokenWorker extends Worker {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 workName,
                 ExistingPeriodicWorkPolicy.KEEP,
-                sendLogsWorkRequest);
+                workRequest);
     }
 
     public static void cancelBackgroundWork(@NonNull Context context) {

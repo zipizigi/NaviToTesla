@@ -3,14 +3,18 @@ package me.zipi.navitotesla.service;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.api.KakaoMapApi;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.KakaoMap;
+import me.zipi.navitotesla.model.Poi;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
+import me.zipi.navitotesla.util.ResponseCloser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import retrofit2.Response;
@@ -35,38 +39,18 @@ public class KakaoPoiFinder implements PoiFinder {
 
     @Override
     public String findPoiAddress(String poiName) throws DuplicatePoiException, IOException {
+        List<Poi> listPoi = listPoiAddress(poiName);
         String address = "";
-
-        Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
-        if (!response.isSuccessful() || response.body() == null) {
-            Log.w(this.getClass().getName(), "Tmap api error: " + response.errorBody());
-            AnalysisUtil.log("Kakao api error: " + response.errorBody());
+        int sameCount = 0;
+        for (Poi poi : listPoi) {
+            if (poi.getPoiName().equalsIgnoreCase(poiName)) {
+                sameCount++;
+                address = poi.getFinalAddress();
+            }
         }
-
-
-        if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
-            int sameCount = 0;
-            for (KakaoMap.Place place : response.body().getDocuments()) {
-                if (place.getPlaceName().equalsIgnoreCase(poiName)) {
-                    sameCount++;
-
-                    if (!place.getRoadAddressName().equals("")) {
-                        // 도로명
-                        address = place.getRoadAddressName();
-                    } else if (!place.getAddressName().equals("")) {
-                        // 지번
-                        address = place.getAddressName();
-                    } else {
-                        // gps
-                        address = String.format(Locale.getDefault(), "%s,%s", place.getLatitude(), place.getLongitude());
-                    }
-                }
-            }
-
-            if (sameCount > 1) {
-                // 중복지명 전송 안함
-                throw new DuplicatePoiException(poiName);
-            }
+        if (sameCount > 1) {
+            // 중복지명 전송 안함
+            throw new DuplicatePoiException(poiName);
         }
 
         return address;
@@ -78,6 +62,33 @@ public class KakaoPoiFinder implements PoiFinder {
          * 목적지 : ~~~~
          */
         return notificationText.replace("목적지 : ", "").trim();
+    }
+
+    @Override
+    public List<Poi> listPoiAddress(String poiName) throws IOException {
+        List<Poi> poiList = new ArrayList<>();
+        Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
+        if (!response.isSuccessful() || response.body() == null) {
+            Log.w(this.getClass().getName(), "Kakao api error: " + response.errorBody());
+            AnalysisUtil.log("Kakao api error: " + response.errorBody().string());
+        }
+
+
+        if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
+            for (KakaoMap.Place place : response.body().getDocuments()) {
+                Poi poi = Poi.builder()
+                        .poiName(place.getPlaceName())
+                        .latitude(place.getLatitude())
+                        .longitude(place.getLongitude())
+                        .roadAddress(place.getRoadAddressName())
+                        .address(place.getAddressName())
+                        .build();
+                poiList.add(poi);
+
+            }
+        }
+        ResponseCloser.closeAll(response);
+        return poiList;
     }
 
     @Override

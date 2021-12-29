@@ -1,6 +1,7 @@
 package me.zipi.navitotesla;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,7 @@ import me.zipi.navitotesla.api.TeslaAuthApi;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.model.Token;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 import okhttp3.Call;
 import okhttp3.EventListener;
@@ -40,18 +42,27 @@ public class AppRepository {
                 .baseUrl("https://owner-api.teslamotors.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(new OkHttpClient.Builder()
-                        .connectTimeout(1, TimeUnit.MINUTES)
-                        .readTimeout(1, TimeUnit.MINUTES)
+                        .connectTimeout(30, TimeUnit.SECONDS)
+                        .readTimeout(30, TimeUnit.SECONDS)
                         .addInterceptor(chain -> {
                             Token token = PreferencesUtil.loadToken(context);
                             String accessToken = token == null ? "" : token.getAccessToken();
                             Request request = chain.request().newBuilder()
-                                    .addHeader("User-Agent", "TMap_To_Tesla")
+                                    .addHeader("User-Agent", "Navi_To_Tesla")
                                     .addHeader("Accept", "*/*")
                                     .addHeader("Content-Type", "application/json")
                                     .addHeader("Authorization", "Bearer " + accessToken)
                                     .build();
-                            return chain.proceed(request);
+                            Response response = chain.proceed(request);
+                            int retry = 0;
+                            while (!response.isSuccessful() && retry < 3) {
+                                Log.d("TeslaApi", "Request is not successful - " + retry);
+                                AnalysisUtil.log("retry tesla api - " + chain.request().url().uri().getPath());
+                                retry++;
+                                // retry the request
+                                response = chain.proceed(request);
+                            }
+                            return response;
                         })
                         .build())
                 .build().create(TeslaApi.class);
@@ -63,7 +74,7 @@ public class AppRepository {
                         .readTimeout(1, TimeUnit.MINUTES)
                         .addInterceptor(chain -> {
                             Request request = chain.request().newBuilder()
-                                    .addHeader("User-Agent", "TMap_To_Tesla")
+                                    .addHeader("User-Agent", "Navi_To_Tesla")
                                     .addHeader("Accept", "*/*")
                                     .addHeader("Content-Type", "application/json")
                                     .build();
@@ -95,12 +106,13 @@ public class AppRepository {
         return database.poiAddressDao().findPoiSync(poiName);
     }
 
-    public void savePoi(String poiName, String address) {
+    public void savePoi(String poiName, String address, Boolean registered) {
         database.runInTransaction(() ->
                 database.poiAddressDao().insertPoi(PoiAddressEntity.builder()
                         .poi(poiName)
                         .address(address)
                         .created(Calendar.getInstance().getTime())
+                        .registered(registered)
                         .build())
         );
 
@@ -115,6 +127,6 @@ public class AppRepository {
     }
 
     public void clearAllPoi() {
-        database.runInTransaction(() -> database.poiAddressDao().deleteAll());
+        database.runInTransaction(() -> database.poiAddressDao().deleteAllNotRegistered());
     }
 }

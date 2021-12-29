@@ -24,4 +24,12 @@ public class PoiFinderFactory {
         }
         throw new NotSupportedNaviException(packageName);
     }
+
+    public static PoiFinder getKakaoPoiFinder() {
+        return new KakaoPoiFinder();
+    }
+
+    public static PoiFinder getTMapPoiFinder() {
+        return new TMapPoiFinder();
+    }
 }
