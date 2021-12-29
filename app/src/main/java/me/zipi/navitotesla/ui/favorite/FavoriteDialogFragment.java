@@ -14,6 +14,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executor;
@@ -154,6 +155,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
                 .registered(true)
                 .poi(binding.txtDest.getText().toString())
                 .address(binding.txtAddress.getText().toString())
+                .created(Calendar.getInstance().getTime())
                 .build();
 
         executor.execute(() -> {
