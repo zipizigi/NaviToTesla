@@ -17,6 +17,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import me.zipi.navitotesla.databinding.FragmentFavoriteBinding;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
+import me.zipi.navitotesla.service.NaviToTeslaService;
+import me.zipi.navitotesla.util.AnalysisUtil;
 
 public class FavoriteFragment extends Fragment implements View.OnClickListener {
 
@@ -27,6 +29,8 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
     private PoiAddressRecyclerAdapter poiHistoryRecyclerAdapter;
     @Nullable
     private PoiAddressRecyclerAdapter poiRegisteredRecyclerAdapter;
+    @Nullable
+    private NaviToTeslaService naviToTeslaService;
     @Nullable
     private AppDatabase appDatabase;
     @Nullable
@@ -40,11 +44,31 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
         binding = FragmentFavoriteBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        poiHistoryRecyclerAdapter = new PoiAddressRecyclerAdapter(this::addFavoriteLocation);
+        poiHistoryRecyclerAdapter = new PoiAddressRecyclerAdapter(new PoiAddressRecyclerAdapter.OnFavoriteButtonClicked() {
+            @Override
+            public void onClick(int position) {
+                addFavoriteLocation(position);
+            }
+
+            @Override
+            public void onShareClick(int position) {
+
+            }
+        });
         binding.recylerHistory.setAdapter(poiHistoryRecyclerAdapter);
         binding.recylerHistory.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        poiRegisteredRecyclerAdapter = new PoiAddressRecyclerAdapter(this::removeFavoriteLocation);
+        poiRegisteredRecyclerAdapter = new PoiAddressRecyclerAdapter(new PoiAddressRecyclerAdapter.OnFavoriteButtonClicked() {
+            @Override
+            public void onClick(int position) {
+                removeFavoriteLocation(position);
+            }
+
+            @Override
+            public void onShareClick(int position) {
+                shareLocation(position);
+            }
+        });
         binding.recylerRegistered.setAdapter(poiRegisteredRecyclerAdapter);
         binding.recylerRegistered.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -66,6 +90,7 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
         binding = null;
         poiHistoryRecyclerAdapter = null;
         poiRegisteredRecyclerAdapter = null;
+        naviToTeslaService = null;
         appDatabase = null;
         executor = null;
     }
@@ -99,10 +124,43 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
         }
         new AlertDialog.Builder(getActivity())
                 .setCancelable(true)
-                .setTitle("삭제하시겠습니까?")
+                .setTitle("즐겨찾기 삭제")
                 .setMessage("해당 즐겨찾기를 삭제하시겠습니까?")
                 .setPositiveButton("삭제", (dialog, which) -> removeFavorite(position))
-                .setNegativeButton("닫기", (dialog, which) -> {
+                .setNegativeButton("취소", (dialog, which) -> {
+                })
+                .show();
+    }
+
+    private void shareLocation(int position) {
+        if (getActivity() == null) {
+            return;
+        }
+        PoiAddressEntity poi = favoriteViewModel.getRegisteredPoiAddress().getValue().get(position);
+        new AlertDialog.Builder(getActivity())
+                .setCancelable(true)
+                .setTitle("목적지 전송")
+                .setMessage("목적지를 전송하시겠습니까?\n - " + poi.getAddress())
+                .setPositiveButton("전송", (dialog, which) -> {
+                    if (executor == null) {
+                        return;
+                    }
+                    executor.execute(() -> {
+                        if (getActivity() == null) {
+                            return;
+                        }
+                        if (naviToTeslaService == null) {
+                            naviToTeslaService = new NaviToTeslaService(getActivity());
+                        }
+                        try {
+                            naviToTeslaService.share(poi.getAddress());
+                        } catch (Exception e) {
+                            AnalysisUtil.recordException(e);
+                        }
+                    });
+                    //
+                })
+                .setNegativeButton("취소", (dialog, which) -> {
                 })
                 .show();
     }

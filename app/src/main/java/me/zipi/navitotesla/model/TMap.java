@@ -3,7 +3,6 @@ package me.zipi.navitotesla.model;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
-import java.util.Locale;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -63,12 +62,34 @@ public class TMap {
 
         public String getRoadAddress() {
             if (roadName.length() > 0 && firstBuildNo.length() > 0) {
-                String roadAddress = String.format(Locale.getDefault(), "%s %s %s %s",
-                        upperAddrName, middleAddrName, roadName, firstBuildNo);
-                if (secondBuildNo.length() > 0 && !secondBuildNo.equals("0")) {
-                    roadAddress = roadAddress + "-" + secondBuildNo;
+                StringBuilder sb = new StringBuilder();
+                sb.append(upperAddrName);
+                if (middleAddrName.length() > 0) {
+                    sb.append(" ").append(middleAddrName);
                 }
-                return roadAddress;
+                if (roadName.length() > 0) {
+                    sb.append(" ").append(roadName);
+                }
+                if (firstBuildNo.length() > 0) {
+                    sb.append(" ").append(firstBuildNo);
+                }
+                if (secondBuildNo.length() > 0 && !secondBuildNo.equals("0")) {
+                    sb.append("-").append(secondBuildNo);
+                }
+
+                // 법정동(동/로/가)가 있을 경우 추가항목으로 (법정동)을 붙여준다.
+                // 건물명이 있을 경우 (법정동, 건물명) 표시도 가능하다.
+                if (middleAddrName.length() > 0) {
+                    String lastChar = middleAddrName.substring(middleAddrName.length() - 1);
+                    if (lastChar.equals("동") || lastChar.equals("로") || lastChar.equals("가")) {
+                        sb.append(" ")
+                                .append("(")
+                                .append(middleAddrName)
+                                .append(")");
+                    }
+
+                }
+                return sb.toString();
             }
             return "";
         }
@@ -78,9 +99,13 @@ public class TMap {
                 return "";
             }
             StringBuilder sb = new StringBuilder();
-            sb.append(upperAddrName).append(" ")
-                    .append(middleAddrName).append(" ")
-                    .append(lowerAddrName);
+            sb.append(upperAddrName);
+            if (middleAddrName.length() > 0) {
+                sb.append(" ").append(middleAddrName);
+            }
+            if (lowerAddrName.length() > 0) {
+                sb.append(" ").append(lowerAddrName);
+            }
 
             if (detailAddrName.length() > 0) {
                 sb.append(" ").append(detailAddrName);

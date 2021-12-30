@@ -113,6 +113,12 @@ public class PreferencesUtil {
         put(context, "tokenUpdated", Calendar.getInstance().getTime().getTime());
     }
 
+    public static void expireToken(Context context) {
+        if (getString(context, "refreshToken") != null) {
+            put(context, "tokenUpdated", 0L);
+        }
+    }
+
     public static Token loadToken(Context context) {
         if (getString(context, "refreshToken") != null) {
             return Token.builder()

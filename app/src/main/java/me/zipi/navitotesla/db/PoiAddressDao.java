@@ -31,7 +31,7 @@ public interface PoiAddressDao {
     @Query("SELECT * FROM poi_address WHERE registered IS NULL OR registered = 0 ORDER BY created desc LIMIT :limit")
     List<PoiAddressEntity> findRecentPoiSync(Integer limit);
 
-    @Query("SELECT * FROM poi_address WHERE registered = 1 ORDER BY created desc")
+    @Query("SELECT * FROM poi_address WHERE registered = 1 ORDER BY poi")
     List<PoiAddressEntity> findRegisteredPoiSync();
 
     @Delete

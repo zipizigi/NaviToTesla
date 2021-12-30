@@ -12,13 +12,13 @@ import com.google.firebase.perf.metrics.AddTrace;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import me.zipi.navitotesla.AppRepository;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
+import me.zipi.navitotesla.exception.ForbiddenException;
 import me.zipi.navitotesla.exception.IgnorePoiException;
 import me.zipi.navitotesla.exception.NotSupportedNaviException;
 import me.zipi.navitotesla.model.ShareRequest;
@@ -76,48 +76,17 @@ public class NaviToTeslaService {
         eventParam.putString("package", packageName);
 
         try {
-            String address = getAddress(packageName, notificationTitle, notificationText);
 
+            String address = getAddress(packageName, notificationTitle, notificationText);
             String lastAddress = PreferencesUtil.getString(context, "lastAddress", "");
 
             if (!lastAddress.equals(address)) {
-                PreferencesUtil.put(context, "lastAddress", address);
-                if (address.length() > 0) {
-                    makeToast("목적지 전송 요청\n" + address);
-
-                    if (refreshToken() == null) {
-                        return;
-                    }
-                    Long id = loadVehicleId();
-                    Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> response = appRepository.getTeslaApi().share(id, new ShareRequest(address)).execute();
-                    TeslaApiResponse.ObjectType<TeslaApiResponse.Result> result = null;
-                    if (response.isSuccessful()) {
-                        result = response.body();
-                    }
-                    if (result != null && result.getError() == null && result.getResponse() != null && result.getResponse().getResult()) {
-                        makeToast("목적지 전송 성공\n" + address);
-                        AnalysisUtil.logEvent("send_success", eventParam);
-                    } else {
-                        Log.w(NaviToTeslaService.class.getName(), response.toString());
-                        makeToast("목적지 전송 실패" + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
-
-                        AnalysisUtil.logEvent("send_fail", eventParam);
-
-                        AnalysisUtil.setCustomKey("address", address);
-                        if (result != null && result.getErrorDescription() != null) {
-                            AnalysisUtil.log("errorDescription: " + result.getErrorDescription());
-                        }
-                        if (!response.isSuccessful()) {
-                            AnalysisUtil.log("Http response code: " + response.code());
-                            if (response.errorBody() != null) {
-                                AnalysisUtil.log("Http error response: " + response.errorBody().string());
-                            }
-                        }
-                        AnalysisUtil.log("sendFail");
-                        AnalysisUtil.recordException(new RuntimeException("Send address fail"));
-
-                    }
-                    ResponseCloser.closeAll(response);
+                try {
+                    share(address);
+                } catch (ForbiddenException e) {
+                    AnalysisUtil.log("force expire token and retry...");
+                    expireToken();
+                    share(address);
                 }
             } else {
                 // 마지막 전송 주소와 동일
@@ -134,10 +103,66 @@ public class NaviToTeslaService {
             makeToast("목적지 전송 실패\n미지원 내비");
         } catch (IgnorePoiException e) {
             AnalysisUtil.logEvent("ignore_address", eventParam);
+        } catch (ForbiddenException e) {
+            makeToast("목적지 전송 실패\n인증 실패");
+            AnalysisUtil.logEvent("error_share", eventParam);
+            AnalysisUtil.recordException(e);
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
             makeToast("목적지 전송 실패\n내부 또는 API 오류");
+            AnalysisUtil.logEvent("error_share", eventParam);
             AnalysisUtil.recordException(e);
+        }
+    }
+
+
+    public void share(String address) throws IOException, ForbiddenException {
+        PreferencesUtil.put(context, "lastAddress", address);
+        if (address.length() > 0) {
+            makeToast("목적지 전송 요청\n" + address);
+
+            if (refreshToken() == null) {
+                return;
+            }
+            Long id = loadVehicleId();
+            Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> response = appRepository.getTeslaApi().share(id, new ShareRequest(address)).execute();
+            TeslaApiResponse.ObjectType<TeslaApiResponse.Result> result = null;
+            if (response.isSuccessful()) {
+                result = response.body();
+            }
+            if (result != null && result.getError() == null && result.getResponse() != null && result.getResponse().getResult()) {
+                makeToast("목적지 전송 성공\n" + address);
+                AnalysisUtil.log("send_success");
+            } else {
+                Log.w(NaviToTeslaService.class.getName(), response.toString());
+                makeToast("목적지 전송 실패" + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
+
+                AnalysisUtil.log("send_fail");
+                AnalysisUtil.setCustomKey("address", address);
+                if (result != null && result.getErrorDescription() != null) {
+                    AnalysisUtil.log("errorDescription: " + result.getErrorDescription());
+                }
+                if (!response.isSuccessful()) {
+                    AnalysisUtil.log("Http response code: " + response.code());
+                    if (response.errorBody() != null) {
+                        AnalysisUtil.log("Http error response: " + response.errorBody().string());
+                    }
+                }
+                AnalysisUtil.log("sendFail");
+                RuntimeException exception;
+                if (response.code() == 401) {
+                    String errorString = "";
+                    if (response.errorBody() != null) {
+                        errorString = response.errorBody().string();
+                    }
+                    exception = new ForbiddenException(401, errorString);
+                } else {
+                    exception = new RuntimeException("Send address fail");
+                }
+                AnalysisUtil.recordException(exception);
+                throw exception;
+            }
+            ResponseCloser.closeAll(response);
         }
     }
 
@@ -175,6 +200,10 @@ public class NaviToTeslaService {
 
     public Token getToken() {
         return PreferencesUtil.loadToken(context);
+    }
+
+    public void expireToken() {
+        PreferencesUtil.expireToken(context);
     }
 
     @AddTrace(name = "refreshToken")

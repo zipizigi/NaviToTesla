@@ -5,11 +5,9 @@ import java.util.Locale;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-//@EqualsAndHashCode(of = )
 @ToString(of = "poiName")
 @Builder
 @NoArgsConstructor
@@ -40,4 +38,5 @@ public class Poi {
     public String getGpsAddress() {
         return String.format(Locale.getDefault(), "%s,%s", latitude, longitude);
     }
+
 }
