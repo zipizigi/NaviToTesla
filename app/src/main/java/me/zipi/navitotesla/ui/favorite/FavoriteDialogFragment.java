@@ -224,8 +224,8 @@ public class FavoriteDialogFragment extends DialogFragment implements
             Poi poi = getItem(position);
             String shortAddress = poi.getFinalAddress();
             String[] addressSplit = shortAddress.split(" ");
-            if (addressSplit.length > 2) {
-                shortAddress = addressSplit[0] + " " + addressSplit[1];
+            if (addressSplit.length > 3) {
+                shortAddress = addressSplit[0] + " " + addressSplit[1] + " " + addressSplit[2];
             }
             String text = poi.getPoiName() + "\n" + shortAddress;
             view.setText(text);

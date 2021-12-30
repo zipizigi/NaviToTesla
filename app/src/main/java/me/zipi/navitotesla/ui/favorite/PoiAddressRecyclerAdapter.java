@@ -51,6 +51,7 @@ public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRe
         TextView poiView;
         TextView addressView;
         Button button;
+        Button shareButton;
         boolean isRegistered;
         private WeakReference<OnFavoriteButtonClicked> listenerRef;
 
@@ -60,8 +61,10 @@ public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRe
             poiView = itemView.findViewById(R.id.recylcer_poi);
             addressView = itemView.findViewById(R.id.recylcer_address);
             button = itemView.findViewById(R.id.btnFavorite);
+            shareButton = itemView.findViewById(R.id.btnShare);
             listenerRef = new WeakReference<>(listener);
             button.setOnClickListener(this);
+            shareButton.setOnClickListener(this);
         }
 
         void onBind(PoiAddressEntity item) {
@@ -70,21 +73,29 @@ public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRe
             isRegistered = item.isRegistered();
             if (!isRegistered) {
                 button.setBackgroundResource(R.drawable.ic_baseline_add_24);
+                shareButton.setVisibility(View.GONE);
             } else {
                 button.setBackgroundResource(R.drawable.ic_baseline_remove_24);
+                shareButton.setVisibility(View.VISIBLE);
             }
         }
 
         @Override
         public void onClick(View view) {
             if (listenerRef != null && listenerRef.get() != null) {
-                listenerRef.get().onClick(getAdapterPosition());
+                if (view.getId() == shareButton.getId()) {
+                    listenerRef.get().onShareClick(getAdapterPosition());
+                } else {
+                    listenerRef.get().onClick(getAdapterPosition());
+                }
             }
         }
     }
 
     public interface OnFavoriteButtonClicked {
         void onClick(int position);
+
+        void onShareClick(int position);
     }
 
 }

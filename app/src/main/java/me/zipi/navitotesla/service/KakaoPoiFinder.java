@@ -5,11 +5,9 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import me.zipi.navitotesla.api.KakaoMapApi;
-import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.model.KakaoMap;
 import me.zipi.navitotesla.model.Poi;
 import me.zipi.navitotesla.util.AnalysisUtil;
@@ -37,24 +35,6 @@ public class KakaoPoiFinder implements PoiFinder {
                     .build())
             .build().create(KakaoMapApi.class);
 
-    @Override
-    public String findPoiAddress(String poiName) throws DuplicatePoiException, IOException {
-        List<Poi> listPoi = listPoiAddress(poiName);
-        String address = "";
-        int sameCount = 0;
-        for (Poi poi : listPoi) {
-            if (poi.getPoiName().equalsIgnoreCase(poiName)) {
-                sameCount++;
-                address = poi.getFinalAddress();
-            }
-        }
-        if (sameCount > 1) {
-            // 중복지명 전송 안함
-            throw new DuplicatePoiException(poiName);
-        }
-
-        return address;
-    }
 
     @Override
     public String parseDestination(String notificationText) {
