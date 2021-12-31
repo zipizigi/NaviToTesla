@@ -133,6 +133,7 @@ public class AppUpdaterUtil {
             } else {
                 context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)));
             }
+            clearDoNotShow(context);
         } catch (Exception e) {
             Log.w(AppUpdaterUtil.class.getName(), "fail update");
             AnalysisUtil.log("fail update");
@@ -220,8 +221,7 @@ public class AppUpdaterUtil {
                 notificationManager.createNotificationChannel(mChannel);
             }
 
-            PendingIntent contentIntent = PendingIntent.getActivity(context, 0, context.getPackageManager().getLaunchIntentForPackage(context.getPackageName()), PendingIntent.FLAG_CANCEL_CURRENT);
-
+            PendingIntent contentIntent = PendingIntent.getActivity(context, 0, context.getPackageManager().getLaunchIntentForPackage(context.getPackageName()), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
             Notification notification = new NotificationCompat.Builder(context, "update_notification_channel")
                     .setContentIntent(contentIntent)
