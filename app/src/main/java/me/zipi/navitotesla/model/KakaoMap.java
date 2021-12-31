@@ -39,11 +39,11 @@ public class KakaoMap {
             String address = roadAddressName;
             Matcher match = pattern.matcher(addressName);
             if (match.find()) {
-                String middleAddrName = match.group(1);
-                if (middleAddrName != null && middleAddrName.length() > 0) {
-                    String lastChar = middleAddrName.substring(middleAddrName.length() - 1);
+                String lowerAddrName = match.group(1);
+                if (lowerAddrName != null && lowerAddrName.length() > 0) {
+                    String lastChar = lowerAddrName.substring(lowerAddrName.length() - 1);
                     if (lastChar.equals("동") || lastChar.equals("로") || lastChar.equals("가")) {
-                        address += " (" + middleAddrName + ")";
+                        address += " (" + lowerAddrName + ")";
                     }
 
                 }

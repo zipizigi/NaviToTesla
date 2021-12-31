@@ -79,12 +79,12 @@ public class TMap {
 
                 // 법정동(동/로/가)가 있을 경우 추가항목으로 (법정동)을 붙여준다.
                 // 건물명이 있을 경우 (법정동, 건물명) 표시도 가능하다.
-                if (middleAddrName.length() > 0) {
-                    String lastChar = middleAddrName.substring(middleAddrName.length() - 1);
+                if (lowerAddrName.length() > 0) {
+                    String lastChar = lowerAddrName.substring(lowerAddrName.length() - 1);
                     if (lastChar.equals("동") || lastChar.equals("로") || lastChar.equals("가")) {
                         sb.append(" ")
                                 .append("(")
-                                .append(middleAddrName)
+                                .append(lowerAddrName)
                                 .append(")");
                     }
 
