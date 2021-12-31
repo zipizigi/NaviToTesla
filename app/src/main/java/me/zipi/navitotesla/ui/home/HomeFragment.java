@@ -273,7 +273,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
                 }
                 List<Vehicle> vehicleList = naviToTeslaService.getVehicles(token);
 
-                if (vehicleList.size() > 0) {
+                if (naviToTeslaService != null && vehicleList.size() > 0) {
                     if (naviToTeslaService.loadVehicleId().equals(0L)) {
                         naviToTeslaService.saveVehicleId(vehicleList.get(0).getId());
                     }
