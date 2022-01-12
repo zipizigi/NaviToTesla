@@ -10,9 +10,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
+import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.service.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
@@ -20,10 +18,8 @@ import me.zipi.navitotesla.util.AppUpdaterUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 
 public class NotificationListener extends NotificationListenerService {
-    NaviToTeslaService naviToTeslaService;
-    Executor executor = Executors.newSingleThreadExecutor();
-
     private static Long lastNotificationPosted = System.currentTimeMillis();
+    NaviToTeslaService naviToTeslaService;
 
     @Override
     public void onCreate() {
@@ -35,7 +31,6 @@ public class NotificationListener extends NotificationListenerService {
     public void onDestroy() {
         super.onDestroy();
         naviToTeslaService = null;
-        executor = null;
     }
 
 
@@ -45,7 +40,7 @@ public class NotificationListener extends NotificationListenerService {
         if (PoiFinderFactory.isNaviSupport(sbn.getPackageName())) {
             Log.i(this.getClass().getName(), "onNotificationRemoved ~ " +
                     " packageName: " + sbn.getPackageName());
-            executor.execute(() -> naviToTeslaService.notificationClear());
+            AppExecutors.execute(() -> naviToTeslaService.notificationClear());
             Bundle param = new Bundle();
             param.putString("package", sbn.getPackageName());
             AnalysisUtil.logEvent("notification_removed", param);
@@ -76,9 +71,9 @@ public class NotificationListener extends NotificationListenerService {
                     " title: " + title +
                     " text : " + text +
                     " subText: " + subText);
-            executor.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text));
-            executor.execute(RemoteConfigUtil::initialize);
-            executor.execute(() -> AppUpdaterUtil.notification(this));
+            AppExecutors.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text));
+            AppExecutors.execute(RemoteConfigUtil::initialize);
+            AppExecutors.execute(() -> AppUpdaterUtil.notification(this));
             Bundle param = new Bundle();
             param.putString("package", sbn.getPackageName());
             AnalysisUtil.logEvent("notification_received", param);

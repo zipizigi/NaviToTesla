@@ -1,0 +1,18 @@
+package me.zipi.navitotesla;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+public class AppExecutors {
+    private static final Executor executor = new ThreadPoolExecutor(0, 5, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+
+
+    private AppExecutors() {
+    }
+
+    public static void execute(Runnable command) {
+        executor.execute(command);
+    }
+}

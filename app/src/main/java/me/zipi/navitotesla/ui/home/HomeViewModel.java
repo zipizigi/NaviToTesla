@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import lombok.Getter;

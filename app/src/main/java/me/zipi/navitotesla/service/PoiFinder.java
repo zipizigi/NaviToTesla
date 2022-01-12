@@ -14,7 +14,7 @@ public interface PoiFinder {
         for (Poi poi : listPoi) {
             if (poi.getPoiName().equalsIgnoreCase(poiName)) {
                 sameCount++;
-                address = poi.getFinalAddress();
+                address = poi.getRoadAddress();
             }
         }
         if (sameCount > 1) {

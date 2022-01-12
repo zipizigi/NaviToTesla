@@ -6,7 +6,6 @@ import android.util.Log;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import lombok.Getter;
 import me.zipi.navitotesla.api.TeslaApi;
@@ -16,8 +15,6 @@ import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
-import okhttp3.Call;
-import okhttp3.EventListener;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

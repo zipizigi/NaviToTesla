@@ -5,15 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.databinding.FragmentFavoriteBinding;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
@@ -33,8 +31,6 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
     private NaviToTeslaService naviToTeslaService;
     @Nullable
     private AppDatabase appDatabase;
-    @Nullable
-    private Executor executor;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -79,8 +75,6 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
         favoriteViewModel.getRegisteredPoiAddress().observe(getViewLifecycleOwner(),
                 items -> poiRegisteredRecyclerAdapter.setItems(items));
         appDatabase = AppDatabase.getInstance(getContext());
-        executor = Executors.newFixedThreadPool(1);
-
         return root;
     }
 
@@ -92,7 +86,6 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
         poiRegisteredRecyclerAdapter = null;
         naviToTeslaService = null;
         appDatabase = null;
-        executor = null;
     }
 
     @Override
@@ -103,14 +96,13 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
     }
 
     private void updatePoiAddress() {
-        if (executor != null) {
-            executor.execute(() -> {
-                if (appDatabase != null) {
-                    favoriteViewModel.getRecentPoiAddress().postValue(appDatabase.poiAddressDao().findRecentPoiSync(25));
-                    favoriteViewModel.getRegisteredPoiAddress().postValue(appDatabase.poiAddressDao().findRegisteredPoiSync());
-                }
-            });
-        }
+        AppExecutors.execute(() -> {
+            if (appDatabase != null) {
+                favoriteViewModel.getRecentPoiAddress().postValue(appDatabase.poiAddressDao().findRecentPoiSync(25));
+                favoriteViewModel.getRegisteredPoiAddress().postValue(appDatabase.poiAddressDao().findRegisteredPoiSync());
+            }
+        });
+
     }
 
     private void addFavoriteLocation(int position) {
@@ -142,10 +134,8 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
                 .setTitle("목적지 전송")
                 .setMessage("목적지를 전송하시겠습니까?\n - " + poi.getAddress())
                 .setPositiveButton("전송", (dialog, which) -> {
-                    if (executor == null) {
-                        return;
-                    }
-                    executor.execute(() -> {
+
+                    AppExecutors.execute(() -> {
                         if (getActivity() == null) {
                             return;
                         }
@@ -167,11 +157,9 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
 
 
     private void removeFavorite(int position) {
-        if (executor == null) {
-            return;
-        }
-        executor.execute(() -> {
-            if (appDatabase == null && executor == null) {
+
+        AppExecutors.execute(() -> {
+            if (appDatabase == null) {
                 return;
             }
             PoiAddressEntity poi = favoriteViewModel.getRegisteredPoiAddress().getValue().get(position);

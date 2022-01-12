@@ -17,9 +17,10 @@ public class Application extends android.app.Application {
 
         RemoteConfigUtil.initialize();
         AnalysisUtil.initialize(this);
-        TokenWorker.startBackgroundWork(this);
-
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG);
+        if (!BuildConfig.DEBUG) {
+            TokenWorker.startBackgroundWork(this);
+            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false);
+        }
     }
 
 

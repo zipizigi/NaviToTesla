@@ -1,9 +1,7 @@
 package me.zipi.navitotesla.ui.favorite;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,13 +11,8 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
@@ -27,21 +20,25 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 import lombok.Setter;
+import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.databinding.FavoriteDialogFragmentBinding;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.model.Poi;
-import me.zipi.navitotesla.service.KakaoPoiFinder;
 import me.zipi.navitotesla.service.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
 
 public class FavoriteDialogFragment extends DialogFragment implements
         AdapterView.OnItemSelectedListener, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
 
+    @Nullable
+    PoiArrayAdapter poiArrayAdapter;
     private String dest;
     @Setter
     private Runnable onDismissListener;
-
+    private FavoriteDialogViewModel favoriteDialogViewModel;
+    @Nullable
+    private FavoriteDialogFragmentBinding binding;
     public FavoriteDialogFragment() {
         super();
     }
@@ -50,16 +47,6 @@ public class FavoriteDialogFragment extends DialogFragment implements
         super();
         this.dest = dest;
     }
-
-    private FavoriteDialogViewModel favoriteDialogViewModel;
-    @Nullable
-    private FavoriteDialogFragmentBinding binding;
-
-    @Nullable
-    PoiArrayAdapter poiArrayAdapter;
-
-    @Nullable
-    Executor executor;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,7 +74,6 @@ public class FavoriteDialogFragment extends DialogFragment implements
         binding.radioGroup.setOnCheckedChangeListener(this);
         favoriteDialogViewModel.getPoiList().observe(getViewLifecycleOwner(), (v) -> updateSpinner());
 
-        executor = Executors.newSingleThreadExecutor();
         return binding.getRoot();
     }
 
@@ -108,7 +94,6 @@ public class FavoriteDialogFragment extends DialogFragment implements
 
         binding = null;
         poiArrayAdapter = null;
-        executor = null;
         dest = null;
 
     }
@@ -134,9 +119,10 @@ public class FavoriteDialogFragment extends DialogFragment implements
         }
         Poi poi = favoriteDialogViewModel.getPoiList().getValue().get(position);
         favoriteDialogViewModel.getSelectedPoi().postValue(poi);
-
-        if (binding.radioAddress.isChecked()) {
-            binding.txtAddress.setText(poi.getFinalAddress());
+        if (binding.radioRoadAddress.isChecked()) {
+            binding.txtAddress.setText(poi.getRoadAddress());
+        } else if (binding.radioAddress.isChecked()) {
+            binding.txtAddress.setText(poi.getAddress());
         } else {
             binding.txtAddress.setText(poi.getGpsAddress());
         }
@@ -148,7 +134,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
     }
 
     private void saveFavorite() {
-        if (binding == null || executor == null) {
+        if (binding == null) {
             return;
         }
         PoiAddressEntity entity = PoiAddressEntity.builder()
@@ -158,7 +144,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
                 .created(Calendar.getInstance().getTime())
                 .build();
 
-        executor.execute(() -> {
+        AppExecutors.execute(() -> {
             AppDatabase.getInstance(getContext()).poiAddressDao().insertPoi(entity);
             if (getActivity() != null) {
                 getActivity().runOnUiThread(this::dismiss);
@@ -172,10 +158,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
     }
 
     private void searchDest() {
-        if (executor == null) {
-            return;
-        }
-        executor.execute(() -> {
+        AppExecutors.execute(() -> {
             if (binding == null) {
                 return;
             }
@@ -203,8 +186,10 @@ public class FavoriteDialogFragment extends DialogFragment implements
         if (favoriteDialogViewModel.getSelectedPoi().getValue() == null || binding == null) {
             return;
         }
-        if (binding.radioAddress.getId() == group.getCheckedRadioButtonId()) {
-            binding.txtAddress.setText(favoriteDialogViewModel.getSelectedPoi().getValue().getFinalAddress());
+        if (binding.radioRoadAddress.getId() == group.getCheckedRadioButtonId()) {
+            binding.txtAddress.setText(favoriteDialogViewModel.getSelectedPoi().getValue().getRoadAddress());
+        } else if (binding.radioAddress.getId() == group.getCheckedRadioButtonId()) {
+            binding.txtAddress.setText(favoriteDialogViewModel.getSelectedPoi().getValue().getAddress());
         } else {
             binding.txtAddress.setText(favoriteDialogViewModel.getSelectedPoi().getValue().getGpsAddress());
         }
@@ -222,7 +207,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
             TextView view = (TextView) super.getView(position, convertView, parent);
             view.setSingleLine(false);
             Poi poi = getItem(position);
-            String shortAddress = poi.getFinalAddress();
+            String shortAddress = poi.getRoadAddress();
             String[] addressSplit = shortAddress.split(" ");
             if (addressSplit.length > 3) {
                 shortAddress = addressSplit[0] + " " + addressSplit[1] + " " + addressSplit[2];
@@ -239,7 +224,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
             TextView view = (TextView) super.getDropDownView(position, convertView, parent);
             view.setSingleLine(false);
             Poi poi = getItem(position);
-            String text = poi.getPoiName() + "\n" + poi.getFinalAddress();
+            String text = poi.getPoiName() + "\n" + poi.getRoadAddress();
             view.setText(text);
             view.setTextSize(12);
 

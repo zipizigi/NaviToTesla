@@ -22,8 +22,6 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.background.TokenWorker;
 import me.zipi.navitotesla.databinding.FragmentHomeBinding;
 import me.zipi.navitotesla.model.Token;
@@ -48,17 +47,12 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     private FragmentHomeBinding binding;
     @Nullable
     private NaviToTeslaService naviToTeslaService;
-    @Nullable
-    private Executor executor;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         if (this.getActivity() != null) {
             this.getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
-
-        executor = Executors.newFixedThreadPool(2);
-
         homeViewModel =
                 new ViewModelProvider(this).get(HomeViewModel.class);
 
@@ -93,11 +87,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         super.onResume();
 
         permissionGrantedCheck();
-        if (executor != null) {
-            executor.execute(this::updateToken);
-            executor.execute(() -> AppUpdaterUtil.dialog(getActivity()));
-            executor.execute(this::updateVersion);
-        }
+
+        AppExecutors.execute(this::updateToken);
+        AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
+        AppExecutors.execute(this::updateVersion);
+
 
     }
 
@@ -106,7 +100,6 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         super.onDestroyView();
         homeViewModel.clearObserve(getViewLifecycleOwner());
         binding = null;
-        executor = null;
         naviToTeslaService = null;
     }
 
@@ -179,15 +172,13 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     }
 
     private void onTxtVersionClicked() {
-        if (executor != null) {
-            executor.execute(() -> AppUpdaterUtil.dialog(getActivity(), true));
-        }
+        AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity(), true));
     }
 
     private void onBtnPoiCacheClearClick() {
-        if (binding != null && executor != null && naviToTeslaService != null) {
+        if (binding != null && naviToTeslaService != null) {
             binding.btnPoiCacheClear.setEnabled(false);
-            executor.execute(() -> {
+            AppExecutors.execute(() -> {
                         try {
                             naviToTeslaService.clearPoiCache();
                             AppUpdaterUtil.clearDoNotShow(getContext());
@@ -220,15 +211,15 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         homeViewModel.getVehicleListLiveData().postValue(new ArrayList<>());
         homeViewModel.refreshToken.postValue("");
 
-        if (executor != null) {
-            executor.execute(() -> {
-                if (getContext() != null && naviToTeslaService != null) {
-                    PreferencesUtil.clear(getContext());
-                    homeViewModel.getTokenLiveData().postValue(naviToTeslaService.getToken());
-                    TokenWorker.cancelBackgroundWork(getContext());
-                }
-            });
-        }
+
+        AppExecutors.execute(() -> {
+            if (getContext() != null && naviToTeslaService != null) {
+                PreferencesUtil.clear(getContext());
+                homeViewModel.getTokenLiveData().postValue(naviToTeslaService.getToken());
+                TokenWorker.cancelBackgroundWork(getContext());
+            }
+        });
+
     }
 
     private void onBtnSaveClick(String refreshToken) {
@@ -242,7 +233,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     }
 
     private void getAccessTokenAndVehicles(String refreshToken) {
-        if (refreshToken == null || refreshToken.length() == 0 || binding == null || executor == null) {
+        if (refreshToken == null || refreshToken.length() == 0 || binding == null) {
             return;
         }
 
@@ -257,7 +248,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         }
 
         final Activity context = getActivity();
-        executor.execute(() -> {
+        AppExecutors.execute(() -> {
 
             try {
                 if (naviToTeslaService == null) {
@@ -338,12 +329,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     }
 
     private void updateVersion() {
-        if (executor != null) {
-            executor.execute(() -> {
-                homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.getContext()));
-                homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.getContext()));
-            });
-        }
+        AppExecutors.execute(() -> {
+            homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.getContext()));
+            homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.getContext()));
+        });
+
     }
 
     private void renderVersion() {

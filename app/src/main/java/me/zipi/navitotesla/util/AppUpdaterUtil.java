@@ -69,61 +69,63 @@ public class AppUpdaterUtil {
     }
 
     public static void dialog(Activity activity, boolean isForce) {
-
-        if (!isForce && (Math.abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow(activity))) {
-            return;
-        }
-        if (isUpdateAvailable(activity)) {
-            if (!permissionCheck(activity)) {
+        try {
+            if (!isForce && (Math.abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow(activity))) {
                 return;
             }
-            try {
-                Github.Release release = null;
+            if (isUpdateAvailable(activity)) {
+                if (!permissionCheck(activity)) {
+                    return;
+                }
+                try {
+                    Github.Release release = null;
 
-                Response<List<Github.Release>> response = githubApi.getReleases("zipizigi", "NaviToTesla").execute();
-                if (response.code() == 403) {
-                    AnalysisUtil.log("github api rate limit exceed");
-                } else if (!response.isSuccessful() || response.body() == null) {
-                    AnalysisUtil.log("github api call fail. Http code: " + response.code());
-                    if (response.errorBody() != null) {
-                        AnalysisUtil.log(response.errorBody().string());
-                        AnalysisUtil.recordException(new RuntimeException());
+                    Response<List<Github.Release>> response = githubApi.getReleases("zipizigi", "NaviToTesla").execute();
+                    if (response.code() == 403) {
+                        AnalysisUtil.log("github api rate limit exceed");
+                    } else if (!response.isSuccessful() || response.body() == null) {
+                        AnalysisUtil.log("github api call fail. Http code: " + response.code());
+                        if (response.errorBody() != null) {
+                            AnalysisUtil.log(response.errorBody().string());
+                            AnalysisUtil.recordException(new RuntimeException());
+                        }
+                    } else {
+                        if (response.body().size() > 0) {
+                            release = response.body().get(0);
+                        }
                     }
-                } else {
-                    if (response.body().size() > 0) {
-                        release = response.body().get(0);
-                    }
+
+
+                    final String apkUrl = getLatestApkUrl(release);
+                    final String releaseDescription = release == null ? "" : release.getTagName() + "\n" + release.getBody();
+                    activity.runOnUiThread(() -> new AlertDialog.Builder(activity)
+                            .setCancelable(true)
+                            .setTitle("업데이트가 있습니다.")
+                            .setMessage(releaseDescription)
+                            .setPositiveButton("업데이트", (dialog, which) -> startUpdate(activity, apkUrl))
+                            .setNeutralButton("7일동안무시", (dialog, which) -> new AlertDialog.Builder(activity)
+                                    .setTitle("안내")
+                                    .setMessage("업데이트를 무시한 후 다시 업데이트 안내를 받고 싶다면 '주소 캐시 삭제' 버튼을 눌러주세요.")
+                                    .setCancelable(false)
+                                    .setPositiveButton("확인", (d, w) -> doNotShow(activity))
+                                    .show())
+                            .setNegativeButton("닫기", (dialog, which) -> {
+                            })
+                            .show());
+
+                    permissionCheck(activity);
+                    dialogLastCheck = System.currentTimeMillis();
+                    ResponseCloser.closeAll(response);
+                } catch (Exception e) {
+                    Log.w(AppUpdaterUtil.class.getName(), "error update dialog show", e);
+                    AnalysisUtil.log("fail update");
+                    AnalysisUtil.recordException(e);
                 }
 
-
-                final String apkUrl = getLatestApkUrl(release);
-                final String releaseDescription = release == null ? "" : release.getTagName() + "\n" + release.getBody();
-                activity.runOnUiThread(() -> new AlertDialog.Builder(activity)
-                        .setCancelable(true)
-                        .setTitle("업데이트가 있습니다.")
-                        .setMessage(releaseDescription)
-                        .setPositiveButton("업데이트", (dialog, which) -> startUpdate(activity, apkUrl))
-                        .setNeutralButton("7일동안무시", (dialog, which) -> new AlertDialog.Builder(activity)
-                                .setTitle("안내")
-                                .setMessage("업데이트를 무시한 후 다시 업데이트 안내를 받고 싶다면 '주소 캐시 삭제' 버튼을 눌러주세요.")
-                                .setCancelable(false)
-                                .setPositiveButton("확인", (d, w) -> doNotShow(activity))
-                                .show())
-                        .setNegativeButton("닫기", (dialog, which) -> {
-                        })
-                        .show());
-
-                permissionCheck(activity);
-                dialogLastCheck = System.currentTimeMillis();
-                ResponseCloser.closeAll(response);
-            } catch (Exception e) {
-                Log.w(AppUpdaterUtil.class.getName(), "error update dialog show", e);
-                AnalysisUtil.log("fail update");
-                AnalysisUtil.recordException(e);
             }
-
+        } catch (NullPointerException e) {
+            Log.w(AppUpdaterUtil.class.getName(), "activity is null", e);
         }
-
     }
 
     public static void startUpdate(Context context, String apkUrl) {
