@@ -17,14 +17,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
         autoMigrations = {@AutoMigration(from = 1, to = 2)})
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
-    private static AppDatabase instance;
-
-
     public static final String DATABASE_NAME = "data.sqlite";
-
-    public abstract PoiAddressDao poiAddressDao();
-
-
+    private static AppDatabase instance;
     private final MutableLiveData<Boolean> mIsDatabaseCreated = new MutableLiveData<>();
 
     public static AppDatabase getInstance(final Context context) {
@@ -56,6 +50,8 @@ public abstract class AppDatabase extends RoomDatabase {
                 //.addMigrations(MIGRATION_2_3)
                 .build();
     }
+
+    public abstract PoiAddressDao poiAddressDao();
 
     /**
      * Check whether the database already exists and expose it via {@link #getDatabaseCreated()}

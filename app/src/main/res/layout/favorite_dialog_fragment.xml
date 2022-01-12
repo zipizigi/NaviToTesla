@@ -52,11 +52,9 @@
             android:layout_marginEnd="12dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:ems="10"
             android:hint="주소 또는 좌표"
-            android:inputType="textPersonName"
+            android:inputType="text"
             android:minHeight="48dp"
-            android:singleLine="false"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/labelAddress"
@@ -85,17 +83,23 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:checkedButton="@id/radioAddress"
+            android:checkedButton="@id/radioRoadAddress"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/addressSelector">
 
             <RadioButton
+                android:id="@+id/radioRoadAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="도로명" />
+
+            <RadioButton
                 android:id="@+id/radioAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="주소" />
+                android:text="지번" />
 
             <RadioButton
                 android:id="@+id/radioGps"

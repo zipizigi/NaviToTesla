@@ -47,6 +47,12 @@ public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRe
         this.notifyDataSetChanged();
     }
 
+    public interface OnFavoriteButtonClicked {
+        void onClick(int position);
+
+        void onShareClick(int position);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView poiView;
         TextView addressView;
@@ -90,12 +96,6 @@ public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRe
                 }
             }
         }
-    }
-
-    public interface OnFavoriteButtonClicked {
-        void onClick(int position);
-
-        void onShareClick(int position);
     }
 
 }

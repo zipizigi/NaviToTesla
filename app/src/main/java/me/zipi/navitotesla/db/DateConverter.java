@@ -1,9 +1,8 @@
-
 package me.zipi.navitotesla.db;
 
-import androidx.room.TypeConverter;
-
 import java.util.Date;
+
+import androidx.room.TypeConverter;
 
 public class DateConverter {
     @TypeConverter

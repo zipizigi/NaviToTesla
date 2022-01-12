@@ -112,6 +112,7 @@ public class NaviToTeslaService {
             makeToast("목적지 전송 실패\n내부 또는 API 오류");
             AnalysisUtil.logEvent("error_share", eventParam);
             AnalysisUtil.recordException(e);
+            AnalysisUtil.sendUnsentReports();
         }
     }
 
@@ -148,7 +149,7 @@ public class NaviToTeslaService {
                         AnalysisUtil.log("Http error response: " + response.errorBody().string());
                     }
                 }
-                AnalysisUtil.log("sendFail");
+
                 RuntimeException exception;
                 if (response.code() == 401) {
                     String errorString = "";

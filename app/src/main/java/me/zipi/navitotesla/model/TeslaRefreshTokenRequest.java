@@ -10,13 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class TeslaRefreshTokenRequest {
-    public TeslaRefreshTokenRequest(String refreshToken) {
-        this.grantType = "refresh_token";
-        this.scope = "openid email offline_access";
-        this.refreshToken = refreshToken;
-        this.clientId = "ownerapi";
-    }
-
     @SerializedName("grant_type")
     String grantType;
     @SerializedName("client_id")
@@ -25,5 +18,11 @@ public class TeslaRefreshTokenRequest {
     String refreshToken;
     @SerializedName("scope")
     String scope;
+    public TeslaRefreshTokenRequest(String refreshToken) {
+        this.grantType = "refresh_token";
+        this.scope = "openid email offline_access";
+        this.refreshToken = refreshToken;
+        this.clientId = "ownerapi";
+    }
 
 }

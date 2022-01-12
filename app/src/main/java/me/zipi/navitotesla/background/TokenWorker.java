@@ -26,22 +26,6 @@ public class TokenWorker extends Worker {
         super(context, workerParams);
     }
 
-    @NonNull
-    @Override
-    public Result doWork() {
-
-        Log.i(TokenWorker.class.getName(), "Start background refresh token");
-        AnalysisUtil.log("Start background refresh token");
-        NaviToTeslaService service = new NaviToTeslaService(getApplicationContext());
-        Token token = service.refreshToken();
-
-        if (token != null) {
-            return Result.success();
-        } else {
-            return Result.failure();
-        }
-    }
-
     public static void startBackgroundWork(@NonNull Context context) {
         if (PreferencesUtil.loadToken(context) == null) {
             AnalysisUtil.log("Token is empty. add work ignore");
@@ -64,6 +48,22 @@ public class TokenWorker extends Worker {
             WorkManager.getInstance(context).cancelUniqueWork(workName);
         } catch (Exception e) {
             AnalysisUtil.recordException(e);
+        }
+    }
+
+    @NonNull
+    @Override
+    public Result doWork() {
+
+        Log.i(TokenWorker.class.getName(), "Start background refresh token");
+        AnalysisUtil.log("Start background refresh token");
+        NaviToTeslaService service = new NaviToTeslaService(getApplicationContext());
+        Token token = service.refreshToken();
+
+        if (token != null) {
+            return Result.success();
+        } else {
+            return Result.failure();
         }
     }
 }

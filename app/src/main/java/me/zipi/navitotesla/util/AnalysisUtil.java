@@ -7,14 +7,12 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnalysisUtil {
-    private static FirebaseAnalytics firebaseAnalytics;
     private static final FirebaseCrashlytics firebaseCrashlytics = FirebaseCrashlytics.getInstance();
-
+    private static FirebaseAnalytics firebaseAnalytics;
 
     public static void initialize(Context context) {
         firebaseAnalytics = FirebaseAnalytics.getInstance(context);
@@ -34,5 +32,9 @@ public class AnalysisUtil {
 
     public static void setCustomKey(String key, String value) {
         AnalysisUtil.firebaseCrashlytics.setCustomKey(key, value);
+    }
+
+    public static void sendUnsentReports() {
+        AnalysisUtil.firebaseCrashlytics.sendUnsentReports();
     }
 }
