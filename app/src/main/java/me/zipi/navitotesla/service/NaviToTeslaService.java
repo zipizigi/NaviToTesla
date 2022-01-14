@@ -39,8 +39,8 @@ public class NaviToTeslaService {
     AppRepository appRepository;
 
     public NaviToTeslaService(Context context) {
-        this.context = context;
-        appRepository = AppRepository.getInstance(context, AppDatabase.getInstance(context));
+        this.context = context.getApplicationContext();
+        appRepository = AppRepository.getInstance(this.context, AppDatabase.getInstance(this.context));
     }
 
     private boolean isAddress(String text) {

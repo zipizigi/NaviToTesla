@@ -1,10 +1,12 @@
 package me.zipi.navitotesla.ui.home;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -19,6 +21,7 @@ import android.widget.Spinner;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,9 +30,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import me.zipi.navitotesla.AppExecutors;
+import me.zipi.navitotesla.BuildConfig;
 import me.zipi.navitotesla.background.TokenWorker;
 import me.zipi.navitotesla.databinding.FragmentHomeBinding;
 import me.zipi.navitotesla.model.Token;
@@ -40,7 +45,7 @@ import me.zipi.navitotesla.util.AppUpdaterUtil;
 import me.zipi.navitotesla.util.PreferencesMigrationUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 
-public class HomeFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
+public class HomeFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, View.OnLongClickListener {
 
     private HomeViewModel homeViewModel;
     @Nullable
@@ -78,6 +83,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         binding.btnPaste.setOnClickListener(this);
         binding.btnTokenClear.setOnClickListener(this);
         binding.txtVersion.setOnClickListener(this);
+        binding.txtVersion.setOnLongClickListener(this);
 
         return root;
     }
@@ -108,6 +114,32 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         super.onAttach(context);
         PreferencesMigrationUtil.migration(context);
         this.naviToTeslaService = new NaviToTeslaService(context);
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        if (binding == null || getActivity() == null) {
+            return false;
+        }
+        if (view.getId() == binding.txtVersion.getId()) {
+            int size = (int) (AnalysisUtil.getLogFileSize() / 1024.0);
+            String type = "KB";
+            if (size > 1024) {
+                type = "MB";
+                size = size / 1024;
+            }
+            new AlertDialog.Builder(getActivity())
+                    .setCancelable(true)
+                    .setTitle("로그파일보기")
+                    .setMessage(String.format("로그파일(%s%s)를 확인하시겠습니까?", size, type))
+                    .setPositiveButton("열기", (dialog, which) -> openLogFile())
+                    .setNegativeButton("닫기", (dialog, which) -> {
+                    })
+                    .setNeutralButton("삭제", (dialog, which) -> AppExecutors.execute(AnalysisUtil::deleteLogFile))
+                    .show();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -349,5 +381,34 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         binding.txtVersion.setText(sb.toString());
     }
 
+
+    private void openLogFile() {
+        if (getActivity() == null) {
+            return;
+        }
+        try {
+            Uri uri = FileProvider.getUriForFile(getActivity(), BuildConfig.APPLICATION_ID + ".provider", new File(AnalysisUtil.getLogFilePath()));
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, "plain/text");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            new AlertDialog.Builder(getActivity())
+                    .setCancelable(true)
+                    .setTitle("앱 설치 필요")
+                    .setMessage("로그 파일을 열 수 있는 앱이 없습니다.\n스토어에서 찾아 설치하시겠습니까?")
+                    .setPositiveButton("설치", (dialog, which) -> {
+                        try {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=log viewer")));
+                        } catch (ActivityNotFoundException anfe) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/search?q=log viewer")));
+                        }
+                    })
+                    .setNegativeButton("닫기", (dialog, which) -> {
+                    })
+                    .show();
+
+        }
+    }
 
 }
