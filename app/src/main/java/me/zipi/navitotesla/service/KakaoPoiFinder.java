@@ -11,6 +11,7 @@ import me.zipi.navitotesla.api.KakaoMapApi;
 import me.zipi.navitotesla.model.KakaoMap;
 import me.zipi.navitotesla.model.Poi;
 import me.zipi.navitotesla.util.AnalysisUtil;
+import me.zipi.navitotesla.util.HttpRetryInterceptor;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 import me.zipi.navitotesla.util.ResponseCloser;
 import okhttp3.OkHttpClient;
@@ -32,6 +33,7 @@ public class KakaoPoiFinder implements PoiFinder {
                                 .build();
                         return chain.proceed(request);
                     })
+                    .addInterceptor(new HttpRetryInterceptor(5))
                     .build())
             .build().create(KakaoMapApi.class);
 
