@@ -1,7 +1,6 @@
 package me.zipi.navitotesla;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -13,11 +12,10 @@ import me.zipi.navitotesla.api.TeslaAuthApi;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.model.Token;
-import me.zipi.navitotesla.util.AnalysisUtil;
+import me.zipi.navitotesla.util.HttpRetryInterceptor;
 import me.zipi.navitotesla.util.PreferencesUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -50,17 +48,9 @@ public class AppRepository {
                                     .addHeader("Content-Type", "application/json")
                                     .addHeader("Authorization", "Bearer " + accessToken)
                                     .build();
-                            Response response = chain.proceed(request);
-                            int retry = 0;
-                            while (!response.isSuccessful() && retry < 3) {
-                                Log.d("TeslaApi", "Request is not successful - " + retry);
-                                AnalysisUtil.log("retry tesla api - " + chain.request().url().uri().getPath());
-                                retry++;
-                                // retry the request
-                                response = chain.proceed(request);
-                            }
-                            return response;
+                            return chain.proceed(request);
                         })
+                        .addInterceptor(new HttpRetryInterceptor(10))
                         .build())
                 .build().create(TeslaApi.class);
         teslaAuthApi = new Retrofit.Builder()
@@ -77,6 +67,7 @@ public class AppRepository {
                                     .build();
                             return chain.proceed(request);
                         })
+                        .addInterceptor(new HttpRetryInterceptor(10))
                         .build())
                 .build().create(TeslaAuthApi.class);
 

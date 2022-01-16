@@ -3,12 +3,14 @@ package me.zipi.navitotesla.util;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -77,6 +79,7 @@ public class AnalysisUtil {
     }
 
     private static void appendLog(String logLevel, String message) {
+        Log.i(AnalysisUtil.class.getName(), message);
         String dateTime = dateFormatter.format(Calendar.getInstance().getTime());
         String text = String.format("%s %s %s", dateTime, logLevel, message);
 
@@ -91,8 +94,9 @@ public class AnalysisUtil {
         try (BufferedWriter buf = new BufferedWriter(new FileWriter(file, true))) {
             buf.append(text);
             buf.newLine();
+        } catch (FileNotFoundException ignore) {
         } catch (IOException e) {
-            recordException(e);
+            firebaseCrashlytics.recordException(e);
         }
     }
 
