@@ -40,6 +40,7 @@ public class AppUpdaterUtil {
             .client(new OkHttpClient.Builder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(10, TimeUnit.SECONDS)
+                    .addInterceptor(new HttpRetryInterceptor(10))
                     .build())
             .build().create(GithubApi.class);
 
@@ -178,6 +179,9 @@ public class AppUpdaterUtil {
 
     public static String getCurrentVersion(Context context) {
         String version = "1.0";
+        if (context == null || context.getPackageManager() == null) {
+            return version;
+        }
         try {
             version = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
         } catch (Exception e) {
