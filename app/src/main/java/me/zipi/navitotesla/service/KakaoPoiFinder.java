@@ -25,8 +25,8 @@ public class KakaoPoiFinder implements PoiFinder {
             .baseUrl("https://dapi.kakao.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(new OkHttpClient.Builder()
-                    .connectTimeout(1, TimeUnit.MINUTES)
-                    .readTimeout(1, TimeUnit.MINUTES)
+                    .connectTimeout(120, TimeUnit.SECONDS)
+                    .readTimeout(120, TimeUnit.SECONDS)
                     .addInterceptor(chain -> {
                         Request request = chain.request().newBuilder()
                                 .addHeader("Authorization", "KakaoAK " + RemoteConfigUtil.getConfig("kakaoApiKey"))

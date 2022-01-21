@@ -38,8 +38,8 @@ public class AppUpdaterUtil {
             .baseUrl("https://api.github.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(new OkHttpClient.Builder()
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(10, TimeUnit.SECONDS)
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
                     .addInterceptor(new HttpRetryInterceptor(10))
                     .build())
             .build().create(GithubApi.class);

@@ -25,8 +25,8 @@ public class TMapPoiFinder implements PoiFinder {
             .baseUrl("https://apis.openapi.sk.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(new OkHttpClient.Builder()
-                    .connectTimeout(1, TimeUnit.MINUTES)
-                    .readTimeout(1, TimeUnit.MINUTES)
+                    .connectTimeout(120, TimeUnit.SECONDS)
+                    .readTimeout(120, TimeUnit.SECONDS)
                     .addInterceptor(chain -> {
                         Request request = chain.request().newBuilder()
                                 .url(chain.request().url().newBuilder()

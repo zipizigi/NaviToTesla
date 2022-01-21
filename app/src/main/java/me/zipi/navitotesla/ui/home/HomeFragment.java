@@ -93,10 +93,10 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         super.onResume();
 
         permissionGrantedCheck();
-
-        AppExecutors.execute(this::updateToken);
-        AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
         AppExecutors.execute(this::updateVersion);
+        AppExecutors.execute(this::updateToken);
+        AppExecutors.execute(this::updateLatestVersion);
+        AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
 
 
     }
@@ -361,10 +361,12 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     }
 
     private void updateVersion() {
-        AppExecutors.execute(() -> {
-            homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.getContext()));
-            homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.getContext()));
-        });
+        AppExecutors.execute(() -> homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.getContext())));
+
+    }
+
+    private void updateLatestVersion() {
+        AppExecutors.execute(() -> homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.getContext())));
 
     }
 
