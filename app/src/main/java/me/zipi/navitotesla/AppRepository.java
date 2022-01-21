@@ -37,8 +37,8 @@ public class AppRepository {
                 .baseUrl("https://owner-api.teslamotors.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(new OkHttpClient.Builder()
-                        .connectTimeout(30, TimeUnit.SECONDS)
-                        .readTimeout(30, TimeUnit.SECONDS)
+                        .connectTimeout(120, TimeUnit.SECONDS)
+                        .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(chain -> {
                             Token token = PreferencesUtil.loadToken(context);
                             String accessToken = token == null ? "" : token.getAccessToken();
@@ -57,8 +57,8 @@ public class AppRepository {
                 .baseUrl("https://auth.tesla.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(new OkHttpClient.Builder()
-                        .connectTimeout(1, TimeUnit.MINUTES)
-                        .readTimeout(1, TimeUnit.MINUTES)
+                        .connectTimeout(120, TimeUnit.SECONDS)
+                        .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(chain -> {
                             Request request = chain.request().newBuilder()
                                     .addHeader("User-Agent", "Navi_To_Tesla")

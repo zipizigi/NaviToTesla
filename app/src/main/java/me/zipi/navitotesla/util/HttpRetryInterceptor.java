@@ -1,6 +1,7 @@
 package me.zipi.navitotesla.util;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Locale;
 
@@ -28,8 +29,8 @@ public class HttpRetryInterceptor implements Interceptor {
                 }
                 response = chain.proceed(chain.request());
                 isSuccess = response.isSuccessful();
-            } catch (UnknownHostException e) {
-                AnalysisUtil.info("Network unstable...#" + retry + " UnknownHostException");
+            } catch (UnknownHostException | SocketTimeoutException e) {
+                AnalysisUtil.info("Network unstable...#" + retry + " " + e.getClass().getName());
                 isSuccess = false;
             }
 
