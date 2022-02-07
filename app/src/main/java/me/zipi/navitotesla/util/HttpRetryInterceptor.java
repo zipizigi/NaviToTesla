@@ -43,9 +43,9 @@ public class HttpRetryInterceptor implements Interceptor {
                 retry++;
             }
             try {
-                long sleep = retry * retry * 100L;
-                if (sleep > 5000) {
-                    sleep = 5000;
+                long sleep = retry * retry * 100L / 2;
+                if (sleep > 3000) {
+                    sleep = 3000;
                 }
                 Thread.sleep(sleep);
                 AnalysisUtil.info(String.format(Locale.getDefault(), "retry sleep... %dms", sleep));

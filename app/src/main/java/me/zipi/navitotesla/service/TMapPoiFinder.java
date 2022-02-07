@@ -36,7 +36,7 @@ public class TMapPoiFinder implements PoiFinder {
                                 .build();
                         return chain.proceed(request);
                     })
-                    .addInterceptor(new HttpRetryInterceptor(5))
+                    .addInterceptor(new HttpRetryInterceptor(10))
                     .build())
 
             .build().create(TMapApi.class);
