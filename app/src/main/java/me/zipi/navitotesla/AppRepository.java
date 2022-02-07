@@ -50,7 +50,7 @@ public class AppRepository {
                                     .build();
                             return chain.proceed(request);
                         })
-                        .addInterceptor(new HttpRetryInterceptor(10))
+                        .addInterceptor(new HttpRetryInterceptor(20))
                         .build())
                 .build().create(TeslaApi.class);
         teslaAuthApi = new Retrofit.Builder()
@@ -67,7 +67,7 @@ public class AppRepository {
                                     .build();
                             return chain.proceed(request);
                         })
-                        .addInterceptor(new HttpRetryInterceptor(10))
+                        .addInterceptor(new HttpRetryInterceptor(20))
                         .build())
                 .build().create(TeslaAuthApi.class);
 
