@@ -11,10 +11,11 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import org.apache.commons.lang3.StringUtils;
 
 import me.zipi.navitotesla.AppExecutors;
+import me.zipi.navitotesla.background.ShareWorker;
+import me.zipi.navitotesla.background.VersionCheckWorker;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.service.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
-import me.zipi.navitotesla.util.AppUpdaterUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 
 public class NotificationListener extends NotificationListenerService {
@@ -71,9 +72,9 @@ public class NotificationListener extends NotificationListenerService {
                     " title: " + title +
                     " text : " + text +
                     " subText: " + subText);
-            AppExecutors.execute(() -> naviToTeslaService.share(sbn.getPackageName(), title, text));
+            ShareWorker.startShare(getApplicationContext(), sbn.getPackageName(), title, text);
             AppExecutors.execute(RemoteConfigUtil::initialize);
-            AppExecutors.execute(() -> AppUpdaterUtil.notification(this));
+            VersionCheckWorker.startVersionCheck(getApplicationContext());
             Bundle param = new Bundle();
             param.putString("package", sbn.getPackageName());
             AnalysisUtil.logEvent("notification_received", param);

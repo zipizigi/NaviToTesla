@@ -20,7 +20,7 @@ import me.zipi.navitotesla.util.PreferencesUtil;
 
 public class TokenWorker extends Worker {
 
-    private static String workName = "refreshTokenWorker";
+    private static final String workName = "refreshTokenWorker";
 
     public TokenWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -32,7 +32,7 @@ public class TokenWorker extends Worker {
             return;
         }
         AnalysisUtil.log("Add background refresh token");
-        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(TokenWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(TokenWorker.class, 350, TimeUnit.MINUTES)
                 .setConstraints(new Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build())
