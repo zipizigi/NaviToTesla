@@ -20,8 +20,9 @@ public class VersionCheckWorker extends Worker {
         super(context, workerParams);
     }
 
+
     public static void startVersionCheck(@NonNull Context context) {
-        AnalysisUtil.log("start version check worker");
+        AnalysisUtil.log("Register version check worker");
         WorkRequest workRequest = new OneTimeWorkRequest.Builder(VersionCheckWorker.class)
                 .setConstraints(new Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -33,6 +34,7 @@ public class VersionCheckWorker extends Worker {
     @NonNull
     @Override
     public ListenableWorker.Result doWork() {
+        AnalysisUtil.log("Start version check worker");
         AppUpdaterUtil.notification(getApplicationContext());
         return Result.success();
     }
