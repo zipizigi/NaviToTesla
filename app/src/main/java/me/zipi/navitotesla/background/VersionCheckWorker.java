@@ -2,6 +2,8 @@ package me.zipi.navitotesla.background;
 
 import android.content.Context;
 
+import java.util.concurrent.TimeUnit;
+
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
 import androidx.work.ListenableWorker;
@@ -27,6 +29,7 @@ public class VersionCheckWorker extends Worker {
                 .setConstraints(new Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build())
+                .setInitialDelay(1, TimeUnit.MINUTES)
                 .build();
         WorkManager.getInstance(context).enqueue(workRequest);
     }

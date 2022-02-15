@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import me.zipi.navitotesla.AppRepository;
+import me.zipi.navitotesla.BuildConfig;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
@@ -43,7 +44,7 @@ public class NaviToTeslaService {
         appRepository = AppRepository.getInstance(this.context, AppDatabase.getInstance(this.context));
     }
 
-    private boolean isAddress(String text) {
+    public boolean isAddress(String text) {
         return pattern.matcher(text).find();
     }
 
@@ -126,6 +127,15 @@ public class NaviToTeslaService {
                 return;
             }
             Long id = loadVehicleId();
+            if (BuildConfig.DEBUG) {
+                makeToast("[DEBUG] 목적지 전송 Skip\n" + address);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignore) {
+
+                }
+                return;
+            }
             Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> response = appRepository.getTeslaApi().share(id, new ShareRequest(address)).execute();
             TeslaApiResponse.ObjectType<TeslaApiResponse.Result> result = null;
             if (response.isSuccessful()) {
