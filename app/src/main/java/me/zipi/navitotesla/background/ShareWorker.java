@@ -8,8 +8,6 @@ import android.content.Context;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.util.UUID;
-
 import androidx.annotation.NonNull;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 import androidx.core.app.NotificationCompat;
@@ -25,14 +23,20 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.service.NaviToTeslaService;
+import me.zipi.navitotesla.service.PoiFinder;
+import me.zipi.navitotesla.service.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
 
 public class ShareWorker extends Worker {
+    private final NaviToTeslaService naviToTeslaService;
+    private final String channelId = "location_share_channel";
+
     public ShareWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
+        naviToTeslaService = new NaviToTeslaService(context);
     }
 
-    public static void startShare(@NonNull Context context, String packageName, String notificationTitle, String notificationText) {
+    public static void startShare(@NonNull Context context, @NonNull String packageName, String notificationTitle, String notificationText) {
         AnalysisUtil.log("Register share worker");
         WorkRequest workRequest = new OneTimeWorkRequest.Builder(ShareWorker.class)
                 .setInputData(new Data.Builder()
@@ -51,8 +55,7 @@ public class ShareWorker extends Worker {
     @NonNull
     @Override
     public ListenableFuture<ForegroundInfo> getForegroundInfoAsync() {
-        Notification notification = createNotification(getApplicationContext(), getId(), "목적지 전송중...");
-        return CallbackToFutureAdapter.getFuture(f -> f.set(new ForegroundInfo(1, notification)));
+        return CallbackToFutureAdapter.getFuture(f -> f.set(new ForegroundInfo(1, createNotification())));
     }
 
     @NonNull
@@ -64,29 +67,67 @@ public class ShareWorker extends Worker {
         String notificationTitle = inputData.getString("notificationTitle");
         String notificationText = inputData.getString("notificationText");
 
-        new NaviToTeslaService(getApplicationContext()).share(packageName, notificationTitle, notificationText);
+        naviToTeslaService.share(packageName, notificationTitle, notificationText);
         return Result.success();
     }
 
 
-    private Notification createNotification(Context context, UUID workRequestId, String notificationTitle) {
+    private void createNotificationChannel() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
+            return;
+        }
+        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(
-                    "location_share_channel", "Share notification",
-                    NotificationManager.IMPORTANCE_HIGH);
-            notificationManager.createNotificationChannel(mChannel);
+        NotificationChannel channel = null;
+        try {
+            channel = notificationManager.getNotificationChannel(channelId);
+        } catch (Exception ignore) {
         }
 
+        if (channel != null) {
+            return;
+        }
+
+        // create channel
+        AnalysisUtil.log("create notification channel - " + channelId);
+
+        NotificationChannel mChannel = new NotificationChannel(channelId, "Share notification", NotificationManager.IMPORTANCE_LOW);
+        mChannel.setSound(null, null);
+        mChannel.setShowBadge(false);
+        mChannel.setDescription("차량에 위치를 공유할 때 알림이 나타납니다.");
+        mChannel.setVibrationPattern(new long[]{0L});
+        notificationManager.createNotificationChannel(mChannel);
+
+    }
+
+    private Notification createNotification() {
+        Context context = getApplicationContext();
+
+        String packageName = getInputData().getString("packageName");
+        String notificationText = getInputData().getString("notificationText");
+
+        createNotificationChannel();
+
+
+        String poiName = "";
+        String address = "";
+        if (packageName != null) {
+            PoiFinder poiFinder = PoiFinderFactory.getPoiFinder(packageName);
+            address = poiFinder.parseDestination(notificationText);
+            if (!naviToTeslaService.isAddress(address)) {
+                poiName = address;
+            }
+        }
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, context.getPackageManager().getLaunchIntentForPackage(context.getPackageName()), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        return new NotificationCompat.Builder(context, "location_share_channel")
+        return new NotificationCompat.Builder(context, channelId)
                 .setContentIntent(contentIntent)
-                .setContentTitle(notificationTitle)
-                .setTicker(notificationTitle)
+                .setContentText("목적지 전송중... " + address)
+                .setTicker("목적지 전송중... " + poiName)
                 .setSmallIcon(R.drawable.ic_baseline_share_24)
                 .setAutoCancel(true)
+                .setVibrate(new long[]{0L})
+                .setSound(null)
                 .build();
     }
 }

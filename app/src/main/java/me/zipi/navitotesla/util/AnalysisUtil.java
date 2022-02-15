@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnalysisUtil {
-    private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     private static final FirebaseCrashlytics firebaseCrashlytics = FirebaseCrashlytics.getInstance();
     private static FirebaseAnalytics firebaseAnalytics;
 
