@@ -35,6 +35,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.BuildConfig;
+import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.background.TokenWorker;
 import me.zipi.navitotesla.databinding.FragmentHomeBinding;
 import me.zipi.navitotesla.model.Token;
@@ -130,12 +131,12 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
             }
             new AlertDialog.Builder(getActivity())
                     .setCancelable(true)
-                    .setTitle("로그파일보기")
-                    .setMessage(String.format("로그파일(%s%s)를 확인하시겠습니까?", size, type))
-                    .setPositiveButton("열기", (dialog, which) -> openLogFile())
-                    .setNegativeButton("닫기", (dialog, which) -> {
+                    .setTitle(getString(R.string.viewLogFile))
+                    .setMessage(getString(R.string.guideViewLogFile, size, type))
+                    .setPositiveButton(getString(R.string.open), (dialog, which) -> openLogFile())
+                    .setNegativeButton(getString(R.string.close), (dialog, which) -> {
                     })
-                    .setNeutralButton("삭제", (dialog, which) -> AppExecutors.execute(AnalysisUtil::deleteLogFile))
+                    .setNeutralButton(getString(R.string.delete), (dialog, which) -> AppExecutors.execute(AnalysisUtil::deleteLogFile))
                     .show();
             return true;
         }
@@ -166,10 +167,10 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
             Set<String> sets = NotificationManagerCompat.getEnabledListenerPackages(getContext());
             if (!sets.contains(getContext().getPackageName())) {
                 new AlertDialog.Builder(getContext())
-                        .setTitle("권한 요청")
-                        .setMessage("Navi To Tesla를 이용하려면 알림 접근 권한이 필요합니다.\nNavi To Telsa에 권한을 허용해주세요.")
+                        .setTitle(getString(R.string.grantPermission))
+                        .setMessage(getString(R.string.guideGrantPermission))
                         // .setIcon(R.drawable.ic_launcher_background)
-                        .setPositiveButton("확인", (dialog, which) ->
+                        .setPositiveButton(getString(R.string.confirm), (dialog, which) ->
                                 startActivity(new Intent(
                                         "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
                         )
@@ -270,7 +271,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         }
 
         binding.btnSave.setEnabled(false);
-        binding.btnSave.setText("확인중");
+        binding.btnSave.setText(getString(R.string.checking));
         if (getActivity() != null) {
             View focusView = getActivity().getCurrentFocus();
             if (focusView != null) {
@@ -307,7 +308,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
                     context.runOnUiThread(() -> {
                         if (binding != null) {
                             binding.btnSave.setEnabled(true);
-                            binding.btnSave.setText("저장");
+                            binding.btnSave.setText(context.getString(R.string.save));
                         }
                     });
                 }
@@ -377,7 +378,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         StringBuilder sb = new StringBuilder();
         sb.append(homeViewModel.getAppVersion().getValue());
         if (homeViewModel.getIsUpdateAvailable().getValue() != null && homeViewModel.getIsUpdateAvailable().getValue()) {
-            sb.append("\n").append("(업데이트가능)");
+            sb.append("\n").append("(").append(getString(R.string.updateAvailable)).append(")");
             binding.txtVersion.setTextColor(Color.RED);
         }
         binding.txtVersion.setText(sb.toString());
@@ -397,16 +398,16 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         } catch (ActivityNotFoundException e) {
             new AlertDialog.Builder(getActivity())
                     .setCancelable(true)
-                    .setTitle("앱 설치 필요")
-                    .setMessage("로그 파일을 열 수 있는 앱이 없습니다.\n스토어에서 찾아 설치하시겠습니까?")
-                    .setPositiveButton("설치", (dialog, which) -> {
+                    .setTitle(getString(R.string.requireLogViewApp))
+                    .setMessage(getString(R.string.guideRequireLogViewApp))
+                    .setPositiveButton(getString(R.string.install), (dialog, which) -> {
                         try {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=log viewer")));
                         } catch (ActivityNotFoundException anfe) {
                             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/search?q=log viewer")));
                         }
                     })
-                    .setNegativeButton("닫기", (dialog, which) -> {
+                    .setNegativeButton(getString(R.string.close), (dialog, which) -> {
                     })
                     .show();
 

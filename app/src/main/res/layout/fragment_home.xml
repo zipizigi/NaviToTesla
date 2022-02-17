@@ -20,7 +20,7 @@
             android:layout_marginEnd="12dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="24dp"
-            android:text="저장"
+            android:text="@string/save"
             app:icon="@drawable/ic_baseline_save_24"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnPaste"
@@ -34,7 +34,7 @@
             android:layout_marginEnd="12dp"
             android:layout_marginStart="6dp"
             android:layout_marginTop="36dp"
-            android:text="주소 캐시 삭제"
+            android:text="@string/clearAddressCache"
             app:icon="@drawable/ic_baseline_clear_24"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnTokenClear"
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="24dp"
-            android:text="붙여넣기"
+            android:text="@string/paste"
             app:icon="@drawable/ic_baseline_content_paste_24"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtRefreshToken" />
@@ -61,7 +61,7 @@
             android:layout_marginStart="6dp"
             android:layout_marginTop="36dp"
 
-            android:text="토큰 삭제"
+            android:text="@string/clearToken"
             app:icon="@drawable/ic_baseline_clear_24"
             app:layout_constraintEnd_toStartOf="@+id/btnPoiCacheClear"
             app:layout_constraintStart_toStartOf="parent"
@@ -75,7 +75,7 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="14dp"
             android:ems="10"
-            android:hint="Refresh Token"
+            android:hint="@string/refreshToken"
             android:inputType="textMultiLine"
             android:maxLines="5"
             android:minHeight="48dp"
@@ -110,7 +110,7 @@
             android:layout_marginTop="24dp"
             android:clickable="false"
             android:enabled="true"
-            android:text="Vehicle"
+            android:text="@string/vehicle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtAccessToken" />
 
@@ -137,7 +137,7 @@
             android:layout_marginTop="24dp"
             android:clickable="false"
             android:enabled="true"
-            android:text="Access Token"
+            android:text="@string/accessToken"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnSave" />
 
@@ -149,7 +149,7 @@
             android:layout_marginTop="26dp"
             android:clickable="false"
             android:enabled="true"
-            android:text="Refresh Token"
+            android:text="@string/refreshToken"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -158,7 +158,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="TextView"
+            android:text="@string/textVersion"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

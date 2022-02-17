@@ -52,7 +52,7 @@ public class KakaoPoiFinder implements PoiFinder {
         Response<KakaoMap.Response<KakaoMap.Place>> response = kakaoMapApi.search(poiName).execute();
         if (!response.isSuccessful() || response.body() == null) {
             Log.w(this.getClass().getName(), "Kakao api error: " + response.errorBody());
-            AnalysisUtil.log("Kakao api error: " + response.errorBody().string());
+            AnalysisUtil.log("Kakao api error: " + (response.errorBody() == null ? "" : response.errorBody().string()));
         }
 
 

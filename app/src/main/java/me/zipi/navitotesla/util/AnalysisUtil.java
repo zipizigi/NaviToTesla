@@ -24,7 +24,6 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AnalysisUtil {
-    private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
     private static final FirebaseCrashlytics firebaseCrashlytics = FirebaseCrashlytics.getInstance();
     private static FirebaseAnalytics firebaseAnalytics;
 
@@ -61,7 +60,7 @@ public class AnalysisUtil {
 
         try (PrintWriter writer = new PrintWriter(new StringWriter())) {
             e.printStackTrace(writer);
-            appendLog("WARN", e.toString() + System.lineSeparator() + writer.toString());
+            appendLog("WARN", e + System.lineSeparator() + writer);
         }
     }
 
@@ -80,7 +79,7 @@ public class AnalysisUtil {
 
     private static void appendLog(String logLevel, String message) {
         Log.i(AnalysisUtil.class.getName(), message);
-        String dateTime = dateFormatter.format(Calendar.getInstance().getTime());
+        String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Calendar.getInstance().getTime());
         String text = String.format("%s %s %s", dateTime, logLevel, message);
 
         File document = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
@@ -89,7 +88,7 @@ public class AnalysisUtil {
             return;
         }
 
-        File file = new File(document.toString() + "/NaviToTesla.log");
+        File file = new File(document + "/NaviToTesla.log");
 
         try (BufferedWriter buf = new BufferedWriter(new FileWriter(file, true))) {
             buf.append(text);
@@ -113,6 +112,7 @@ public class AnalysisUtil {
         File document = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
         File file = new File(document.toString() + "/NaviToTesla.log");
         if (file.exists()) {
+            //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
     }

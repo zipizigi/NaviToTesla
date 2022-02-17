@@ -61,6 +61,7 @@ public class PreferencesMigrationUtil {
             }
 
             editor.apply();
+            //noinspection ResultOfMethodCallIgnored
             file.delete();
         } catch (Exception e) {
             Log.w(PreferencesMigrationUtil.class.getName(), "error migration", e);

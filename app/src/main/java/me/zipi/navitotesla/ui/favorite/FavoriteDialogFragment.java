@@ -39,6 +39,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
     private FavoriteDialogViewModel favoriteDialogViewModel;
     @Nullable
     private FavoriteDialogFragmentBinding binding;
+
     public FavoriteDialogFragment() {
         super();
     }
@@ -114,7 +115,7 @@ public class FavoriteDialogFragment extends DialogFragment implements
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (binding == null) {
+        if (binding == null || favoriteDialogViewModel.getPoiList().getValue() == null) {
             return;
         }
         Poi poi = favoriteDialogViewModel.getPoiList().getValue().get(position);

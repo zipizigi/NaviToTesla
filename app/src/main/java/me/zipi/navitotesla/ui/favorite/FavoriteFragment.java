@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import me.zipi.navitotesla.AppExecutors;
+import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.databinding.FragmentFavoriteBinding;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
@@ -106,34 +107,37 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
     }
 
     private void addFavoriteLocation(int position) {
+        if (favoriteViewModel.getRecentPoiAddress().getValue() == null) {
+            return;
+        }
         String poi = favoriteViewModel.getRecentPoiAddress().getValue().get(position).getPoi();
         addFavorite(poi);
     }
 
     private void removeFavoriteLocation(int position) {
-        if (getActivity() == null) {
+        if (getActivity() == null || getContext() == null) {
             return;
         }
         new AlertDialog.Builder(getActivity())
                 .setCancelable(true)
-                .setTitle("즐겨찾기 삭제")
-                .setMessage("해당 즐겨찾기를 삭제하시겠습니까?")
-                .setPositiveButton("삭제", (dialog, which) -> removeFavorite(position))
-                .setNegativeButton("취소", (dialog, which) -> {
+                .setTitle(getString(R.string.removeFavorite))
+                .setMessage(getString(R.string.confirmRemoveFavorite))
+                .setPositiveButton(getString(R.string.delete), (dialog, which) -> removeFavorite(position))
+                .setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
                 })
                 .show();
     }
 
     private void shareLocation(int position) {
-        if (getActivity() == null) {
+        if (getActivity() == null || favoriteViewModel.getRegisteredPoiAddress().getValue() == null) {
             return;
         }
         PoiAddressEntity poi = favoriteViewModel.getRegisteredPoiAddress().getValue().get(position);
         new AlertDialog.Builder(getActivity())
                 .setCancelable(true)
-                .setTitle("목적지 전송")
-                .setMessage("목적지를 전송하시겠습니까?\n - " + poi.getAddress())
-                .setPositiveButton("전송", (dialog, which) -> {
+                .setTitle(getString(R.string.sendDestination))
+                .setMessage(getString(R.string.confirmSendDestination) +" \n - " + poi.getAddress())
+                .setPositiveButton(getString(R.string.send), (dialog, which) -> {
 
                     AppExecutors.execute(() -> {
                         if (getActivity() == null) {
@@ -150,7 +154,7 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
                     });
                     //
                 })
-                .setNegativeButton("취소", (dialog, which) -> {
+                .setNegativeButton(getString(R.string.cancel), (dialog, which) -> {
                 })
                 .show();
     }
@@ -159,7 +163,7 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
     private void removeFavorite(int position) {
 
         AppExecutors.execute(() -> {
-            if (appDatabase == null) {
+            if (appDatabase == null || favoriteViewModel.getRegisteredPoiAddress().getValue() == null) {
                 return;
             }
             PoiAddressEntity poi = favoriteViewModel.getRegisteredPoiAddress().getValue().get(position);
@@ -183,15 +187,15 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (binding == null || getActivity() == null) {
+        if (binding == null || getActivity() == null || getContext() == null) {
             return;
         }
         if (v.getId() == binding.btnFavoriteHelp.getId()) {
             new AlertDialog.Builder(getActivity())
-                    .setTitle("안내")
-                    .setMessage("집, 회사와 같은 즐겨찾는 목적지와 중복된 목적지의 실제 주소를 입력하여 사용할 수 있습니다.")
+                    .setTitle(getString(R.string.guide))
+                    .setMessage(getString(R.string.guideFavorite))
                     .setCancelable(true)
-                    .setPositiveButton("확인", (dialog, which) -> {
+                    .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
                     })
                     .create().show();
         } else if (v.getId() == binding.btnFavoriteAdd.getId()) {
