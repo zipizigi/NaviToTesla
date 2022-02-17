@@ -13,7 +13,7 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        getRepository();
+        AppRepository.getInstance(this, getDatabase());
 
         RemoteConfigUtil.initialize();
         AnalysisUtil.initialize(this);
@@ -28,7 +28,5 @@ public class Application extends android.app.Application {
         return AppDatabase.getInstance(this);
     }
 
-    public AppRepository getRepository() {
-        return AppRepository.getInstance(this, getDatabase());
-    }
+
 }

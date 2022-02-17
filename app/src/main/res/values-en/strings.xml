@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Navi to Tesla</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
@@ -13,7 +12,6 @@
     <string name="destination">Destination</string>
     <string name="roadAddress">Road</string>
     <string name="lotNumberAddress">Lot number</string>
-    <string name="gps" translatable="false">GPS</string>
     <string name="address">Address</string>
     <string name="searchResult">Search Result</string>
     <string name="favorite">Favorite</string>
@@ -21,9 +19,7 @@
     <string name="clearAddressCache">Clear address cache</string>
     <string name="paste">Paste</string>
     <string name="clearToken">Clear token</string>
-    <string name="refreshToken" translatable="false">Refresh Token</string>
     <string name="vehicle">Vehicle</string>
-    <string name="accessToken" translatable="false">Access Token</string>
     <string name="textVersion">version</string>
     <string name="favoriteName">Favorite name</string>
     <string name="sendDestinationFail">Failed to send destination</string>

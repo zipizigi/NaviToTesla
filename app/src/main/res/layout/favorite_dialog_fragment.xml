@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="검색"
+            android:text="@string/search"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtDest" />
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:layout_marginTop="8dp"
-            android:text="저장"
+            android:text="@string/save"
             android:textColor="@color/design_default_color_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtAddress" />
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:layout_marginTop="8dp"
-            android:text="취소"
+            android:text="@string/cancel"
             android:textColor="@color/design_default_color_primary"
             app:layout_constraintEnd_toStartOf="@+id/btnFavoriteSave"
             app:layout_constraintTop_toBottomOf="@+id/txtAddress" />
@@ -52,7 +52,7 @@
             android:layout_marginEnd="12dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
-            android:hint="주소 또는 좌표"
+            android:hint="@string/addressOrCord"
             android:inputType="text"
             android:minHeight="48dp"
             android:textSize="14sp"
@@ -68,7 +68,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginTop="8dp"
             android:ems="10"
-            android:hint="목적지"
+            android:hint="@string/destination"
             android:inputType="text"
             android:minHeight="48dp"
             android:textSize="14sp"
@@ -93,19 +93,19 @@
                 android:id="@+id/radioRoadAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="도로명" />
+                android:text="@string/roadAddress" />
 
             <RadioButton
                 android:id="@+id/radioAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="지번" />
+                android:text="@string/lotNumberAddress" />
 
             <RadioButton
                 android:id="@+id/radioGps"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="GPS" />
+                android:text="@string/gps" />
 
         </RadioGroup>
 
@@ -129,7 +129,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="20dp"
-            android:text="주소"
+            android:text="@string/address"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/radioGroup" />
 
@@ -139,7 +139,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="20dp"
-            android:text="목적지"
+            android:text="@string/destination"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -149,7 +149,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="24dp"
-            android:text="검색결과"
+            android:text="@string/searchResult"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnDestSearch" />
 

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import me.zipi.navitotesla.AppRepository;
 import me.zipi.navitotesla.BuildConfig;
+import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.exception.DuplicatePoiException;
@@ -37,7 +38,7 @@ public class NaviToTeslaService {
 
     private final Context context;
     private final Pattern pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|세종시\\s[가-힣\\d]+[읍면동로])");
-    AppRepository appRepository;
+    private final AppRepository appRepository;
 
     public NaviToTeslaService(Context context) {
         this.context = context.getApplicationContext();
@@ -97,20 +98,21 @@ public class NaviToTeslaService {
             appRepository.clearExpiredPoi();
         } catch (DuplicatePoiException e) {
             AnalysisUtil.logEvent("duplicated_address", eventParam);
-            makeToast("목적지 전송 실패\n목적지 중복");
+            AnalysisUtil.log("duplicate poi name: " + e.getPoiName());
+            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName));
         } catch (NotSupportedNaviException e) {
             AnalysisUtil.logEvent("unsupported_navi", eventParam);
             AnalysisUtil.recordException(e);
-            makeToast("목적지 전송 실패\n미지원 내비");
+            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.unsupportedNavi));
         } catch (IgnorePoiException e) {
             AnalysisUtil.logEvent("ignore_address", eventParam);
         } catch (ForbiddenException e) {
-            makeToast("목적지 전송 실패\n인증 실패");
+            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.authFail));
             AnalysisUtil.logEvent("error_share", eventParam);
             AnalysisUtil.recordException(e);
         } catch (Exception e) {
             Log.e(NaviToTeslaService.class.getName(), "thread inside error", e);
-            makeToast("목적지 전송 실패\n내부 또는 API 오류");
+            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.apiError));
             AnalysisUtil.logEvent("error_share", eventParam);
             AnalysisUtil.recordException(e);
             AnalysisUtil.sendUnsentReports();
@@ -121,7 +123,7 @@ public class NaviToTeslaService {
     public void share(String address) throws IOException, ForbiddenException {
         PreferencesUtil.put(context, "lastAddress", address);
         if (address.length() > 0) {
-            makeToast("목적지 전송 요청\n" + address);
+            makeToast(context.getString(R.string.requestSend) + "\n" + address);
 
             if (refreshToken() == null) {
                 return;
@@ -142,11 +144,12 @@ public class NaviToTeslaService {
                 result = response.body();
             }
             if (result != null && result.getError() == null && result.getResponse() != null && result.getResponse().getResult()) {
-                makeToast("목적지 전송 성공\n" + address);
+                makeToast(context.getString(R.string.sendDestinationSuccess) + "\n" + address);
+
                 AnalysisUtil.log("send_success");
             } else {
                 Log.w(NaviToTeslaService.class.getName(), response.toString());
-                makeToast("목적지 전송 실패" + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
+                makeToast(context.getString(R.string.sendDestinationFail) + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
 
                 AnalysisUtil.log("send_fail");
                 AnalysisUtil.setCustomKey("address", address);
@@ -226,7 +229,7 @@ public class NaviToTeslaService {
         if (refreshToken == null) {
             Token token = PreferencesUtil.loadToken(context);
             if (token == null) {
-                makeToast("Token 정보가 없습니다.");
+                makeToast(context.getString(R.string.notExistsToken));
                 return null;
             } else if (!token.isExpire()) {
                 return token;
@@ -248,7 +251,7 @@ public class NaviToTeslaService {
             ResponseCloser.closeAll(newToken);
         } catch (Exception e) {
             Log.w(this.getClass().getName(), "refresh token fail", e);
-            makeToast("Token 갱신에 실패하였습니다.");
+            makeToast(context.getString(R.string.refreshTokenError));
             AnalysisUtil.recordException(e);
         }
         if (token == null) {
@@ -264,7 +267,7 @@ public class NaviToTeslaService {
             token = PreferencesUtil.loadToken(context);
         }
         if (token == null || token.getRefreshToken() == null) {
-            makeToast("Token 설정이 필요합니다.");
+            makeToast(context.getString(R.string.requireToken));
             return new ArrayList<>();
         }
         List<Vehicle> vehicles = new ArrayList<>();
@@ -274,11 +277,11 @@ public class NaviToTeslaService {
             }
             Response<TeslaApiResponse.ListType<Vehicle>> response = appRepository.getTeslaApi().vehicles().execute();
             if (response.code() == 401) {
-                makeToast("Token이 잘못되었습니다.");
+                makeToast(context.getString(R.string.invalidToken));
             } else if (response.isSuccessful() && response.body() != null) {
                 vehicles = response.body().getResponse();
             } else {
-                Log.w(this.getClass().getName(), "get vehicle error: " + response.toString());
+                Log.w(this.getClass().getName(), "get vehicle error: " + response);
             }
             ResponseCloser.closeAll(response);
 
@@ -290,7 +293,7 @@ public class NaviToTeslaService {
             vehicles = new ArrayList<>();
         }
         if (vehicles.size() == 0) {
-            makeToast("등록된 차량이 없습니다.");
+            makeToast(context.getString(R.string.noVehicle));
         }
         return vehicles;
     }

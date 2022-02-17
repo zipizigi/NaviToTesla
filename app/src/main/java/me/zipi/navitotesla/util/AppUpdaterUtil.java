@@ -101,16 +101,16 @@ public class AppUpdaterUtil {
                     final String releaseDescription = release == null ? "" : release.getTagName() + "\n" + release.getBody();
                     activity.runOnUiThread(() -> new AlertDialog.Builder(activity)
                             .setCancelable(true)
-                            .setTitle("업데이트가 있습니다.")
+                            .setTitle(activity.getString(R.string.existsUpdate))
                             .setMessage(releaseDescription)
-                            .setPositiveButton("업데이트", (dialog, which) -> startUpdate(activity, apkUrl))
-                            .setNeutralButton("7일동안무시", (dialog, which) -> new AlertDialog.Builder(activity)
-                                    .setTitle("안내")
-                                    .setMessage("업데이트를 무시한 후 다시 업데이트 안내를 받고 싶다면 '주소 캐시 삭제' 버튼을 눌러주세요.")
+                            .setPositiveButton(activity.getString(R.string.update), (dialog, which) -> startUpdate(activity, apkUrl))
+                            .setNeutralButton(activity.getString(R.string.ignoreUpdate), (dialog, which) -> new AlertDialog.Builder(activity)
+                                    .setTitle(activity.getString(R.string.guide))
+                                    .setMessage(activity.getString(R.string.guideIgnoreUpdate))
                                     .setCancelable(false)
-                                    .setPositiveButton("확인", (d, w) -> doNotShow(activity))
+                                    .setPositiveButton(activity.getString(R.string.confirm), (d, w) -> doNotShow(activity))
                                     .show())
-                            .setNegativeButton("닫기", (dialog, which) -> {
+                            .setNegativeButton(activity.getString(R.string.close), (dialog, which) -> {
                             })
                             .show());
 
@@ -200,9 +200,9 @@ public class AppUpdaterUtil {
                 && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         if (!granted) {
             activity.runOnUiThread(() -> new AlertDialog.Builder(activity)
-                    .setTitle("권한 요청")
-                    .setMessage("Navi To Tesla를 이용하려면 저장소 접근 권한이 필요합니다.\nNavi To Telsa에 권한을 허용해주세요.")
-                    .setPositiveButton("확인", (dialog, which) ->
+                    .setTitle(activity.getString(R.string.grantPermission))
+                    .setMessage(activity.getString(R.string.guideGrantStoragePermission))
+                    .setPositiveButton(activity.getString(R.string.confirm), (dialog, which) ->
                             activity.requestPermissions(new String[]
                                             {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                                     2)
@@ -231,8 +231,8 @@ public class AppUpdaterUtil {
 
             Notification notification = new NotificationCompat.Builder(context, "update_notification_channel")
                     .setContentIntent(contentIntent)
-                    .setContentTitle("업데이트 가능")
-                    .setContentText("Navi To Tesla 업데이트가 가능합니다")
+                    .setContentTitle(context.getString(R.string.updateAvailable))
+                    .setContentText(context.getString(R.string.guideUpdateAvailable))
                     .setSmallIcon(R.drawable.ic_baseline_system_update_24)
                     .setOnlyAlertOnce(true)
                     .setAutoCancel(true)

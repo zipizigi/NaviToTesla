@@ -122,8 +122,8 @@ public class ShareWorker extends Worker {
 
         return new NotificationCompat.Builder(context, channelId)
                 .setContentIntent(contentIntent)
-                .setContentText("목적지 전송중... " + address)
-                .setTicker("목적지 전송중... " + poiName)
+                .setContentText(context.getString(R.string.sendingDestination) + "\n" + address)
+                .setTicker(context.getString(R.string.sendingDestination) + "\n" + poiName)
                 .setSmallIcon(R.drawable.ic_baseline_share_24)
                 .setAutoCancel(true)
                 .setVibrate(new long[]{0L})

@@ -20,7 +20,7 @@ public class HttpRetryInterceptor implements Interceptor {
 
         Response response = null;
         int retry = 0;
-        boolean isSuccess = false;
+        boolean isSuccess;
         while (true) {
             try {
                 if (response != null) {

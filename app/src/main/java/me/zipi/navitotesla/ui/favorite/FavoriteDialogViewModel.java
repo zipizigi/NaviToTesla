@@ -11,8 +11,8 @@ import me.zipi.navitotesla.model.Poi;
 public class FavoriteDialogViewModel extends ViewModel {
 
     @Getter
-    private MutableLiveData<List<Poi>> poiList = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Poi>> poiList = new MutableLiveData<>(new ArrayList<>());
 
     @Getter
-    private MutableLiveData<Poi> selectedPoi = new MutableLiveData<>();
+    private final MutableLiveData<Poi> selectedPoi = new MutableLiveData<>();
 }

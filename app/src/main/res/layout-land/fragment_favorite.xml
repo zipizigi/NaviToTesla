@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:weightSum="100"
-    tools:context=".ui.favorite.FavoriteFragment">
+    tools:context=".ui.favorite.FavoriteFragment"
+    android:baselineAligned="false">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
@@ -19,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="8dp"
-            android:text="즐겨찾기"
+            android:text="@string/favorite"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -75,7 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="12dp"
             android:layout_marginTop="8dp"
-            android:text="최근 목적지"
+            android:text="@string/recentDestination"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"

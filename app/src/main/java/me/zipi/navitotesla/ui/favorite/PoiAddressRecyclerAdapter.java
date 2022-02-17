@@ -18,7 +18,7 @@ import me.zipi.navitotesla.db.PoiAddressEntity;
 public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRecyclerAdapter.ViewHolder> {
 
     List<PoiAddressEntity> items;
-    OnFavoriteButtonClicked listener;
+    final OnFavoriteButtonClicked listener;
 
     public PoiAddressRecyclerAdapter(OnFavoriteButtonClicked listener) {
         this.listener = listener;
@@ -54,12 +54,12 @@ public class PoiAddressRecyclerAdapter extends RecyclerView.Adapter<PoiAddressRe
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView poiView;
-        TextView addressView;
-        Button button;
-        Button shareButton;
+        final TextView poiView;
+        final TextView addressView;
+        final Button button;
+        final Button shareButton;
         boolean isRegistered;
-        private WeakReference<OnFavoriteButtonClicked> listenerRef;
+        private final WeakReference<OnFavoriteButtonClicked> listenerRef;
 
         public ViewHolder(@NonNull View itemView, OnFavoriteButtonClicked listener) {
             super(itemView);

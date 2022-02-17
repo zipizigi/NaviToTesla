@@ -12,6 +12,7 @@ import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 import me.zipi.navitotesla.model.Token;
 
+@SuppressWarnings("UnusedReturnValue")
 public class PreferencesUtil {
     private final static String preferencesFileName = "settings";
 
