@@ -94,12 +94,13 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         super.onResume();
 
         permissionGrantedCheck();
+
         AppExecutors.execute(this::updateVersion);
         AppExecutors.execute(this::updateToken);
         AppExecutors.execute(this::updateLatestVersion);
-        AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
-
-
+        if (permissionAlertDialog == null || !permissionAlertDialog.isShowing()) {
+            AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
+        }
     }
 
     @Override
@@ -162,17 +163,22 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         }
     }
 
+    AlertDialog permissionAlertDialog = null;
+
     private void permissionGrantedCheck() {
-        if (getContext() != null) {
+        if (getContext() != null && (permissionAlertDialog == null || !permissionAlertDialog.isShowing())) {
             Set<String> sets = NotificationManagerCompat.getEnabledListenerPackages(getContext());
             if (!sets.contains(getContext().getPackageName())) {
-                new AlertDialog.Builder(getContext())
+                permissionAlertDialog = new AlertDialog.Builder(getContext())
                         .setTitle(getString(R.string.grantPermission))
                         .setMessage(getString(R.string.guideGrantPermission))
                         // .setIcon(R.drawable.ic_launcher_background)
-                        .setPositiveButton(getString(R.string.confirm), (dialog, which) ->
-                                startActivity(new Intent(
-                                        "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+                        .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                                    if (permissionAlertDialog != null) {
+                                        permissionAlertDialog = null;
+                                    }
+                                    startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                                }
                         )
                         .setCancelable(false)
                         .show();
