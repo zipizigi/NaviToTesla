@@ -56,8 +56,8 @@ jobs:
       id: sign_aab
       with:
         releaseDirectory: app/build/outputs/bundle/release
-        signingKeyBase64: ${{ secrets.KEYSTORE }}
-        alias: ${{ secrets.ALIAS }}
+        signingKeyBase64: ${{ secrets.KEYSTORE_UPLOAD }}
+        alias: ${{ secrets.ALIAS_UPLOAD }}
         keyStorePassword: ${{ secrets.KEY_PASS }}
         keyPassword: ${{ secrets.KEY_PASS }}
       env:
