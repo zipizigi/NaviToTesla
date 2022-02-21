@@ -11,6 +11,10 @@ on:
         description: 'Release description'
         required: true
         default: 'Description release' 
+      inAppUpdatePriority:
+        type: choice
+        description: In-App update priority
+        options: ['0', '1', '2', '3', '4', '5']
         
 jobs:
   build:
@@ -112,4 +116,15 @@ jobs:
       with:
         name: Signed app bundle
         path: navi-to-tesla.1.${{ github.run_number }}.aab
-        
+
+    - name: Upload to Google play
+      id: upload-release-to-play
+      uses: r0adkll/upload-google-play@v1
+      with:
+        serviceAccountJson: ${{ PLAY_SERVICE_JSON }}
+        packageName: me.zipi.navitotesla
+        releaseFile: ${{steps.sign_aab.outputs.signedReleaseFile}}
+        releaseName: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
+        track: production
+        inAppUpdatePriority: ${{ github.event.inputs.inAppUpdatePriority }}
+        mappingFile: app/build/outputs/mapping/release/mapping.txt
