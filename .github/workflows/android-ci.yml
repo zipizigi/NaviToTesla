@@ -125,6 +125,6 @@ jobs:
         packageName: me.zipi.navitotesla
         releaseFile: ${{steps.sign_aab.outputs.signedReleaseFile}}
         releaseName: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
-        track: production
+        track: internal
         inAppUpdatePriority: ${{ github.event.inputs.inAppUpdatePriority }}
         mappingFile: app/build/outputs/mapping/release/mapping.txt
