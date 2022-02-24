@@ -121,7 +121,7 @@ jobs:
       id: upload-release-to-play
       uses: r0adkll/upload-google-play@v1
       with:
-        serviceAccountJson: ${{ PLAY_SERVICE_JSON }}
+        serviceAccountJson: ${{ secrets.PLAY_SERVICE_JSON }}
         packageName: me.zipi.navitotesla
         releaseFile: ${{steps.sign_aab.outputs.signedReleaseFile}}
         releaseName: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
