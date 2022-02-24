@@ -131,6 +131,19 @@ public class AppUpdaterUtil {
 
     public static void startUpdate(Context context, String apkUrl) {
         try {
+            AnalysisUtil.log("Start update app - github");
+            if (isPlayStoreInstalled(context)) {
+                final String appPackageName = context.getPackageName();
+                try {
+                    AnalysisUtil.log("Start update app - github to play store");
+                    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                    return;
+                } catch (android.content.ActivityNotFoundException e) {
+                    AnalysisUtil.log("play store is installed, but launch error");
+                    AnalysisUtil.recordException(e);
+                }
+            }
+
             if (apkUrl.contains(".apk")) {
                 new DownloadApk(context).startDownloadingApk(apkUrl, apkUrl.split("/")[apkUrl.split("/").length - 1].replace(".apk", ""));
             } else {
@@ -241,6 +254,15 @@ public class AppUpdaterUtil {
             notificationManager.notify(0, notification);
         }
         notificationLastCheck = System.currentTimeMillis();
+    }
+
+    private static boolean isPlayStoreInstalled(Context context) {
+        try {
+            context.getPackageManager().getPackageInfo("com.android.vending", 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
 }
