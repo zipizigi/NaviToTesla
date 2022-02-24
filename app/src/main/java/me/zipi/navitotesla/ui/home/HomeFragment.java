@@ -237,7 +237,8 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         if (getActivity() != null && binding != null) {
             ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard != null && clipboard.getPrimaryClip() != null
-                    && clipboard.getPrimaryClip().getItemAt(0) != null) {
+                    && clipboard.getPrimaryClip().getItemAt(0) != null
+                    && clipboard.getPrimaryClip().getItemAt(0).getText() != null) {
                 String pasteData = clipboard.getPrimaryClip().getItemAt(0).getText().toString().trim();
                 if (pasteData.matches("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)")) {
                     binding.txtRefreshToken.setText(pasteData);
