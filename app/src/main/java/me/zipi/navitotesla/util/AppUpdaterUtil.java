@@ -204,8 +204,17 @@ public class AppUpdaterUtil {
     }
 
     public static boolean isUpdateAvailable(Context context) {
+        float latestVersionNumber = 1.0f;
+        float currentVersionNumber = 1.0f;
         String latestVersion = getLatestVersion();
-        return !latestVersion.equals("1.0") && !getCurrentVersion(context).equals(latestVersion);
+        String currentVersion = getCurrentVersion(context);
+        if (latestVersion.contains(".")) {
+            latestVersionNumber = Float.parseFloat(latestVersion.split("\\.")[0] + "." + latestVersion.split("\\.")[1]);
+        }
+        if (currentVersion.contains(".")) {
+            currentVersionNumber = Float.parseFloat(currentVersion.split("\\.")[0] + "." + currentVersion.split("\\.")[1]);
+        }
+        return !latestVersion.equals("1.0") && currentVersionNumber < latestVersionNumber;
     }
 
     private static boolean permissionCheck(Activity activity) {

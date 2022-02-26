@@ -78,26 +78,13 @@ public class ShareWorker extends Worker {
         }
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        NotificationChannel channel = null;
-        try {
-            channel = notificationManager.getNotificationChannel(channelId);
-        } catch (Exception ignore) {
-        }
-
-        if (channel != null) {
-            return;
-        }
-
         // create channel
-        AnalysisUtil.log("create notification channel - " + channelId);
-
         NotificationChannel mChannel = new NotificationChannel(channelId, "Share notification", NotificationManager.IMPORTANCE_LOW);
         mChannel.setSound(null, null);
         mChannel.setShowBadge(false);
         mChannel.setDescription("차량에 위치를 공유할 때 알림이 나타납니다.");
         mChannel.setVibrationPattern(new long[]{0L});
         notificationManager.createNotificationChannel(mChannel);
-
     }
 
     private Notification createNotification() {
