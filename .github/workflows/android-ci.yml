@@ -41,13 +41,13 @@ jobs:
         RELEASE: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
       run: |
         chmod +x gradlew
-        ./gradlew assembleRelease bundleRelease --stacktrace
+        ./gradlew assembleNostoreRelease bundlePlaystoreRelease --stacktrace
         
     - uses: r0adkll/sign-android-release@v1
       name: Sign app APK
       id: sign_apk
       with:
-        releaseDirectory: app/build/outputs/apk/release
+        releaseDirectory: app/build/outputs/apk/nostore/release
         signingKeyBase64: ${{ secrets.KEYSTORE }}
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_PASS }}
@@ -59,7 +59,7 @@ jobs:
       name: Sign app Bundle
       id: sign_aab
       with:
-        releaseDirectory: app/build/outputs/bundle/release
+        releaseDirectory: app/build/outputs/bundle/playstoreRelease
         signingKeyBase64: ${{ secrets.KEYSTORE_UPLOAD }}
         alias: ${{ secrets.ALIAS_UPLOAD }}
         keyStorePassword: ${{ secrets.KEY_PASS }}
