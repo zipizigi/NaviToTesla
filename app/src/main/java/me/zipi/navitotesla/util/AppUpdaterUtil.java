@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.dcastalia.localappupdate.DownloadApk;
@@ -24,6 +23,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.NotificationCompat;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import me.zipi.navitotesla.BuildConfig;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.api.GithubApi;
 import me.zipi.navitotesla.model.Github;
@@ -49,9 +49,6 @@ public class AppUpdaterUtil {
 
 
     public static void clearDoNotShow(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean("prefAppUpdaterShow", true).apply();
-
         PreferencesUtil.remove(context, "updateDoNotShow");
     }
 
@@ -70,6 +67,10 @@ public class AppUpdaterUtil {
     }
 
     public static void dialog(Activity activity, boolean isForce) {
+        //noinspection ConstantConditions
+        if (BuildConfig.BUILD_MODE.equals("playstore")) {
+            return;
+        }
         try {
             if (!isForce && (Math.abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow(activity))) {
                 return;
@@ -81,7 +82,9 @@ public class AppUpdaterUtil {
                 try {
                     Github.Release release = null;
 
-                    Response<List<Github.Release>> response = githubApi.getReleases("zipizigi", "NaviToTesla").execute();
+                    Response<List<Github.Release>> response =
+                            githubApi.getReleases(RemoteConfigUtil.getConfig("repoOwner"), RemoteConfigUtil.getConfig("repoName"))
+                                    .execute();
                     if (response.code() == 403) {
                         AnalysisUtil.log("github api rate limit exceed");
                     } else if (!response.isSuccessful() || response.body() == null) {
@@ -129,13 +132,13 @@ public class AppUpdaterUtil {
         }
     }
 
-    public static void startUpdate(Context context, String apkUrl) {
+    private static void startUpdate(Context context, String apkUrl) {
         try {
-            AnalysisUtil.log("Start update app - github");
+            AnalysisUtil.log("Start update app");
             if (isPlayStoreInstalled(context)) {
                 final String appPackageName = context.getPackageName();
                 try {
-                    AnalysisUtil.log("Start update app - github to play store");
+                    AnalysisUtil.log("Start update app - open play store");
                     context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
                     return;
                 } catch (android.content.ActivityNotFoundException e) {
@@ -144,10 +147,14 @@ public class AppUpdaterUtil {
                 }
             }
 
-            if (apkUrl.contains(".apk")) {
-                new DownloadApk(context).startDownloadingApk(apkUrl, apkUrl.split("/")[apkUrl.split("/").length - 1].replace(".apk", ""));
-            } else {
-                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)));
+
+            //noinspection ConstantConditions
+            if (!BuildConfig.BUILD_MODE.equals("playstore")) {
+                if (apkUrl.contains(".apk")) {
+                    new DownloadApk(context).startDownloadingApk(apkUrl, apkUrl.split("/")[apkUrl.split("/").length - 1].replace(".apk", ""));
+                } else {
+                    context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)));
+                }
             }
             clearDoNotShow(context);
         } catch (Exception e) {
@@ -159,7 +166,9 @@ public class AppUpdaterUtil {
 
     public static String getLatestVersion() {
         try {
-            HttpURLConnection con = (HttpURLConnection) (new URL("https://github.com/zipizigi/NaviToTesla/releases/latest").openConnection());
+            String latestUrl = String.format("https://github.com/%s/%s/releases/latest",
+                    RemoteConfigUtil.getConfig("repoOwner"), RemoteConfigUtil.getConfig("repoName"));
+            HttpURLConnection con = (HttpURLConnection) (new URL(latestUrl).openConnection());
             con.setInstanceFollowRedirects(false);
             con.connect();
             if (con.getResponseCode() == 302 || con.getResponseCode() == 304) {
@@ -175,7 +184,8 @@ public class AppUpdaterUtil {
     }
 
     public static String getLatestApkUrl(Github.Release release) {
-        String apkUrl = "https://github.com/zipizigi/NaviToTesla/releases/latest";
+        String apkUrl = String.format("https://github.com/%s/%s/releases/latest",
+                RemoteConfigUtil.getConfig("repoOwner"), RemoteConfigUtil.getConfig("repoName"));
         if (release == null || release.getAssets() == null || release.getAssets().size() == 0) {
             return apkUrl;
         }
@@ -209,10 +219,10 @@ public class AppUpdaterUtil {
         String latestVersion = getLatestVersion();
         String currentVersion = getCurrentVersion(context);
         if (latestVersion.contains(".")) {
-            latestVersionNumber = Float.parseFloat(latestVersion.split("\\.")[0] + "." + latestVersion.split("\\.")[1]);
+            latestVersionNumber = Float.parseFloat(latestVersion.split("[.-]")[0] + "." + latestVersion.split("[.-]")[1]);
         }
         if (currentVersion.contains(".")) {
-            currentVersionNumber = Float.parseFloat(currentVersion.split("\\.")[0] + "." + currentVersion.split("\\.")[1]);
+            currentVersionNumber = Float.parseFloat(currentVersion.split("[.-]")[0] + "." + currentVersion.split("[.-]")[1]);
         }
         return !latestVersion.equals("1.0") && currentVersionNumber < latestVersionNumber;
     }
@@ -236,6 +246,10 @@ public class AppUpdaterUtil {
     }
 
     static public void notification(Context context) {
+        //noinspection ConstantConditions
+        if (BuildConfig.BUILD_MODE.equals("playstore")) {
+            return;
+        }
         if (Math.abs(System.currentTimeMillis() - notificationLastCheck) < 5 * 60 * 1000 || isDoNotShow(context)) {
             return;
         }

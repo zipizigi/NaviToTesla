@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Navi to Tesla</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
