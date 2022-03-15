@@ -1,10 +1,12 @@
 package me.zipi.navitotesla.ui.home;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,6 +56,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     @Nullable
     private NaviToTeslaService naviToTeslaService;
 
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         if (this.getActivity() != null) {
@@ -102,6 +105,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
             AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
         }
     }
+
 
     @Override
     public void onDestroyView() {
@@ -166,27 +170,55 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     AlertDialog permissionAlertDialog = null;
 
     private void permissionGrantedCheck() {
-        if (getContext() != null && (permissionAlertDialog == null || !permissionAlertDialog.isShowing())) {
-            Set<String> sets = NotificationManagerCompat.getEnabledListenerPackages(getContext());
-            if (!sets.contains(getContext().getPackageName())) {
-                permissionAlertDialog = new AlertDialog.Builder(getContext())
-                        .setTitle(getString(R.string.grantPermission))
-                        .setMessage(getString(R.string.guideGrantPermission))
-                        // .setIcon(R.drawable.ic_launcher_background)
-                        .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
-                                    if (permissionAlertDialog != null) {
-                                        permissionAlertDialog = null;
-                                    }
-                                    startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
-                                }
-                        )
-                        .setCancelable(false)
-                        .show();
-            }
+        //todo : file write permission check
+        if (getContext() == null) {
+            return;
+        }
+        if (permissionAlertDialog != null && permissionAlertDialog.isShowing()) {
+            return;
         }
 
+        // notification listener
+        Set<String> sets = NotificationManagerCompat.getEnabledListenerPackages(getContext());
+        if (!sets.contains(getContext().getPackageName())) {
+            permissionAlertDialog = new AlertDialog.Builder(getContext())
+                    .setTitle(getString(R.string.grantPermission))
+                    .setMessage(getString(R.string.guideGrantPermission))
+                    // .setIcon(R.drawable.ic_launcher_background)
+                    .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                                if (permissionAlertDialog != null) {
+                                    permissionAlertDialog = null;
+                                }
+                                startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                            }
+                    )
+                    .setCancelable(false)
+                    .show();
+            return;
+        }
+        if (getContext() == null || getActivity() == null) {
+            return;
+        }
+        // file write permission
+        boolean granted = getContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        if (!granted) {
+            permissionAlertDialog = new AlertDialog.Builder(getContext())
+                    .setTitle(this.getString(R.string.grantPermission))
+                    .setMessage(this.getString(R.string.guideGrantStoragePermission))
+                    .setPositiveButton(this.getString(R.string.confirm), (dialog, which) -> {
+                                getActivity().requestPermissions(new String[]
+                                                {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                                        2);
+                                if (permissionAlertDialog != null) {
+                                    permissionAlertDialog = null;
+                                }
+                            }
+                    )
+                    .setCancelable(false)
+                    .show();
+        }
     }
-
 
     private void updateToken() {
         if (naviToTeslaService == null) {

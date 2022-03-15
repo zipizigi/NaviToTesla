@@ -2,7 +2,6 @@ package me.zipi.navitotesla.util;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -19,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
+import androidx.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -26,9 +26,12 @@ import lombok.NoArgsConstructor;
 public class AnalysisUtil {
     private static final FirebaseCrashlytics firebaseCrashlytics = FirebaseCrashlytics.getInstance();
     private static FirebaseAnalytics firebaseAnalytics;
+    @Nullable
+    private static String externalDir;
 
     public static void initialize(Context context) {
         firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+        externalDir = context.getExternalFilesDir(null).toString();
     }
 
     public static void logEvent(String event, Bundle param) {
@@ -73,8 +76,7 @@ public class AnalysisUtil {
     }
 
     public static String getLogFilePath() {
-        File document = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        return new File(document.toString() + "/NaviToTesla.log").toString();
+        return new File(externalDir + "/NaviToTesla.log").toString();
     }
 
     private static void appendLog(String logLevel, String message) {
@@ -82,13 +84,12 @@ public class AnalysisUtil {
         String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Calendar.getInstance().getTime());
         String text = String.format("%s %s %s", dateTime, logLevel, message);
 
-        File document = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        if (!document.exists() && !document.mkdirs()) {
+        if (externalDir != null && !new File(externalDir).exists() && !new File(externalDir).mkdirs()) {
             firebaseCrashlytics.log("create document directory fail");
             return;
         }
 
-        File file = new File(document + "/NaviToTesla.log");
+        File file = new File(externalDir + "/NaviToTesla.log");
 
         try (BufferedWriter buf = new BufferedWriter(new FileWriter(file, true))) {
             buf.append(text);
@@ -100,8 +101,7 @@ public class AnalysisUtil {
     }
 
     public static long getLogFileSize() {
-        File document = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        File file = new File(document.toString() + "/NaviToTesla.log");
+        File file = new File(externalDir + "/NaviToTesla.log");
         if (!file.exists()) {
             return 0L;
         }
@@ -109,8 +109,7 @@ public class AnalysisUtil {
     }
 
     public static void deleteLogFile() {
-        File document = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        File file = new File(document.toString() + "/NaviToTesla.log");
+        File file = new File(externalDir + "/NaviToTesla.log");
         if (file.exists()) {
             //noinspection ResultOfMethodCallIgnored
             file.delete();
