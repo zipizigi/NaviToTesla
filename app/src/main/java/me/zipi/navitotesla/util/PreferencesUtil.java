@@ -49,6 +49,28 @@ public class PreferencesUtil {
 
     }
 
+    public static boolean put(Context context, String key, Boolean value) {
+        try {
+            getSharedPreferences(context).edit().putBoolean(key, value).apply();
+            return true;
+        } catch (Exception e) {
+            Log.w(PreferencesUtil.class.getName(), "put boolean error", e);
+            AnalysisUtil.recordException(e);
+            return false;
+        }
+    }
+
+    public static boolean put(Context context, String key, Long value) {
+        try {
+            getSharedPreferences(context).edit().putLong(key, value).apply();
+            return true;
+        } catch (Exception e) {
+            Log.w(PreferencesUtil.class.getName(), "put long error", e);
+            AnalysisUtil.recordException(e);
+            return false;
+        }
+    }
+
     public static boolean put(Context context, String key, String value) {
         try {
             getSharedPreferences(context).edit().putString(key, value).apply();
@@ -74,16 +96,6 @@ public class PreferencesUtil {
         return getString(context, key, null);
     }
 
-    public static boolean put(Context context, String key, Long value) {
-        try {
-            getSharedPreferences(context).edit().putLong(key, value).apply();
-            return true;
-        } catch (Exception e) {
-            Log.w(PreferencesUtil.class.getName(), "put long error", e);
-            AnalysisUtil.recordException(e);
-            return false;
-        }
-    }
 
     public static Long getLong(Context context, String key) {
         try {

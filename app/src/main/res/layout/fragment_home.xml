@@ -12,6 +12,31 @@
         android:layout_height="wrap_content"
         android:paddingBottom="80dp">
 
+        <RadioGroup
+            android:id="@+id/radioGroupShareMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textShareMode"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/radioUsingTeslaApi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usingTeslaApi" />
+
+            <RadioButton
+                android:id="@+id/radioUsingTeslaApp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/usingTeslaApp" />
+        </RadioGroup>
+
         <Button
             android:id="@+id/btnSave"
             style="@style/Widget.MaterialComponents.Button.Icon"
@@ -73,7 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="8dp"
             android:ems="10"
             android:hint="@string/refreshToken"
             android:inputType="textMultiLine"
@@ -83,7 +108,7 @@
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/defaultLabel"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupShareMode" />
 
         <Space
             android:layout_width="wrap_content"
@@ -146,12 +171,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="48dp"
-            android:layout_marginTop="26dp"
+            android:layout_marginTop="18dp"
             android:clickable="false"
             android:enabled="true"
             android:text="@string/refreshToken"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupShareMode" />
 
         <TextView
             android:id="@+id/txtVersion"
@@ -163,5 +188,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="1.0" />
+
+        <TextView
+            android:id="@+id/textShareMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/shareMode"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

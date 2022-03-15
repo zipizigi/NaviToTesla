@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
@@ -48,7 +50,8 @@ import me.zipi.navitotesla.util.AppUpdaterUtil;
 import me.zipi.navitotesla.util.PreferencesMigrationUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 
-public class HomeFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener, View.OnLongClickListener {
+public class HomeFragment extends Fragment
+        implements AdapterView.OnItemSelectedListener, View.OnClickListener, View.OnLongClickListener, RadioGroup.OnCheckedChangeListener {
 
     private HomeViewModel homeViewModel;
     @Nullable
@@ -62,8 +65,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         if (this.getActivity() != null) {
             this.getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
-        homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
+        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -73,8 +75,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         homeViewModel.getAppVersion().observe(getViewLifecycleOwner(), (v) -> renderVersion());
         homeViewModel.getIsUpdateAvailable().observe(getViewLifecycleOwner(), (v) -> renderVersion());
         homeViewModel.getRefreshToken().observe(getViewLifecycleOwner(), this::getAccessTokenAndVehicles);
+        homeViewModel.getIsInstalledTeslaApp().observe(getViewLifecycleOwner(), this::onChangeTeslaAppInstalled);
+        homeViewModel.getShareMode().observe(getViewLifecycleOwner(), this::onChangedTeslaShareMode);
 
         binding.txtAccessToken.setMovementMethod(new ScrollingMovementMethod());
+        binding.radioGroupShareMode.setOnCheckedChangeListener(this);
         KeyboardVisibilityEvent.setEventListener(
                 getActivity(),
                 isOpen -> {
@@ -89,6 +94,7 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         binding.txtVersion.setOnClickListener(this);
         binding.txtVersion.setOnLongClickListener(this);
 
+
         return root;
     }
 
@@ -101,9 +107,12 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         AppExecutors.execute(this::updateVersion);
         AppExecutors.execute(this::updateToken);
         AppExecutors.execute(this::updateLatestVersion);
+        AppExecutors.execute(this::updateShareMode);
+        AppExecutors.execute(this::checkTeslaAppInstalled);
         if (permissionAlertDialog == null || !permissionAlertDialog.isShowing()) {
             AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
         }
+
     }
 
 
@@ -401,13 +410,11 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
     }
 
     private void updateVersion() {
-        AppExecutors.execute(() -> homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.getContext())));
-
+        homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.getContext()));
     }
 
     private void updateLatestVersion() {
-        AppExecutors.execute(() -> homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.getContext())));
-
+        homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.getContext()));
     }
 
     private void renderVersion() {
@@ -453,4 +460,103 @@ public class HomeFragment extends Fragment implements AdapterView.OnItemSelected
         }
     }
 
+
+    private void checkTeslaAppInstalled() {
+        if (getContext() == null) {
+            return;
+        }
+        if (BuildConfig.DEBUG) {
+            homeViewModel.getIsInstalledTeslaApp().postValue(true);
+            return;
+        }
+        try {
+            getContext().getPackageManager().getPackageInfo("com.teslamotors.tesla", 0);
+            homeViewModel.getIsInstalledTeslaApp().postValue(true);
+        } catch (PackageManager.NameNotFoundException e) {
+            homeViewModel.getIsInstalledTeslaApp().postValue(false);
+        }
+    }
+
+    // share mode
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        String shareMode;
+        if (binding == null) {
+            return;
+        }
+        if (binding.radioUsingTeslaApp.getId() == group.getCheckedRadioButtonId()) {
+            shareMode = "app";
+        } else {
+            shareMode = "api";
+        }
+        if (homeViewModel.getShareMode().getValue() == null && homeViewModel.getShareMode().getValue().equals(shareMode)) {
+            return;
+        }
+        homeViewModel.getShareMode().postValue(shareMode);
+        PreferencesUtil.put(getContext(), "shareMode", shareMode);
+    }
+
+    private void updateShareMode() {
+        if (binding == null) {
+            return;
+        }
+        String shareMode = PreferencesUtil.getString(getContext(), "shareMode", "api");
+        homeViewModel.getShareMode().postValue(shareMode);
+        AnalysisUtil.log("update share mode change to " + shareMode);
+        if (shareMode.equals("api")) {
+            binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId());
+        } else {
+            binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.getId());
+            overlayPermissionGrantedCheck();
+        }
+    }
+
+    private void onChangeTeslaAppInstalled(Boolean isInstalled) {
+        if (binding == null) {
+            return;
+        }
+        binding.radioUsingTeslaApp.setEnabled(isInstalled);
+    }
+
+    private void onChangedTeslaShareMode(String mode) {
+        if (binding == null) {
+            return;
+        }
+        boolean enableApiElement = !mode.equals("app");
+        binding.txtRefreshToken.setEnabled(enableApiElement);
+        binding.btnPaste.setEnabled(enableApiElement);
+        binding.btnSave.setEnabled(enableApiElement);
+        binding.vehicleSelector.setEnabled(enableApiElement);
+        binding.btnTokenClear.setEnabled(enableApiElement);
+
+        AnalysisUtil.log("share mode change to " + mode);
+        if (mode.equals("app")) {
+            overlayPermissionGrantedCheck();
+        }
+    }
+
+    private void overlayPermissionGrantedCheck() {
+        if (getContext() != null && getActivity() != null && !Settings.canDrawOverlays(getContext())
+                && (permissionAlertDialog == null || !permissionAlertDialog.isShowing())
+        ) {
+            getActivity().runOnUiThread(() -> {
+                permissionAlertDialog = new AlertDialog.Builder(getContext())
+                        .setTitle(getString(R.string.grantPermission))
+                        .setMessage(getString(R.string.guideGrantOverlayPermission))
+                        .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                                    if (permissionAlertDialog.isShowing()) {
+                                        permissionAlertDialog.dismiss();
+                                    }
+                                    if (permissionAlertDialog != null) {
+                                        permissionAlertDialog = null;
+                                    }
+                                    startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                            Uri.parse("package:" + getContext().getPackageName())));
+                                }
+                        )
+                        .setCancelable(false)
+                        .show();
+            });
+        }
+    }
 }

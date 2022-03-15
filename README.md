@@ -1,7 +1,7 @@
 # Navi to Tesla  
-스마트폰 내비로 길안내를 시작할 경우 목적지를 Tesla 차량으로 자동으로 전송해준다. 
-따로 목적지를 공유하거나 복사할 필요가 없다.
-안드로이드만 지원한다.
+스마트폰 내비로 길안내를 시작할 경우 목적지를 Tesla 차량으로 자동으로 전송해준다.  
+따로 목적지를 공유하거나 복사할 필요가 없다.  
+안드로이드만 지원한다.  
 
 ## 설치방법
 github release(https://github.com/zipizigi/NaviToTesla/releases/latest)에서 가장 최신 apk를 받아 설치한다.  
@@ -9,24 +9,41 @@ github release(https://github.com/zipizigi/NaviToTesla/releases/latest)에서 �
 
 
 ## 사용방법  
-### 1. Refresh Token 구하기  
+첫 실행시 나타나는 권한 요청 창에서 Navi to Tesla를 활성시켜준다.  
+내비게이션 앱의 알림을 분석하여 테슬라로 전송하기 위하여 꼭 필요하다. 
+
+### Tesla App을 이용하는 방법
+안드로이드 기기에 Tesla 앱이 설치되어 있고, 로그인 되어 있을 때 사용한다.  
+앱 실행시 상단의 Tesla App을 선택해주면 되며, 별도의 설정이 필요하지 않는다.   
+목적지를 자동으로 전송해준다.  
+
+### Tesla Api를 이용하는 방법 
+Tesla App이 없는 경우에 사용한다.  
+별도의 태블릿 PC를 이용하거나 안드로이드 계기반을 이용할 때 사용한다.  
+
+#### 1. Refresh Token 구하기  
 android : https://play.google.com/store/apps/details?id=net.leveugle.teslatokens  
 iOS : https://apps.apple.com/kr/app/auth-app-for-tesla/id1552058613  
   
-Tesla 계정 로그인 후 생성되는 Refresh Token을 이용한다.
+Tesla 계정 로그인 후 생성되는 Refresh Token을 복사한다.  
 
 > Refresh Token은 외부로 노출되지 않도록 주의한다.
 > TMap To Tesla 앱에서는 Refresh Token을 Tesla API 인증 목적으로만 사용하며, 외부로 전송하지 않는다.
 
-### 2. 앱 설정
-앱 첫 실행시 나타나는 창에서 Navi to Tesla을 활성화시켜준다.  
-앱이 내비의 알림을 읽어 테슬라로 전송하기 위해서 꼭 필요하다.  
+#### 2. 앱 설정
 
-이후 1번에서 구한 Refresh Token을 넣고, 차량을 선택한다. (계정 내 다수일 경우)
+이후 1번에서 구한 Refresh Token을 넣고, 차량을 선택한다. (계정 내 다수일 경우)  
 
 
 ### 3. 사용방법
-스마트폰 내비에서 평소처럼 사용하면, 목적지를 Tesla 차량에 전송한다.
+스마트폰 내비에서 평소처럼 사용하면, 목적지를 Tesla 차량에 전송한다.  
+
+#### 즐겨찾기 기능 
+내비 앱으로 목적지로 안내할 경우, 목적지 검색 결과가 여러곳이거나, 또는 이름을 바꿔서 저장한 경우 Navi to Telsa가 실제 주소를 알 수 없다.  
+이경우 즐겨찾기 기능을 통해서 실제 목적지를 입력해준다.   
+
+예로들어, 특정 장소를 '집'이라고 저장해둔 경우, '집'에 해당하는 실제 주소를 입력하여 미리 저장해둔다. 
+Navi to Telsa가 정확히 '집'이라는 목적지 안내가 필요한 경우 미리 저장되어 있는 주소를 전송한다.  
 
 ## 동작 원리
 안드로이드 TMap의 경우 경로 안내가 시작되면 아래와 같은 형태로 알림창이 나타난다.
@@ -41,7 +58,7 @@ Tesla 계정 로그인 후 생성되는 Refresh Token을 이용한다.
 목적지 : 목적지 
 ```
 
-Navi to Tesla 앱은 알림을 읽고, 목적지를 Tesla로 전송한다.  
+Navi to Tesla 앱은 알림을 분석하고, 목적지를 Tesla로 전송한다.  
 목적지가 주소일 경우 즉시 전송하고, 주소가 아닌 건물, 장소 명(서울역, 서울역 2번출구 )일 경우 TMap/Kakao API를 이용하여 주소를 찾아서 전송한다.
 간혹 주소가 없는 경우 경도/위도를 전송한다. (도로명 주소 -> 지번 주소 -> 경도/위도 순서)
 

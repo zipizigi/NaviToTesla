@@ -14,7 +14,7 @@ import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.background.ShareWorker;
 import me.zipi.navitotesla.background.VersionCheckWorker;
 import me.zipi.navitotesla.service.NaviToTeslaService;
-import me.zipi.navitotesla.service.PoiFinderFactory;
+import me.zipi.navitotesla.service.poifinder.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.RemoteConfigUtil;
 
