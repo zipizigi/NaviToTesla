@@ -23,8 +23,8 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.service.NaviToTeslaService;
-import me.zipi.navitotesla.service.PoiFinder;
-import me.zipi.navitotesla.service.PoiFinderFactory;
+import me.zipi.navitotesla.service.poifinder.PoiFinder;
+import me.zipi.navitotesla.service.poifinder.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
 
 public class ShareWorker extends Worker {

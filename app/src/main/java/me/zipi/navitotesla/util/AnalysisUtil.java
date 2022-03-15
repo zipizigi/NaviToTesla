@@ -2,7 +2,10 @@ package me.zipi.navitotesla.util;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -114,5 +117,17 @@ public class AnalysisUtil {
             //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
+    }
+
+    public static void makeToast(Context context, String text) {
+        try {
+            Log.i(AnalysisUtil.class.getName(), text);
+            AnalysisUtil.log(text);
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
+        } catch (Exception e) {
+            AnalysisUtil.recordException(e);
+            e.printStackTrace();
+        }
+
     }
 }

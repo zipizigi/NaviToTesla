@@ -25,7 +25,7 @@ import me.zipi.navitotesla.databinding.FavoriteDialogFragmentBinding;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
 import me.zipi.navitotesla.model.Poi;
-import me.zipi.navitotesla.service.PoiFinderFactory;
+import me.zipi.navitotesla.service.poifinder.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
 
 public class FavoriteDialogFragment extends DialogFragment implements

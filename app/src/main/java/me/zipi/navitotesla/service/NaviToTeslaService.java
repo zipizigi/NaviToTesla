@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import me.zipi.navitotesla.AppRepository;
-import me.zipi.navitotesla.BuildConfig;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.db.AppDatabase;
 import me.zipi.navitotesla.db.PoiAddressEntity;
@@ -23,11 +22,14 @@ import me.zipi.navitotesla.exception.DuplicatePoiException;
 import me.zipi.navitotesla.exception.ForbiddenException;
 import me.zipi.navitotesla.exception.IgnorePoiException;
 import me.zipi.navitotesla.exception.NotSupportedNaviException;
-import me.zipi.navitotesla.model.ShareRequest;
 import me.zipi.navitotesla.model.TeslaApiResponse;
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
+import me.zipi.navitotesla.service.poifinder.PoiFinder;
+import me.zipi.navitotesla.service.poifinder.PoiFinderFactory;
+import me.zipi.navitotesla.service.share.TeslaShareByApi;
+import me.zipi.navitotesla.service.share.TeslaShareByApp;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 import me.zipi.navitotesla.util.ResponseCloser;
@@ -48,6 +50,7 @@ public class NaviToTeslaService {
     public boolean isAddress(String text) {
         return pattern.matcher(text).find();
     }
+
 
     private void makeToast(String text) {
         try {
@@ -125,58 +128,16 @@ public class NaviToTeslaService {
         if (address.length() > 0) {
             makeToast(context.getString(R.string.requestSend) + "\n" + address);
 
-            if (refreshToken() == null) {
-                return;
-            }
-            Long id = loadVehicleId();
-            if (BuildConfig.DEBUG) {
-                makeToast("[DEBUG] 목적지 전송 Skip\n" + address);
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignore) {
-
+            String shareMode = PreferencesUtil.getString(context, "shareMode", "api");
+            if (shareMode.equals("api")) {
+                if (refreshToken() == null) {
+                    return;
                 }
-                return;
-            }
-            Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> response = appRepository.getTeslaApi().share(id, new ShareRequest(address)).execute();
-            TeslaApiResponse.ObjectType<TeslaApiResponse.Result> result = null;
-            if (response.isSuccessful()) {
-                result = response.body();
-            }
-            if (result != null && result.getError() == null && result.getResponse() != null && result.getResponse().getResult()) {
-                makeToast(context.getString(R.string.sendDestinationSuccess) + "\n" + address);
-
-                AnalysisUtil.log("send_success");
+                Long id = loadVehicleId();
+                new TeslaShareByApi(context, id).share(address);
             } else {
-                Log.w(NaviToTeslaService.class.getName(), response.toString());
-                makeToast(context.getString(R.string.sendDestinationFail) + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
-
-                AnalysisUtil.log("send_fail");
-                AnalysisUtil.setCustomKey("address", address);
-                if (result != null && result.getErrorDescription() != null) {
-                    AnalysisUtil.log("errorDescription: " + result.getErrorDescription());
-                }
-                if (!response.isSuccessful()) {
-                    AnalysisUtil.log("Http response code: " + response.code());
-                    if (response.errorBody() != null) {
-                        AnalysisUtil.log("Http error response: " + response.errorBody().string());
-                    }
-                }
-
-                RuntimeException exception;
-                if (response.code() == 401) {
-                    String errorString = "";
-                    if (response.errorBody() != null) {
-                        errorString = response.errorBody().string();
-                    }
-                    exception = new ForbiddenException(401, errorString);
-                } else {
-                    exception = new RuntimeException("Send address fail");
-                }
-                AnalysisUtil.recordException(exception);
-                throw exception;
+                new TeslaShareByApp(context).share(address);
             }
-            ResponseCloser.closeAll(response);
         }
     }
 
@@ -211,6 +172,7 @@ public class NaviToTeslaService {
         }
         return address;
     }
+
 
     public Token getToken() {
         return PreferencesUtil.loadToken(context);

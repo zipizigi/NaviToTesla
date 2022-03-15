@@ -23,6 +23,10 @@ public class HomeViewModel extends ViewModel {
     @Getter
     final MutableLiveData<String> refreshToken = new MutableLiveData<>("");
 
+    @Getter
+    final MutableLiveData<String> shareMode = new MutableLiveData<>("api"); // api or app
+    @Getter
+    final MutableLiveData<Boolean> isInstalledTeslaApp = new MutableLiveData<>(false);
 
     public void clearObserve(LifecycleOwner owner) {
         vehicleListLiveData.removeObservers(owner);
@@ -30,5 +34,7 @@ public class HomeViewModel extends ViewModel {
         appVersion.removeObservers(owner);
         isUpdateAvailable.removeObservers(owner);
         refreshToken.removeObservers(owner);
+        shareMode.removeObservers(owner);
+        isInstalledTeslaApp.removeObservers(owner);
     }
 }

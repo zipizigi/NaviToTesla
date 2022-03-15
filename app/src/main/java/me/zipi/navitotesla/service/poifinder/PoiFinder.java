@@ -1,4 +1,4 @@
-package me.zipi.navitotesla.service;
+package me.zipi.navitotesla.service.poifinder;
 
 import java.io.IOException;
 import java.util.List;

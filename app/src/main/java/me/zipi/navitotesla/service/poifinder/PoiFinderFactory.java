@@ -1,4 +1,4 @@
-package me.zipi.navitotesla.service;
+package me.zipi.navitotesla.service.poifinder;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
