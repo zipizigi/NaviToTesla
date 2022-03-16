@@ -34,7 +34,11 @@ public class AnalysisUtil {
 
     public static void initialize(Context context) {
         firebaseAnalytics = FirebaseAnalytics.getInstance(context);
-        externalDir = context.getExternalFilesDir(null).toString();
+        if (context.getExternalFilesDir(null) != null) {
+            externalDir = context.getExternalFilesDir(null).toString();
+        } else {
+            externalDir = null;
+        }
     }
 
     public static void logEvent(String event, Bundle param) {
@@ -59,6 +63,10 @@ public class AnalysisUtil {
     public static void error(String message) {
         AnalysisUtil.firebaseCrashlytics.log(message);
         appendLog("ERROR", message);
+    }
+
+    public static boolean isWritableLog() {
+        return externalDir != null;
     }
 
     public static void recordException(Throwable e) {
@@ -92,6 +100,9 @@ public class AnalysisUtil {
             return;
         }
 
+        if (!isWritableLog()) {
+            return;
+        }
         File file = new File(externalDir + "/NaviToTesla.log");
 
         try (BufferedWriter buf = new BufferedWriter(new FileWriter(file, true))) {

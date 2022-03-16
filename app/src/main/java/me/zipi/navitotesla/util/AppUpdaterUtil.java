@@ -94,8 +94,11 @@ public class AppUpdaterUtil {
                             AnalysisUtil.recordException(new RuntimeException());
                         }
                     } else {
-                        if (response.body().size() > 0) {
-                            release = response.body().get(0);
+                        for (Github.Release r : response.body()) {
+                            if (!r.getIsPreRelease()) {
+                                release = r;
+                                break;
+                            }
                         }
                     }
 

@@ -21,6 +21,8 @@ public class Github {
         String name;
         List<Asset> assets;
         String body;
+        @SerializedName("prerelease")
+        Boolean isPreRelease;
     }
 
     @NoArgsConstructor

@@ -9,7 +9,7 @@ import retrofit2.http.Path;
 
 public interface GithubApi {
 
-    @GET("/repos/{owner}/{repo}/releases?per_page=1")
+    @GET("/repos/{owner}/{repo}/releases?per_page=10")
     Call<List<Github.Release>> getReleases(@Path("owner") String owner, @Path("repo") String repo);
 
 }
