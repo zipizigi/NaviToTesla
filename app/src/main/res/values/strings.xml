@@ -65,5 +65,5 @@
     <string name="shareMode">Share mode</string>
     <string name="usingTeslaApp">Tesla app</string>
     <string name="usingTeslaApi">Tesla api</string>
-    <string name="guideGrantOverlayPermission">Share your destination via the Tesla app installed on your Android device.\\nIf you are logged in, you can use it without token. Additional privileges are required to use this feature.</string>
+    <string name="guideGrantOverlayPermission">Share your destination via the Tesla app installed on your Android device.\nIf you are logged in, you can use it without token.\nAdditional privileges are required to use this feature.</string>
 </resources>

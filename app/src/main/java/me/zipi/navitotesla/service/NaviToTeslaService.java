@@ -128,8 +128,9 @@ public class NaviToTeslaService {
         if (address.length() > 0) {
             makeToast(context.getString(R.string.requestSend) + "\n" + address);
 
-            String shareMode = PreferencesUtil.getString(context, "shareMode", "api");
-            if (shareMode.equals("api")) {
+            String shareMode = PreferencesUtil.getString(context, "shareMode", "app");
+
+            if (shareMode.equals("api") && PreferencesUtil.loadToken(context) != null) {
                 if (refreshToken() == null) {
                     return;
                 }

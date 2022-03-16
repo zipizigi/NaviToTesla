@@ -108,7 +108,7 @@ public class HomeFragment extends Fragment
         AppExecutors.execute(this::updateToken);
         AppExecutors.execute(this::updateLatestVersion);
         AppExecutors.execute(this::updateShareMode);
-        AppExecutors.execute(this::checkTeslaAppInstalled);
+        AppExecutors.execute(() -> homeViewModel.getIsInstalledTeslaApp().postValue(isTeslaAppInstalled()));
         if (permissionAlertDialog == null || !permissionAlertDialog.isShowing()) {
             AppExecutors.execute(() -> AppUpdaterUtil.dialog(getActivity()));
         }
@@ -133,7 +133,7 @@ public class HomeFragment extends Fragment
 
     @Override
     public boolean onLongClick(View view) {
-        if (binding == null || getActivity() == null) {
+        if (binding == null || getActivity() == null || !AnalysisUtil.isWritableLog()) {
             return false;
         }
         if (view.getId() == binding.txtVersion.getId()) {
@@ -179,7 +179,6 @@ public class HomeFragment extends Fragment
     AlertDialog permissionAlertDialog = null;
 
     private void permissionGrantedCheck() {
-        //todo : file write permission check
         if (getContext() == null) {
             return;
         }
@@ -460,20 +459,18 @@ public class HomeFragment extends Fragment
         }
     }
 
-
-    private void checkTeslaAppInstalled() {
+    private boolean isTeslaAppInstalled() {
         if (getContext() == null) {
-            return;
+            return false;
         }
         if (BuildConfig.DEBUG) {
-            homeViewModel.getIsInstalledTeslaApp().postValue(true);
-            return;
+            return true;
         }
         try {
             getContext().getPackageManager().getPackageInfo("com.teslamotors.tesla", 0);
-            homeViewModel.getIsInstalledTeslaApp().postValue(true);
+            return true;
         } catch (PackageManager.NameNotFoundException e) {
-            homeViewModel.getIsInstalledTeslaApp().postValue(false);
+            return false;
         }
     }
 
@@ -489,6 +486,7 @@ public class HomeFragment extends Fragment
         } else {
             shareMode = "api";
         }
+        Log.i("-----", shareMode);
         if (homeViewModel.getShareMode().getValue() == null && homeViewModel.getShareMode().getValue().equals(shareMode)) {
             return;
         }
@@ -500,9 +498,10 @@ public class HomeFragment extends Fragment
         if (binding == null) {
             return;
         }
-        String shareMode = PreferencesUtil.getString(getContext(), "shareMode", "api");
+        boolean isAppInstalled = isTeslaAppInstalled();
+        String shareMode = PreferencesUtil.getString(getContext(), "shareMode", isAppInstalled ? "app" : "api");
         homeViewModel.getShareMode().postValue(shareMode);
-        AnalysisUtil.log("update share mode change to " + shareMode);
+
         if (shareMode.equals("api")) {
             binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId());
         } else {
@@ -529,33 +528,39 @@ public class HomeFragment extends Fragment
         binding.vehicleSelector.setEnabled(enableApiElement);
         binding.btnTokenClear.setEnabled(enableApiElement);
 
-        AnalysisUtil.log("share mode change to " + mode);
         if (mode.equals("app")) {
             overlayPermissionGrantedCheck();
         }
     }
 
-    private void overlayPermissionGrantedCheck() {
-        if (getContext() != null && getActivity() != null && !Settings.canDrawOverlays(getContext())
-                && (permissionAlertDialog == null || !permissionAlertDialog.isShowing())
-        ) {
+    private synchronized void overlayPermissionGrantedCheck() {
+        if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                permissionAlertDialog = new AlertDialog.Builder(getContext())
-                        .setTitle(getString(R.string.grantPermission))
-                        .setMessage(getString(R.string.guideGrantOverlayPermission))
-                        .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
-                                    if (permissionAlertDialog.isShowing()) {
-                                        permissionAlertDialog.dismiss();
+                if (getContext() != null && !Settings.canDrawOverlays(getContext())
+                        && (permissionAlertDialog == null || !permissionAlertDialog.isShowing())
+                ) {
+                    permissionAlertDialog = new AlertDialog.Builder(getContext())
+                            .setTitle(getString(R.string.grantPermission))
+                            .setMessage(getString(R.string.guideGrantOverlayPermission))
+                            .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                                        if (permissionAlertDialog != null) {
+                                            permissionAlertDialog = null;
+                                        }
+                                        startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                                Uri.parse("package:" + getContext().getPackageName())));
                                     }
-                                    if (permissionAlertDialog != null) {
-                                        permissionAlertDialog = null;
-                                    }
-                                    startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                            Uri.parse("package:" + getContext().getPackageName())));
+                            )
+                            .setNegativeButton(getString(R.string.deny), (dialog, which) -> {
+                                if (permissionAlertDialog != null) {
+                                    permissionAlertDialog = null;
                                 }
-                        )
-                        .setCancelable(false)
-                        .show();
+                                if (binding != null) {
+                                    binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId());
+                                }
+                            })
+                            .setCancelable(false)
+                            .show();
+                }
             });
         }
     }
