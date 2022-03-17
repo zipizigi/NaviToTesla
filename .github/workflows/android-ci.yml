@@ -107,7 +107,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: Signed app apk
-        path: navi-to-tesla.1_nostore.${{ github.run_number }}.apk
+        path: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
 
     - name: Upload Release Asset
       id: upload-release-asset-apk-playstore
@@ -122,7 +122,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: Signed app apk
-        path: navi-to-tesla.1_playstore.${{ github.run_number }}.apk
+        path: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
         
     - name: Upload Release Asset
       id: upload-release-asset-aab
