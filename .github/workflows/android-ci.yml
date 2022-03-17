@@ -78,7 +78,7 @@ jobs:
     - name: copy release file
       run: |
         cp ${{steps.sign_apk.outputs.signedReleaseFile}} navi-to-tesla_nostore.1.${{ github.run_number }}.apk
-        cp ${{steps.sign_playstore.apk.outputs.signedReleaseFile}} navi-to-tesla_playstore.1.${{ github.run_number }}.apk
+        cp ${{steps.sign_playstore_apk.outputs.signedReleaseFile}} navi-to-tesla_playstore.1.${{ github.run_number }}.apk
         cp ${{steps.sign_aab.outputs.signedReleaseFile}} navi-to-tesla.1.${{ github.run_number }}.aab
         
         
