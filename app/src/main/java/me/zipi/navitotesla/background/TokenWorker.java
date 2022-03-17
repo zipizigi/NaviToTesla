@@ -28,7 +28,7 @@ public class TokenWorker extends Worker {
 
     public static void startBackgroundWork(@NonNull Context context) {
         if (PreferencesUtil.loadToken(context) == null) {
-            AnalysisUtil.log("Token is empty. add work ignore");
+            AnalysisUtil.log("Token is empty. add token refresh work ignore");
             return;
         }
         AnalysisUtil.log("Add background refresh token");
