@@ -14,6 +14,21 @@ import okhttp3.Response;
 public class HttpRetryInterceptor implements Interceptor {
     private final int maxRetryCount;
 
+    private void sleep(int retry, Chain chain) {
+        try {
+            long sleep = retry * retry * 100L / 2;
+            sleep = sleep > 3000 ? 3000 : sleep;
+
+            if (sleep > 0) {
+                Thread.sleep(sleep);
+                AnalysisUtil.log("retry http request #" + retry + " - " + chain.request().url().uri().getPath());
+                AnalysisUtil.info(String.format(Locale.getDefault(), "retry sleep... %dms", sleep));
+            }
+        } catch (Exception ignore) {
+
+        }
+    }
+
     @NonNull
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
@@ -22,13 +37,14 @@ public class HttpRetryInterceptor implements Interceptor {
         int retry = 0;
         boolean isSuccess;
         while (true) {
+            sleep(retry, chain);
+
             try {
-                if (response != null) {
-                    response.close();
-                    AnalysisUtil.log("retry http request #" + retry + " - " + chain.request().url().uri().getPath());
-                }
                 response = chain.proceed(chain.request());
                 isSuccess = response.isSuccessful();
+                if (!isSuccess) {
+                    AnalysisUtil.log("http status code : " + response.code());
+                }
             } catch (UnknownHostException | SocketTimeoutException e) {
                 AnalysisUtil.info("Network unstable...#" + retry + " " + e.getClass().getName());
                 isSuccess = false;
@@ -37,21 +53,18 @@ public class HttpRetryInterceptor implements Interceptor {
             if (isSuccess) {
                 break;
             } else if (retry >= maxRetryCount) {
-                response = chain.proceed(chain.request());
+                if (response == null) {
+                    response = chain.proceed(chain.request());
+                }
                 break;
             } else {
+                if (response != null) {
+                    response.close();
+                    response = null;
+                }
                 retry++;
             }
-            try {
-                long sleep = retry * retry * 100L / 2;
-                if (sleep > 3000) {
-                    sleep = 3000;
-                }
-                Thread.sleep(sleep);
-                AnalysisUtil.info(String.format(Locale.getDefault(), "retry sleep... %dms", sleep));
-            } catch (Exception ignore) {
 
-            }
         }
 
         return response;
