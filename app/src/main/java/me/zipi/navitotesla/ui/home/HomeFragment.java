@@ -486,7 +486,7 @@ public class HomeFragment extends Fragment
         } else {
             shareMode = "api";
         }
-        Log.i("-----", shareMode);
+
         if (homeViewModel.getShareMode().getValue() == null && homeViewModel.getShareMode().getValue().equals(shareMode)) {
             return;
         }
@@ -495,7 +495,7 @@ public class HomeFragment extends Fragment
     }
 
     private void updateShareMode() {
-        if (binding == null) {
+        if (binding == null || getActivity() == null) {
             return;
         }
         boolean isAppInstalled = isTeslaAppInstalled();
@@ -503,9 +503,9 @@ public class HomeFragment extends Fragment
         homeViewModel.getShareMode().postValue(shareMode);
 
         if (shareMode.equals("api")) {
-            binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId());
+            getActivity().runOnUiThread(() -> binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId()));
         } else {
-            binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.getId());
+            getActivity().runOnUiThread(() -> binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.getId()));
             overlayPermissionGrantedCheck();
         }
     }
