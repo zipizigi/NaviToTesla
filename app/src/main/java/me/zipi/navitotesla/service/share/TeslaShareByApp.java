@@ -21,6 +21,7 @@ public class TeslaShareByApp extends TeslaShareBase implements TeslaShare {
         intent.setComponent(new ComponentName("com.teslamotors.tesla", "com.tesla.share.ShareActivity"));
         intent.setType("text/plain");
         intent.putExtra("android.intent.extra.TEXT", address);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 }
