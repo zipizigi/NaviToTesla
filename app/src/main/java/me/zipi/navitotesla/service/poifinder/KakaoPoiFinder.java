@@ -75,6 +75,6 @@ public class KakaoPoiFinder implements PoiFinder {
 
     @Override
     public boolean isIgnore(String notificationTitle, String notificationText) {
-        return notificationTitle.equals("안전운전 주행 중");
+        return !notificationTitle.equals("길안내 주행 중");
     }
 }
