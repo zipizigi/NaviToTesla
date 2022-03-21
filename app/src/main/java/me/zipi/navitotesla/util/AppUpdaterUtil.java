@@ -67,10 +67,6 @@ public class AppUpdaterUtil {
     }
 
     public static void dialog(Activity activity, boolean isForce) {
-        //noinspection ConstantConditions
-        if (BuildConfig.BUILD_MODE.equals("playstore")) {
-            return;
-        }
         try {
             if (!isForce && (Math.abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow(activity))) {
                 return;
@@ -138,11 +134,14 @@ public class AppUpdaterUtil {
     private static void startUpdate(Context context, String apkUrl) {
         try {
             AnalysisUtil.log("Start update app");
-            if (isPlayStoreInstalled(context)) {
-                final String appPackageName = context.getPackageName();
+            final String appPackageName = BuildConfig.DEBUG ?
+                    context.getPackageName().replace(".debug", "") : context.getPackageName();
+            //noinspection ConstantConditions
+            if (isPlayStoreInstalled(context) && BuildConfig.BUILD_MODE.equals("playstore")) {
                 try {
                     AnalysisUtil.log("Start update app - open play store");
                     context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                    clearDoNotShow(context);
                     return;
                 } catch (android.content.ActivityNotFoundException e) {
                     AnalysisUtil.log("play store is installed, but launch error");
@@ -158,6 +157,9 @@ public class AppUpdaterUtil {
                 } else {
                     context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)));
                 }
+            } else {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName));
+                context.startActivity(intent);
             }
             clearDoNotShow(context);
         } catch (Exception e) {
