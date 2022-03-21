@@ -1,6 +1,7 @@
 package me.zipi.navitotesla.service.share;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.io.IOException;
@@ -48,6 +49,7 @@ public class TeslaShareByApi extends TeslaShareBase implements TeslaShare {
             AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationSuccess) + "\n" + address);
 
             AnalysisUtil.log("send_success");
+            AnalysisUtil.logEvent("share_by_api_success", new Bundle());
         } else {
             Log.w(NaviToTeslaService.class.getName(), response.toString());
             AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationFail) + (result != null && result.getErrorDescription() != null ? "\n" + result.getErrorDescription() : ""));
@@ -74,6 +76,7 @@ public class TeslaShareByApi extends TeslaShareBase implements TeslaShare {
             } else {
                 exception = new RuntimeException("Send address fail");
             }
+            AnalysisUtil.logEvent("share_by_api_fail", new Bundle());
             AnalysisUtil.recordException(exception);
             throw exception;
         }

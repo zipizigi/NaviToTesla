@@ -1,8 +1,10 @@
 package me.zipi.navitotesla.service.share;
 
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import me.zipi.navitotesla.util.AnalysisUtil;
@@ -22,6 +24,12 @@ public class TeslaShareByApp extends TeslaShareBase implements TeslaShare {
         intent.setType("text/plain");
         intent.putExtra("android.intent.extra.TEXT", address);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+        try {
+            context.startActivity(intent);
+            AnalysisUtil.logEvent("share_by_app_success", new Bundle());
+        } catch (ActivityNotFoundException e) {
+            AnalysisUtil.log("Tesla app is not installed");
+            AnalysisUtil.logEvent("share_by_app_fail", new Bundle());
+        }
     }
 }

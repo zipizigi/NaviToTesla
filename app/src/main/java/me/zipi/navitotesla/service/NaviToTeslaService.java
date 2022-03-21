@@ -39,7 +39,7 @@ import retrofit2.Response;
 public class NaviToTeslaService {
 
     private final Context context;
-    private final Pattern pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\s");
+    private final Pattern pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s");
     private final AppRepository appRepository;
 
     public NaviToTeslaService(Context context) {
