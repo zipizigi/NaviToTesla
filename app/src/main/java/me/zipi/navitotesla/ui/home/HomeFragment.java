@@ -470,6 +470,7 @@ public class HomeFragment extends Fragment
             getContext().getPackageManager().getPackageInfo("com.teslamotors.tesla", 0);
             return true;
         } catch (PackageManager.NameNotFoundException e) {
+            AnalysisUtil.log("package not found " + e);
             return false;
         }
     }
