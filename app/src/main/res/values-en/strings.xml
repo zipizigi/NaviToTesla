@@ -44,8 +44,8 @@
     <string name="viewLogFile">View log file</string>
     <string name="guideViewLogFile">Do you want to check the log file (%1$d%2$s)?</string>
     <string name="grantPermission">Request for permission</string>
-    <string name="guideGrantPermission">Notification access permission is required to use Navi To Tesla.\nPlease grant permission to Navi To Telsa.</string>
-    <string name="guideGrantStoragePermission">Storage access permission is required to use Navi To Tesla.\nPlease grant permission to Navi To Telsa.</string>
+    <string name="guideGrantPermission">Notification access permission is required to use Navi To Tesla.\nPlease grant permission to Navi To Tesla.</string>
+    <string name="guideGrantStoragePermission">Storage access permission is required to use Navi To Tesla.\nPlease grant permission to Navi To Tesla.</string>
     <string name="requireLogViewApp">App needs to be installed</string>
     <string name="guideRequireLogViewApp">There is no app that can open the log file.\nDo you want to find it from the store and install it?</string>
     <string name="install">Install</string>
