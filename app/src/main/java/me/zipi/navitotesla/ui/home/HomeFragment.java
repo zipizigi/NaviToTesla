@@ -47,7 +47,6 @@ import me.zipi.navitotesla.model.Vehicle;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
-import me.zipi.navitotesla.util.PreferencesMigrationUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 
 public class HomeFragment extends Fragment
@@ -127,7 +126,6 @@ public class HomeFragment extends Fragment
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        PreferencesMigrationUtil.migration(context);
         this.naviToTeslaService = new NaviToTeslaService(context);
     }
 
