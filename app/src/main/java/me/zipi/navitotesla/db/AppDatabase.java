@@ -13,8 +13,9 @@ import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 
-@Database(entities = {PoiAddressEntity.class}, version = 2,
-        autoMigrations = {@AutoMigration(from = 1, to = 2)})
+@Database(entities = {PoiAddressEntity.class, ConditionEntity.class}, version = 3,
+        autoMigrations = {@AutoMigration(from = 1, to = 2),
+                @AutoMigration(from = 2, to = 3)})
 @TypeConverters(DateConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     public static final String DATABASE_NAME = "data.sqlite";
@@ -52,6 +53,8 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     public abstract PoiAddressDao poiAddressDao();
+
+    public abstract ConditionDao conditionDao();
 
     /**
      * Check whether the database already exists and expose it via {@link #getDatabaseCreated()}

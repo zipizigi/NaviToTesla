@@ -27,8 +27,8 @@
         <Button
             android:id="@+id/btnFavoriteHelp"
             style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/ic_baseline_help_outline_24"
@@ -38,8 +38,8 @@
 
         <Button
             android:id="@+id/btnFavoriteAdd"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/ic_baseline_add_24"

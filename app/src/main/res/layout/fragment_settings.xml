@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".ui.home.HomeFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="80dp">
+
+        <TextView
+            android:id="@+id/textAppEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/appActive"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btnAppEnableHelp"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/ic_baseline_help_outline_24"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintStart_toEndOf="@+id/textAppEnable"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupAppEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnAppEnableHelp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/radioAppEnable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <RadioButton
+                android:id="@+id/radioAppDisable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+        </RadioGroup>
+
+        <RadioGroup
+            android:id="@+id/radioGroupConditionEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnConditionHelp"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable">
+
+            <RadioButton
+                android:id="@+id/radioConditionEnable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <RadioButton
+                android:id="@+id/radioConditionDisable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+        </RadioGroup>
+        <TextView
+            android:id="@+id/textCondition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/condition"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable" />
+
+        <Button
+            android:id="@+id/btnConditionHelp"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/ic_baseline_help_outline_24"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintStart_toEndOf="@+id/textCondition"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable" />
+
+        <TextView
+            android:id="@+id/txtBluetooth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="56dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/bluetooth"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupConditionEnable" />
+
+        <Button
+            android:id="@+id/btnBluetoothAdd"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/ic_baseline_add_24"
+            app:layout_constraintStart_toEndOf="@+id/txtBluetooth"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupConditionEnable"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recylerBluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtBluetooth">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

@@ -96,6 +96,19 @@ public class PreferencesUtil {
         return getString(context, key, null);
     }
 
+    public static Boolean getBoolean(Context context, String key) {
+        return getBoolean(context, key, null);
+    }
+
+    public static Boolean getBoolean(Context context, String key, Boolean defaultValue) {
+        try {
+            return getSharedPreferences(context).getBoolean(key, defaultValue);
+        } catch (Exception e) {
+            Log.w(PreferencesUtil.class.getName(), "get boolean error", e);
+            AnalysisUtil.recordException(e);
+            return defaultValue;
+        }
+    }
 
     public static Long getLong(Context context, String key) {
         try {

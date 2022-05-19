@@ -31,6 +31,7 @@ import me.zipi.navitotesla.service.poifinder.PoiFinderFactory;
 import me.zipi.navitotesla.service.share.TeslaShareByApi;
 import me.zipi.navitotesla.service.share.TeslaShareByApp;
 import me.zipi.navitotesla.util.AnalysisUtil;
+import me.zipi.navitotesla.util.EnablerUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 import me.zipi.navitotesla.util.ResponseCloser;
 import retrofit2.Response;
@@ -73,6 +74,11 @@ public class NaviToTeslaService {
 
     @AddTrace(name = "share")
     public void share(String packageName, String notificationTitle, String notificationText) {
+
+        if (!EnablerUtil.isSendingCheck(context)) {
+            AnalysisUtil.log("skip send share because condition");
+            return;
+        }
         AnalysisUtil.setCustomKey("packageName", packageName);
         AnalysisUtil.setCustomKey("notificationTitle", notificationTitle);
         AnalysisUtil.setCustomKey("notificationText", notificationText);

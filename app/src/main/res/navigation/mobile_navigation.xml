@@ -17,4 +17,9 @@
         android:label="@string/title_favorite"
         tools:layout="@layout/fragment_favorite" />
 
+    <fragment
+        android:id="@+id/navigation_setting"
+        android:name="me.zipi.navitotesla.ui.setting.SettingFragment"
+        android:label="@string/title_setting"
+        tools:layout="@layout/fragment_settings" />
 </navigation>

@@ -502,11 +502,20 @@ public class HomeFragment extends Fragment
         homeViewModel.getShareMode().postValue(shareMode);
 
         if (shareMode.equals("api")) {
-            getActivity().runOnUiThread(() -> binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId()));
+            getActivity().runOnUiThread(() -> {
+                if (binding != null) {
+                    binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.getId());
+                }
+            });
         } else {
-            getActivity().runOnUiThread(() -> binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.getId()));
+            getActivity().runOnUiThread(() -> {
+                if (binding != null) {
+                    binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.getId());
+                }
+            });
             overlayPermissionGrantedCheck();
         }
+
     }
 
     private void onChangeTeslaAppInstalled(Boolean isInstalled) {

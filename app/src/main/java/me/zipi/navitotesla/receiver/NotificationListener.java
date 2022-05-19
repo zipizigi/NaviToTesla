@@ -52,6 +52,7 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
+
         if (PoiFinderFactory.isNaviSupport(sbn.getPackageName()) && sbn.getPostTime() - lastNotificationPosted > 2500) {
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "NotificationListener");
