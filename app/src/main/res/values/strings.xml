@@ -66,4 +66,19 @@
     <string name="usingTeslaApp">Tesla app</string>
     <string name="usingTeslaApi">Tesla api</string>
     <string name="guideGrantOverlayPermission">Share your destination via the Tesla app installed on your Android device.\nIf you are logged in, you can use it without token.\nAdditional privileges are required to use this feature.</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
+    <string name="wifi" translatable="false">WiFi</string>
+    <string name="bluetooth" translatable="false">Bluetooth</string>
+    <string name="condition">Condition</string>
+    <string name="guideCondition">This is a function to prevent unnecessary destination sending due to problems such as using multiple vehicles. Send the destination to the vehicle only when the device is connected to a specific Bluetooth.</string>
+    <string name="guideAppEnable">Enable or disable the Navi to Tesla feature.</string>
+    <string name="appActive">App activation</string>
+    <string name="title_setting">Setting</string>
+    <string name="guideAddCondition">Please select one from the list of devices that have been connected to your phone.</string>
+    <string name="titleAddCondition">Add condition</string>
+    <string name="removeCondition">Remove condition</string>
+    <string name="dialogRemoveCondition">Are you sure you want to delete the condition?</string>
+    <string name="guideGrantBluetoothPermission">Bluetooth access permission required.</string>
+
 </resources>
