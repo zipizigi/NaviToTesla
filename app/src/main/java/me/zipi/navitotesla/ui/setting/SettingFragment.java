@@ -105,6 +105,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
                 if (getActivity() == null) {
                     return;
                 }
+
                 getActivity().runOnUiThread(() -> {
                     if (binding == null) {
                         return;
@@ -114,12 +115,11 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
                     binding.radioGroupConditionEnable.check(conditionEnabled
                             ? binding.radioConditionEnable.getId() : binding.radioConditionDisable.getId());
                 });
-                settingViewModel.getBluetoothConditions().postValue(EnablerUtil.listBluetoothCondition(getContext()));
-                settingViewModel.getIsAppEnabled().postValue(EnablerUtil.getAppEnabled(getContext()));
-                settingViewModel.getIsConditionEnabled().postValue(EnablerUtil.getConditionEnabled(getContext()));
             }
         });
-
+        AppExecutors.execute(()->  settingViewModel.getBluetoothConditions().postValue(EnablerUtil.listBluetoothCondition(getContext())));
+        AppExecutors.execute(()->  settingViewModel.getIsAppEnabled().postValue(EnablerUtil.getAppEnabled(getContext())));
+        AppExecutors.execute(()->  settingViewModel.getIsConditionEnabled().postValue(EnablerUtil.getConditionEnabled(getContext())));
     }
 
     @Override

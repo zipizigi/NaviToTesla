@@ -75,10 +75,12 @@
     <string name="guideAppEnable">Enable or disable the Navi to Tesla feature.</string>
     <string name="appActive">App activation</string>
     <string name="title_setting">Setting</string>
-    <string name="guideAddCondition">Please select one from the list of devices that have been connected to your phone.</string>
+    <string name="guideAddCondition" translatable="false">Please select one from the list of devices that have been connected to your phone.</string>
     <string name="titleAddCondition">Add condition</string>
     <string name="removeCondition">Remove condition</string>
     <string name="dialogRemoveCondition">Are you sure you want to delete the condition?</string>
     <string name="guideGrantBluetoothPermission">Bluetooth access permission required.</string>
+    <string name="enabledApp">Navi to Tesla is enabled</string>
+    <string name="disabledApp">Navi to Tesla is disabled</string>
 
 </resources>

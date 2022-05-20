@@ -75,4 +75,6 @@
     <string name="removeCondition">동작 조건 삭제</string>
     <string name="dialogRemoveCondition">동작 조건을 삭제하시겠습니까?</string>
     <string name="guideGrantBluetoothPermission">해당 기능을 사용하려면 블루투스 접근 권한이 필요합니다.</string>
+    <string name="enabledApp">Navi to Tesla가 활성화 되었습니다</string>
+    <string name="disabledApp">Navi to Tesla가 비활성화 되었습니다</string>
 </resources>

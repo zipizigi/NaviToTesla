@@ -55,6 +55,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".receiver.NaviToTeslaReceiver" android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="navitotesla.ENABLE"/>
+                <action android:name="navitotesla.DISABLE"/>
+            </intent-filter>
+        </receiver>
+
     </application>
     <queries>
         <package android:name="com.teslamotors.tesla"/>

@@ -99,11 +99,14 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
     private void updatePoiAddress() {
         AppExecutors.execute(() -> {
             if (appDatabase != null) {
-                favoriteViewModel.getRecentPoiAddress().postValue(appDatabase.poiAddressDao().findRecentPoiSync(25));
                 favoriteViewModel.getRegisteredPoiAddress().postValue(appDatabase.poiAddressDao().findRegisteredPoiSync());
             }
         });
-
+        AppExecutors.execute(() -> {
+            if (appDatabase != null) {
+                favoriteViewModel.getRecentPoiAddress().postValue(appDatabase.poiAddressDao().findRecentPoiSync(25));
+            }
+        });
     }
 
     private void addFavoriteLocation(int position) {
@@ -136,7 +139,7 @@ public class FavoriteFragment extends Fragment implements View.OnClickListener {
         new AlertDialog.Builder(getActivity())
                 .setCancelable(true)
                 .setTitle(getString(R.string.sendDestination))
-                .setMessage(getString(R.string.confirmSendDestination) +" \n - " + poi.getAddress())
+                .setMessage(getString(R.string.confirmSendDestination) + " \n - " + poi.getAddress())
                 .setPositiveButton(getString(R.string.send), (dialog, which) -> {
 
                     AppExecutors.execute(() -> {
