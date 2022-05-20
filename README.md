@@ -4,8 +4,15 @@
 안드로이드만 지원한다.  
 
 ## 설치방법
-github release(https://github.com/zipizigi/NaviToTesla/releases/latest)에서 가장 최신 apk를 받아 설치한다.  
-설치할 때 '출처를 알 수 없는 앱 설치'를 허용해줘야한다. 
+### Play store
+Play Store에서 Navi to Tesla를 검색하거나 아래 링크를 통해 설치할 수 있다.    
+https://play.google.com/store/apps/details?id=me.zipi.navitotesla
+
+### Without Play store
+Play Store가 없는 기기(ex, 중국 태블릿, 계기반 등)를 위해 별도 버전으로 설치가 가능하다.  
+github release(https://github.com/zipizigi/NaviToTesla/releases/latest)에서 가장 최신 apk를 받아 설치한다.   
+설치할 때 '출처를 알 수 없는 앱 설치'를 허용해줘야한다.  
+설치할 때 _nostore 버전을 설치해야 자동 업데이트가 가능하다.  
 
 
 ## 사용방법  
@@ -52,10 +59,10 @@ Navi to Tesla가 정확히 '집'이라는 목적지 안내가 필요한 경우 �
 #### 다른 앱과 연동
 특정 위치, WiFi, 블루투스 등 다양한 조건에서 목적지 전송 기능을 활성화/비활성화 할 수 있다.    
 Tasker, MacroDroid 등을 이용하여 Intent를 전송하여 앱을 활성화/비활성화 할 수 있다.  
-* package : me.zipi.navitotesla  
-* action   
-- navitotesla.ENABLE   : Navi to Telsa 활성화  
-- navitotesla.DISALBE  : Navi to Tesla 비활성화  
+- package : me.zipi.navitotesla  
+- action
+  - navitotesla.ENABLE   : Navi to Tesla 활성화  
+  - navitotesla.DISALBE  : Navi to Tesla 비활성화  
 
 상세한 설명은 [WiKi](https://github.com/zipizigi/NaviToTesla/wiki) 페이지를 참고  
 
