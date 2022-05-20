@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import androidx.core.app.ActivityCompat;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.EnablerUtil;
 
 public class BluetoothReceiver extends BroadcastReceiver {
@@ -21,7 +22,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
         }
 
         BluetoothDevice device = intent.getExtras().getParcelable(BluetoothDevice.EXTRA_DEVICE);
-
+        AnalysisUtil.log("receive bluetooth broadcast: " + intent.getAction() + " - " + device.getName());
         switch (intent.getAction()) {
             case BluetoothDevice.ACTION_ACL_CONNECTED:
                 EnablerUtil.addConnectedBluetooth(device.getName());

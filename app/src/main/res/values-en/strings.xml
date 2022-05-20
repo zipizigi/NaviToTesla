@@ -75,4 +75,6 @@
     <string name="removeCondition">Remove Condition</string>
     <string name="dialogRemoveCondition">Are you sure you want to delete the condition?</string>
     <string name="guideGrantBluetoothPermission">Bluetooth access permission required.</string>
+    <string name="enabledApp">Navi to Tesla is enabled</string>
+    <string name="disabledApp">Navi to Tesla is disabled</string>
 </resources>
