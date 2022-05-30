@@ -26,10 +26,18 @@ public class EnablerUtil {
     private static final Set<String> connectedBluetoothDevice = new HashSet<>();
 
     public static void addConnectedBluetooth(String name) {
+        if (name == null) {
+            AnalysisUtil.log("add bluetooth name error. device name is null");
+            return;
+        }
         connectedBluetoothDevice.add(name.toLowerCase(Locale.ROOT));
     }
 
     public static void removeConnectedBluetooth(String name) {
+        if (name == null) {
+            AnalysisUtil.log("remove bluetooth name error. device name is null");
+            return;
+        }
         connectedBluetoothDevice.remove(name.toLowerCase(Locale.ROOT));
     }
 
