@@ -29,7 +29,7 @@ public class KakaoPoiFinder implements PoiFinder {
                     .readTimeout(120, TimeUnit.SECONDS)
                     .addInterceptor(chain -> {
                         Request request = chain.request().newBuilder()
-                                .addHeader("Authorization", "KakaoAK " + RemoteConfigUtil.getConfig("kakaoApiKey"))
+                                .addHeader("Authorization", "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"))
                                 .build();
                         return chain.proceed(request);
                     })
@@ -57,12 +57,13 @@ public class KakaoPoiFinder implements PoiFinder {
 
 
         if (response.isSuccessful() && response.body() != null && response.body().getDocuments() != null) {
+            boolean withLocalName = RemoteConfigUtil.getBoolean("withLocalName"); // 법정동 포함 여부
             for (KakaoMap.Place place : response.body().getDocuments()) {
                 Poi poi = Poi.builder()
                         .poiName(place.getPlaceName())
                         .latitude(place.getLatitude())
                         .longitude(place.getLongitude())
-                        .roadAddress(place.getRoadAddressName())
+                        .roadAddress(place.getRoadAddressName(withLocalName))
                         .address(place.getAddressName())
                         .build();
                 poiList.add(poi);

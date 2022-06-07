@@ -34,11 +34,11 @@ public class KakaoMap {
         @SerializedName("y")
         String latitude;
 
-        public String getRoadAddressName() {
+        public String getRoadAddressName(boolean withLocalName) {
             // 시도 구군구 읍동면리 (산) 123(-2)
             String address = roadAddressName;
             Matcher match = pattern.matcher(addressName);
-            if (match.find()) {
+            if (match.find() && withLocalName) {
                 String lowerAddrName = match.group(1);
                 if (lowerAddrName != null && lowerAddrName.length() > 0) {
                     String lastChar = lowerAddrName.substring(lowerAddrName.length() - 1);

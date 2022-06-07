@@ -79,7 +79,7 @@ public class AppUpdaterUtil {
                     Github.Release release = null;
 
                     Response<List<Github.Release>> response =
-                            githubApi.getReleases(RemoteConfigUtil.getConfig("repoOwner"), RemoteConfigUtil.getConfig("repoName"))
+                            githubApi.getReleases(RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"))
                                     .execute();
                     if (response.code() == 403) {
                         AnalysisUtil.log("github api rate limit exceed");
@@ -172,7 +172,7 @@ public class AppUpdaterUtil {
     public static String getLatestVersion() {
         try {
             String latestUrl = String.format("https://github.com/%s/%s/releases/latest",
-                    RemoteConfigUtil.getConfig("repoOwner"), RemoteConfigUtil.getConfig("repoName"));
+                    RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"));
             HttpURLConnection con = (HttpURLConnection) (new URL(latestUrl).openConnection());
             con.setInstanceFollowRedirects(false);
             con.connect();
@@ -190,7 +190,7 @@ public class AppUpdaterUtil {
 
     public static String getLatestApkUrl(Github.Release release) {
         String apkUrl = String.format("https://github.com/%s/%s/releases/latest",
-                RemoteConfigUtil.getConfig("repoOwner"), RemoteConfigUtil.getConfig("repoName"));
+                RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"));
         if (release == null || release.getAssets() == null || release.getAssets().size() == 0) {
             return apkUrl;
         }

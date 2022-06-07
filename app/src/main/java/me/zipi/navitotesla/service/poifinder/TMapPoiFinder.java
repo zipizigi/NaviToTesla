@@ -31,7 +31,7 @@ public class TMapPoiFinder implements PoiFinder {
                         Request request = chain.request().newBuilder()
                                 .url(chain.request().url().newBuilder()
                                         .addQueryParameter("version", "1")
-                                        .addQueryParameter("appKey", RemoteConfigUtil.getConfig("tmapApiKey"))
+                                        .addQueryParameter("appKey", RemoteConfigUtil.getString("tmapApiKey"))
                                         .build())
                                 .build();
                         return chain.proceed(request);
@@ -68,11 +68,12 @@ public class TMapPoiFinder implements PoiFinder {
         }
 
         if (response.isSuccessful() && response.body() != null && response.body().getSearchPoiInfo() != null) {
+            boolean withLocalName = RemoteConfigUtil.getBoolean("withLocalName"); // 법정동 포함 여부
             for (TMap.PoiItem item : response.body().getSearchPoiInfo().getPois().getPoi()) {
                 Poi poi = Poi.builder()
                         .poiName(item.getName())
                         .address(item.getAddress())
-                        .roadAddress(item.getRoadAddress())
+                        .roadAddress(item.getRoadAddress(withLocalName))
                         .latitude(item.getLatitude())
                         .longitude(item.getLongitude())
                         .build();
