@@ -60,7 +60,7 @@ public class TMap {
         @SerializedName("noorLon")
         String longitude;
 
-        public String getRoadAddress() {
+        public String getRoadAddress(boolean withLocalName) {
             if (roadName.length() > 0 && firstBuildNo.length() > 0) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(upperAddrName);
@@ -79,13 +79,10 @@ public class TMap {
 
                 // 법정동(동/로/가)가 있을 경우 추가항목으로 (법정동)을 붙여준다.
                 // 건물명이 있을 경우 (법정동, 건물명) 표시도 가능하다.
-                if (lowerAddrName.length() > 0) {
+                if (lowerAddrName.length() > 0 && withLocalName) {
                     String lastChar = lowerAddrName.substring(lowerAddrName.length() - 1);
                     if (lastChar.equals("동") || lastChar.equals("로") || lastChar.equals("가")) {
-                        sb.append(" ")
-                                .append("(")
-                                .append(lowerAddrName)
-                                .append(")");
+                        sb.append(" (").append(lowerAddrName).append(")");
                     }
 
                 }

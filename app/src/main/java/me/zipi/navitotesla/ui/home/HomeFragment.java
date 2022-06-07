@@ -501,6 +501,9 @@ public class HomeFragment extends Fragment
         String shareMode = PreferencesUtil.getString(getContext(), "shareMode", isAppInstalled ? "app" : "api");
         homeViewModel.getShareMode().postValue(shareMode);
 
+        if (getActivity() == null) {
+            return;
+        }
         if (shareMode.equals("api")) {
             getActivity().runOnUiThread(() -> {
                 if (binding != null) {

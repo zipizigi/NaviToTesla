@@ -23,10 +23,20 @@ public class RemoteConfigUtil {
         remoteConfig.fetchAndActivate().addOnCompleteListener(task -> Log.i(RemoteConfigUtil.class.getName(), "Remote config fetch ok"));
     }
 
+    @Deprecated
     public static String getConfig(String key) {
         FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
         return remoteConfig.getString(key);
     }
 
+    public static String getString(String key) {
+        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
+        return remoteConfig.getString(key);
+    }
+
+    public static Boolean getBoolean(String key) {
+        FirebaseRemoteConfig remoteConfig = FirebaseRemoteConfig.getInstance();
+        return remoteConfig.getBoolean(key);
+    }
 
 }
