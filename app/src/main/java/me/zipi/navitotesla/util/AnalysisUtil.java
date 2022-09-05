@@ -105,6 +105,9 @@ public class AnalysisUtil {
         }
         File file = new File(externalDir + "/NaviToTesla.log");
 
+        if(file.exists() && file.length() > 50 * 1024){
+            file.delete();
+        }
         try (BufferedWriter buf = new BufferedWriter(new FileWriter(file, true))) {
             buf.append(text);
             buf.newLine();

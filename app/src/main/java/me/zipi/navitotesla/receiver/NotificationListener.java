@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.background.ShareWorker;
 import me.zipi.navitotesla.background.VersionCheckWorker;
+import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory;
 import me.zipi.navitotesla.util.AnalysisUtil;
@@ -74,6 +75,9 @@ public class NotificationListener extends NotificationListenerService {
                     " text : " + text +
                     " subText: " + subText);
             ShareWorker.startShare(getApplicationContext(), sbn.getPackageName(), title, text);
+
+            NaviToTeslaAccessibilityService.notifyIfAvailable(getApplicationContext(), sbn.getPackageName());
+
             AppExecutors.execute(RemoteConfigUtil::initialize);
             VersionCheckWorker.startVersionCheck(getApplicationContext());
             Bundle param = new Bundle();

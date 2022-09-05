@@ -10,10 +10,11 @@ public class PoiFinderFactory {
     private static final String tmapPackage = "com.skt.tmap.ku";
     private static final String tmapSKPackage = "com.skt.skaf.l001mtm091";
     private static final String kakaoPackage = "com.locnall.KimGiSa";
+    private static final String naverPackage = "com.nhn.android.nmap";
 
     public static boolean isNaviSupport(String packageName) {
         return packageName.equalsIgnoreCase(tmapPackage) || packageName.equalsIgnoreCase(tmapSKPackage)
-                || packageName.equalsIgnoreCase(kakaoPackage);
+                || packageName.equalsIgnoreCase(kakaoPackage) || packageName.equalsIgnoreCase(naverPackage);
     }
 
     public static PoiFinder getPoiFinder(String packageName) throws NotSupportedNaviException {
@@ -21,6 +22,8 @@ public class PoiFinderFactory {
             return new TMapPoiFinder();
         } else if (packageName.equalsIgnoreCase(kakaoPackage)) {
             return new KakaoPoiFinder();
+        } else if (packageName.equalsIgnoreCase(naverPackage)){
+            return new NaverPoiFinder();
         }
         throw new NotSupportedNaviException(packageName);
     }
