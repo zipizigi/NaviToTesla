@@ -12,6 +12,31 @@
         android:layout_height="wrap_content"
         android:paddingBottom="80dp">
 
+        <RadioGroup
+            android:id="@+id/radioGroupAccEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnAccEnableHelp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/radioAccEnable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/enable" />
+
+            <RadioButton
+                android:id="@+id/radioAccDisable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/disable" />
+
+        </RadioGroup>
+
         <TextView
             android:id="@+id/textAppEnable"
             android:layout_width="wrap_content"
@@ -19,6 +44,18 @@
             android:layout_marginStart="48dp"
             android:layout_marginTop="24dp"
             android:text="@string/appActive"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAccEnable" />
+
+        <TextView
+            android:id="@+id/textAccEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/accessibilityService"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,6 +71,18 @@
             android:background="@drawable/ic_baseline_help_outline_24"
             android:textColor="@color/design_default_color_primary"
             app:layout_constraintStart_toEndOf="@+id/textAppEnable"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAccEnable" />
+
+        <Button
+            android:id="@+id/btnAccEnableHelp"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/ic_baseline_help_outline_24"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintStart_toEndOf="@+id/textAccEnable"
             app:layout_constraintTop_toTopOf="parent" />
 
         <RadioGroup
@@ -45,7 +94,7 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnAppEnableHelp"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAccEnable">
 
             <RadioButton
                 android:id="@+id/radioAppEnable"

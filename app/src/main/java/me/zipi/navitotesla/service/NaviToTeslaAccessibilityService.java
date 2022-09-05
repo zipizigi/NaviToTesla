@@ -18,6 +18,8 @@ import java.util.List;
 import androidx.core.app.NotificationCompat;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder;
+import me.zipi.navitotesla.util.AppUpdaterUtil;
+import me.zipi.navitotesla.util.PreferencesUtil;
 
 public class NaviToTeslaAccessibilityService extends AccessibilityService {
     @Override
@@ -42,6 +44,8 @@ public class NaviToTeslaAccessibilityService extends AccessibilityService {
     }
 
 
+    private static String lastNotifyAppVersion = null;
+
     /**
      * 내비게이션이 있고, 접근성이 필요하다면, 노티알림
      *
@@ -53,9 +57,25 @@ public class NaviToTeslaAccessibilityService extends AccessibilityService {
         if (!packageName.equalsIgnoreCase("com.nhn.android.nmap")) {
             return;
         }
+        if (context == null) {
+            return;
+        }
         if (isAccessibilityServiceEnabled(context)) {
             return;
         }
+
+        // AppUpdaterUtil.getCurrentVersion(this.getContext()
+        String currentVersion = AppUpdaterUtil.getCurrentVersion(context);
+        if (lastNotifyAppVersion == null) {
+            lastNotifyAppVersion = PreferencesUtil.getString(context, "lastNotifyAppVersionForAccessibility");
+        }
+        if (lastNotifyAppVersion != null && lastNotifyAppVersion.equals(currentVersion)) {
+            return;
+        }
+
+        lastNotifyAppVersion = currentVersion;
+        PreferencesUtil.put(context, "lastNotifyAppVersionForAccessibility", currentVersion);
+
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel mChannel = new NotificationChannel(
@@ -82,6 +102,9 @@ public class NaviToTeslaAccessibilityService extends AccessibilityService {
     }
 
     public static boolean isAccessibilityServiceEnabled(Context context) {
+        if (context == null) {
+            return false;
+        }
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         List<AccessibilityServiceInfo> enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
 

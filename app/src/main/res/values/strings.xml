@@ -75,15 +75,17 @@
     <string name="guideAppEnable">Enable or disable the Navi to Tesla feature.</string>
     <string name="appActive">App activation</string>
     <string name="title_setting">Setting</string>
-    <string name="guideAddCondition" translatable="false">Please select one from the list of devices that have been connected to your phone.</string>
+    <string name="guideAddCondition">Please select one from the list of devices that have been connected to your phone.</string>
     <string name="titleAddCondition">Add condition</string>
     <string name="removeCondition">Remove condition</string>
     <string name="dialogRemoveCondition">Are you sure you want to delete the condition?</string>
     <string name="guideGrantBluetoothPermission">Bluetooth access permission required.</string>
     <string name="enabledApp">Navi to Tesla is enabled</string>
     <string name="disabledApp">Navi to Tesla is disabled</string>
-    <string name="accessibility_description">Navi to Tesla requires accessibility features to get some navigation destinations.\n\nThe apps to access are as follows.\n- NAVER Navi\n\nThe information to be accessed is as follows.\n- Destination information in the navigation app\n\nThe destination collected will be used to share Tesla and will not be transmitted anywhere else.\n\nIf you do not allow accessibility features, you may not be able to use Navi to Tesla destination share with certain navigation systems. Navigation other than that works normally.</string>
+    <string name="accessibility_description">Navi to Tesla requires enabling accessibility features to get some navigation destinations.\n\nThe apps to access are as follows.\n- NAVER Navi\n\nThe information to be accessed is as follows.\n- Destination address in the navigation app\n\nThe collected information is used for the following purposes.\n- Transfer destinations to customer-owned Tesla vehicles\n- Saved inside the android device to speed up\n\n\nNavi to Tesla collects destination address from the navigation app, even when the app is closed or not in use.\n\nThe information collected will be used to transfer destinations via Navi to Tesla to your Tesla vehicle.\nIn addition, the collected information is stored inside the device to improve speed, and the information is not transmitted or stored anywhere other than for the purposes listed above.\nNavi to Tesla does not collect any other information except for destination information in navigation apps.\n\nIf you do not enable accessibility features, you will not be able to use the Navi to Tesla features in the navigations listed above.\nYou can always disable accessibility features in your Android settings.</string>
     <string name="requireAccessibility">Requires accessibility services</string>
-    <string name="guideRequireAccessibility">For some navigation apps, Navi to Tesla is available through accessibility services.\nPlease allow accessibility services to Navi to Tesla in Android settings.</string>
+    <string name="guideRequireAccessibility">For some navigation apps, you can use Navi to Tesla using accessibility services.\nDetails can be found in the Settings tab.</string>
+    <string name="accessibilityService">Accessibility Service</string>
+    <string name="disableAccessibility">Disable accessibility services. Navi to Tesla is not available on certain navigations.\nYou can disable the Navi to Tesla accessibility service in your Android settings.</string>
 
 </resources>
