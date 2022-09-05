@@ -77,7 +77,9 @@
     <string name="guideGrantBluetoothPermission">해당 기능을 사용하려면 블루투스 접근 권한이 필요합니다.</string>
     <string name="enabledApp">Navi to Tesla가 활성화 되었습니다</string>
     <string name="disabledApp">Navi to Tesla가 비활성화 되었습니다</string>
-    <string name="accessibility_description">Navi to Tesla는 일부 내비게시션의 목적지를 얻기 위하여 접근성 기능이 필요합니다.\n\n접근하는 앱은 아래와 같습니다.\n- 네이버내비\n\n접근하는 정보는 아래와 같습니다.\n- 네비게이션 앱의 목적지 정보\n\n수집된 정보는 Tesla 목적지 공유에 사용되며, 이외에 다른곳으로 전송하지 않습니다.\n\n접근성 기능을 허용하지 않으면, 특정 내비게이션에서 Navi to Tesla 목적지 연동을 사용할 수 없습니다. 이외의 내비게이션은 정상적으로 동작합니다.</string>
+    <string name="accessibility_description">Navi to Tesla는 일부 내비게시션의 목적지를 얻기 위하여 접근성 기능 활성화가 필요합니다.\n\n접근하는 앱은 아래와 같습니다.\n- 네이버내비\n\n접근하는 정보는 아래와 같습니다.\n- 내비게이션 앱의 목적지 정보\n\n수집된 정보는 아래 목적으로 사용합니다.\n- 고객 소유의 Tesla 차량으로 목적지 전송\n- 속도 향상을 위해서 기기 내부에 저장\n\n\nNavi to Tesla는 앱이 닫혀있거나 사용 중이 아닐 때에도, 내비게이션 앱에서 목적지 정보를 수집합니다.  \n\n수집된 정보는 Navi to Tesla를 통하여 고객 소유의 Tesla 차량으로 목적지를 전송하는데 사용됩니다. \n또한 수집된 정보는 속도 향상을 위해 기기 내부에 저장되며, 위에 나열한 목적 외에 다른 곳에 정보를 전송하거나 저장하지 않습니다.\nNavi to Tesla는 내비게이션 앱의 목적지 정보를 제외하고 다른 정보는 수집하지 않습니다. \n\n접근성 기능을 활성화하지 않으면, 위에 나열한 내비게이션에서 Navi to Tesla 기능을 사용할 수 없습니다.\n안드로이드 설정에서 언제나 접근성 기능을 비활성화 할 수 있습니다. </string>
     <string name="requireAccessibility">접근성 서비스가 필요합니다</string>
-    <string name="guideRequireAccessibility">일부 내비게이션 앱의 경우 접근성 서비스를 이용하여 Navi to Tesla를 이용할 수 있습니다.\n안드로이드 설정에서 Navi to Tesla에 접근성 서비스를 허용해주세요.</string>
+    <string name="guideRequireAccessibility">일부 내비게이션 앱의 경우 접근성 서비스를 이용하여 Navi to Tesla를 이용할 수 있습니다.\n자세한 내용은 설정탭에서 확인할 수 있습니다.</string>
+    <string name="accessibilityService">접근성 서비스</string>
+    <string name="disableAccessibility">접근성 서비스를 비활성화합니다. 특정 내비게이션에서 Navi to Tesla를 사용할 수 없습니다. \n안드로이드 설정에서 Navi to Tesla 접근성 서비스를 비활성화할 수 있습니다.</string>
 </resources>

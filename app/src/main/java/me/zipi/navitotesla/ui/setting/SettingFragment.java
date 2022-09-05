@@ -2,9 +2,12 @@ package me.zipi.navitotesla.ui.setting;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import me.zipi.navitotesla.AppExecutors;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.databinding.FragmentSettingsBinding;
+import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService;
 import me.zipi.navitotesla.util.EnablerUtil;
 
 
@@ -49,9 +53,11 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
         binding.btnBluetoothAdd.setOnClickListener(this);
         binding.btnConditionHelp.setOnClickListener(this);
         binding.btnAppEnableHelp.setOnClickListener(this);
+        binding.btnAccEnableHelp.setOnClickListener(this);
 
         binding.radioGroupAppEnable.setOnCheckedChangeListener(this);
         binding.radioGroupConditionEnable.setOnCheckedChangeListener(this);
+        binding.radioGroupAccEnable.setOnCheckedChangeListener(this);
 
 
         settingViewModel.getIsConditionEnabled().observe(getViewLifecycleOwner(), this::onChangedConditionEnabled);
@@ -102,6 +108,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
             if (getContext() != null && binding != null && getActivity() != null) {
                 boolean appEnabled = EnablerUtil.getAppEnabled(getContext());
                 boolean conditionEnabled = EnablerUtil.getConditionEnabled(getContext());
+                boolean accEnabled = NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(getContext());
                 if (getActivity() == null) {
                     return;
                 }
@@ -114,12 +121,18 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
                             ? binding.radioAppEnable.getId() : binding.radioAppDisable.getId());
                     binding.radioGroupConditionEnable.check(conditionEnabled
                             ? binding.radioConditionEnable.getId() : binding.radioConditionDisable.getId());
+                    if (accEnabled) {
+                        binding.radioAccEnable.setChecked(true);
+                    } else {
+                        binding.radioAccDisable.setChecked(true);
+                    }
                 });
             }
         });
-        AppExecutors.execute(()->  settingViewModel.getBluetoothConditions().postValue(EnablerUtil.listBluetoothCondition(getContext())));
-        AppExecutors.execute(()->  settingViewModel.getIsAppEnabled().postValue(EnablerUtil.getAppEnabled(getContext())));
-        AppExecutors.execute(()->  settingViewModel.getIsConditionEnabled().postValue(EnablerUtil.getConditionEnabled(getContext())));
+        AppExecutors.execute(() -> settingViewModel.getBluetoothConditions().postValue(EnablerUtil.listBluetoothCondition(getContext())));
+        AppExecutors.execute(() -> settingViewModel.getIsAppEnabled().postValue(EnablerUtil.getAppEnabled(getContext())));
+        AppExecutors.execute(() -> settingViewModel.getIsConditionEnabled().postValue(EnablerUtil.getConditionEnabled(getContext())));
+
     }
 
     @Override
@@ -146,6 +159,14 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
             new AlertDialog.Builder(getActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.guideCondition))
+                    .setCancelable(true)
+                    .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                    })
+                    .create().show();
+        } else if (v.getId() == binding.btnAccEnableHelp.getId()) {
+            new AlertDialog.Builder(getActivity())
+                    .setTitle(getString(R.string.guide))
+                    .setMessage(getString(R.string.accessibility_description))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
                     })
@@ -252,6 +273,52 @@ public class SettingFragment extends Fragment implements View.OnClickListener, R
             if (settingViewModel.getIsConditionEnabled().getValue() != null && settingViewModel.getIsConditionEnabled().getValue()) {
                 settingViewModel.getIsConditionEnabled().postValue(false);
             }
+        } else if (checkedId == R.id.radioAccEnable) {
+            if (getActivity() != null && !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(getActivity())) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(getString(R.string.guide))
+                        .setMessage(getString(R.string.accessibility_description))
+                        .setCancelable(true)
+                        .setPositiveButton(getString(R.string.allow), (dialog, which) -> openAccessibilitySettings())
+                        .setNegativeButton(getString(R.string.deny), (dialog, which) -> setAccRadio(false))
+                        .create().show();
+            }
+        } else if (checkedId == R.id.radioAccDisable) {
+            if (getActivity() != null && NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(getActivity())) {
+                new AlertDialog.Builder(getActivity())
+                        .setTitle(getString(R.string.guide))
+                        .setMessage(getString(R.string.disableAccessibility))
+                        .setCancelable(true)
+                        .setPositiveButton(getString(R.string.title_setting), (dialog, which) -> openAccessibilitySettings())
+                        .setNegativeButton(getString(R.string.cancel), (dialog, which) -> setAccRadio(true))
+                        .create().show();
+            }
+        }
+
+    }
+
+    private void setAccRadio(boolean enable) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                if (binding == null) {
+                    return;
+                }
+                if (enable) {
+                    binding.radioAccEnable.setChecked(true);
+                } else {
+                    binding.radioAccDisable.setChecked(true);
+                }
+
+            });
+        }
+    }
+
+
+    private void openAccessibilitySettings() {
+        try {
+            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(Settings.ACTION_SETTINGS));
         }
     }
 }
