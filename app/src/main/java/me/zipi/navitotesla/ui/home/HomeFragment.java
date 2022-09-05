@@ -200,16 +200,7 @@ public class HomeFragment extends Fragment
                         .setTitle(getString(R.string.requireAccessibility))
                         .setMessage(getString(R.string.guideRequireAccessibility))
                         .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
-                                    if (permissionAlertDialog != null) {
-                                        permissionAlertDialog = null;
-                                    }
-                                    try {
-                                        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-                                    } catch (ActivityNotFoundException e) {
-                                        startActivity(new Intent(Settings.ACTION_SETTINGS));
-                                    }
-                                }
-                        )
+                        })
                         .setCancelable(true)
                         .show();
                 nextAction = null;
