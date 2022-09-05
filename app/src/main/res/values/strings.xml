@@ -82,5 +82,8 @@
     <string name="guideGrantBluetoothPermission">Bluetooth access permission required.</string>
     <string name="enabledApp">Navi to Tesla is enabled</string>
     <string name="disabledApp">Navi to Tesla is disabled</string>
+    <string name="accessibility_description">Navi to Tesla requires accessibility features to get some navigation destinations.\n\nThe apps to access are as follows.\n- NAVER Navi\n\nThe information to be accessed is as follows.\n- Destination information in the navigation app\n\nThe destination collected will be used to share Tesla and will not be transmitted anywhere else.\n\nIf you do not allow accessibility features, you may not be able to use Navi to Tesla destination share with certain navigation systems. Navigation other than that works normally.</string>
+    <string name="requireAccessibility">Requires accessibility services</string>
+    <string name="guideRequireAccessibility">For some navigation apps, Navi to Tesla is available through accessibility services.\nPlease allow accessibility services to Navi to Tesla in Android settings.</string>
 
 </resources>

@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 32
 
     defaultConfig {
         buildConfigField "String", "BUILD_MODE", '"playstore"'
         applicationId "me.zipi.navitotesla"
         minSdk 23
-        targetSdk 31
+        targetSdk 32
 
         versionCode Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1") ?: 1
         versionName System.getenv("RELEASE") ?: "1.0"

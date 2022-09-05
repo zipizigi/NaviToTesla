@@ -1,5 +1,6 @@
 package me.zipi.navitotesla;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,6 +9,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import me.zipi.navitotesla.databinding.ActivityMainBinding;
+import me.zipi.navitotesla.ui.home.HomeFragment;
+import me.zipi.navitotesla.util.AnalysisUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +38,29 @@ public class MainActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+
+        receivedNotification(getIntent());
     }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        receivedNotification(intent);
+    }
+
+    private void receivedNotification(Intent intent) {
+        String action = intent.getStringExtra("noti_action");
+        if (action == null) {
+            return;
+        }
+        if (action.equals("requireAccessibility")) {
+            AnalysisUtil.log("received notification: " + action);
+
+            HomeFragment.nextAction = action;
+
+
+        }
+    }
+
 
 }

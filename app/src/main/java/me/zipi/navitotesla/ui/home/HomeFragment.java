@@ -44,6 +44,7 @@ import me.zipi.navitotesla.background.TokenWorker;
 import me.zipi.navitotesla.databinding.FragmentHomeBinding;
 import me.zipi.navitotesla.model.Token;
 import me.zipi.navitotesla.model.Vehicle;
+import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService;
 import me.zipi.navitotesla.service.NaviToTeslaService;
 import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
@@ -58,6 +59,8 @@ public class HomeFragment extends Fragment
     @Nullable
     private NaviToTeslaService naviToTeslaService;
 
+
+    public static String nextAction = null;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -101,6 +104,7 @@ public class HomeFragment extends Fragment
     public void onResume() {
         super.onResume();
 
+        accessibilityGrantedCheck();
         permissionGrantedCheck();
 
         AppExecutors.execute(this::updateVersion);
@@ -155,6 +159,7 @@ public class HomeFragment extends Fragment
         return false;
     }
 
+
     @Override
     public void onClick(View view) {
         Integer id = view.getId();
@@ -176,6 +181,42 @@ public class HomeFragment extends Fragment
 
     AlertDialog permissionAlertDialog = null;
 
+    private void accessibilityGrantedCheck() {
+        if (nextAction == null) {
+            return;
+        }
+
+        if (nextAction.equals("requireAccessibility")) {
+            if (getContext() == null) {
+                return;
+            }
+            if (permissionAlertDialog != null && permissionAlertDialog.isShowing()) {
+                return;
+            }
+
+            // accessibility check
+            if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(getContext())) {
+                permissionAlertDialog = new AlertDialog.Builder(getContext())
+                        .setTitle(getString(R.string.requireAccessibility))
+                        .setMessage(getString(R.string.guideRequireAccessibility))
+                        .setPositiveButton(getString(R.string.confirm), (dialog, which) -> {
+                                    if (permissionAlertDialog != null) {
+                                        permissionAlertDialog = null;
+                                    }
+                                    try {
+                                        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+                                    } catch (ActivityNotFoundException e) {
+                                        startActivity(new Intent(Settings.ACTION_SETTINGS));
+                                    }
+                                }
+                        )
+                        .setCancelable(true)
+                        .show();
+                nextAction = null;
+            }
+        }
+    }
+
     private void permissionGrantedCheck() {
         if (getContext() == null) {
             return;
@@ -195,7 +236,7 @@ public class HomeFragment extends Fragment
                                 if (permissionAlertDialog != null) {
                                     permissionAlertDialog = null;
                                 }
-                                startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                                startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
                             }
                     )
                     .setCancelable(false)
