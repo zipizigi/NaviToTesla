@@ -52,6 +52,9 @@ public class HttpRetryInterceptor implements Interceptor {
 
             if (isSuccess) {
                 break;
+            } else if (response != null && response.code() >= 400 && response.code() <= 405) {
+                AnalysisUtil.info("Http call 4xx error!: " + response.code());
+                break;
             } else if (retry >= maxRetryCount) {
                 if (response == null) {
                     response = chain.proceed(chain.request());
