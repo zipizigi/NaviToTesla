@@ -291,6 +291,7 @@ public class HomeFragment extends Fragment
                         try {
                             naviToTeslaService.clearPoiCache();
                             AppUpdaterUtil.clearDoNotShow(getContext());
+                            PreferencesUtil.put(getContext(), "lastNotifyAppVersionForAccessibility", "");
                         } catch (Exception e) {
                             Log.w(this.getClass().getName(), "clear poi cache error", e);
                             AnalysisUtil.recordException(e);
