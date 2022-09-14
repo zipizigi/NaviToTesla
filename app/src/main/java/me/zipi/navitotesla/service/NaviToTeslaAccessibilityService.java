@@ -31,7 +31,8 @@ public class NaviToTeslaAccessibilityService extends AccessibilityService {
         if (event.getPackageName().equals("com.nhn.android.nmap")) {
             // naver navi, 목적지 저장
             List<AccessibilityNodeInfo> goalList = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal");
-            if (goalList.size() > 0) {
+            if (goalList != null && goalList.size() > 0 && goalList.get(0) != null
+                    && goalList.get(0).getText() != null) {
                 NaverPoiFinder.addDestination(goalList.get(0).getText().toString());
             }
         }
