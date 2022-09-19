@@ -13,28 +13,41 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.core.app.NotificationCompat;
 import me.zipi.navitotesla.R;
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder;
+import me.zipi.navitotesla.util.AnalysisUtil;
 import me.zipi.navitotesla.util.AppUpdaterUtil;
 import me.zipi.navitotesla.util.PreferencesUtil;
 
 public class NaviToTeslaAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        if (event.getEventType() != AccessibilityEvent.TYPE_VIEW_CLICKED && event.getEventType() != AccessibilityEvent.TYPE_VIEW_SELECTED) {
-            return;
-        }
-
-        if (event.getPackageName().equals("com.nhn.android.nmap")) {
-            // naver navi, 목적지 저장
-            List<AccessibilityNodeInfo> goalList = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal");
-            if (goalList != null && goalList.size() > 0 && goalList.get(0) != null
-                    && goalList.get(0).getText() != null) {
-                NaverPoiFinder.addDestination(goalList.get(0).getText().toString());
+        try {
+            if (event.getEventType() != AccessibilityEvent.TYPE_VIEW_CLICKED && event.getEventType() != AccessibilityEvent.TYPE_VIEW_SELECTED) {
+                return;
             }
+
+            if (event.getPackageName().equals("com.nhn.android.nmap")) {
+                // naver navi, 목적지 저장
+                List<String> goalList = new ArrayList<>();
+                // portrait
+                List<AccessibilityNodeInfo> portrait = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal");
+                // landscape
+                List<AccessibilityNodeInfo> landscape = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal");
+                goalList.addAll(parseNaverNaviDestination(portrait));
+                goalList.addAll(parseNaverNaviDestination(landscape));
+
+                if (goalList.size() > 0) {
+                    NaverPoiFinder.addDestination(goalList.get(0));
+                }
+            }
+        } catch (Exception e) {
+            AnalysisUtil.warn("accessibility error: " + e.getMessage());
+            AnalysisUtil.recordException(e);
         }
 
     }
@@ -42,6 +55,18 @@ public class NaviToTeslaAccessibilityService extends AccessibilityService {
     @Override
     public void onInterrupt() {
 
+    }
+
+    private List<String> parseNaverNaviDestination(List<AccessibilityNodeInfo> goalList) {
+        List<String> result = new ArrayList<>();
+        if (goalList != null) {
+            for (AccessibilityNodeInfo node : goalList) {
+                if (node != null && node.getText() != null && node.getText().toString().length() > 0) {
+                    result.add(node.getText().toString());
+                }
+            }
+        }
+        return result;
     }
 
 
