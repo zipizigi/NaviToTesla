@@ -1,10 +1,11 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    kotlin("android")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
     id("com.google.devtools.ksp")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 ksp {
     arg { listOf("room.schemaLocation=$projectDir/schemas") }
@@ -20,7 +21,6 @@ android {
 
         versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1") ?: 1
         versionName = System.getenv("RELEASE") ?: "1.0"
-
     }
 
     flavorDimensions += "store"
@@ -79,7 +79,6 @@ android {
 
 dependencies {
 
-
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -102,7 +101,6 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
 
-
     implementation("org.apache.commons:commons-lang3:3.12.0")
 
     implementation("androidx.room:room-runtime:2.6.0")
@@ -115,7 +113,6 @@ dependencies {
 
     implementation("android.arch.lifecycle:extensions:1.1.1")
 
-
     implementation(platform("com.google.firebase:firebase-bom:32.5.0"))
     implementation("com.google.firebase:firebase-config")
     implementation("com.google.firebase:firebase-analytics")
@@ -125,5 +122,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-
+}
+ktlint {
+    android.set(true)
+    outputColorName.set("RED")
 }
