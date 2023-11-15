@@ -56,7 +56,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         if (this.activity != null) {
             this.requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         }
-        homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
         homeViewModel.vehicleListLiveData
@@ -131,9 +131,9 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                 .setCancelable(true)
                 .setTitle(getString(R.string.viewLogFile))
                 .setMessage(getString(R.string.guideViewLogFile, size, type))
-                .setPositiveButton(getString(R.string.open)) { dialog: DialogInterface?, which: Int -> openLogFile() }
-                .setNegativeButton(getString(R.string.close)) { dialog: DialogInterface?, which: Int -> }
-                .setNeutralButton(getString(R.string.delete)) { dialog: DialogInterface?, which: Int ->
+                .setPositiveButton(getString(R.string.open)) { _: DialogInterface?, _: Int -> openLogFile() }
+                .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+                .setNeutralButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
                     AppExecutors.execute { AnalysisUtil.deleteLogFile() }
                 }
                 .show()
@@ -166,7 +166,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         }
     }
 
-    var permissionAlertDialog: AlertDialog? = null
+    private var permissionAlertDialog: AlertDialog? = null
     private fun accessibilityGrantedCheck() {
         if (nextAction == null) {
             return
@@ -184,7 +184,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                 permissionAlertDialog = AlertDialog.Builder(requireContext())
                     .setTitle(getString(R.string.requireAccessibility))
                     .setMessage(getString(R.string.guideRequireAccessibility))
-                    .setPositiveButton(getString(R.string.confirm)) { dialog: DialogInterface?, which: Int -> }
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .setCancelable(true)
                     .show()
                 nextAction = null
@@ -210,7 +210,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                 .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
                 .setPositiveButton(
                     getString(R.string.confirm)
-                ) { dialog: DialogInterface?, which: Int ->
+                ) { _: DialogInterface?, _: Int ->
                     if (permissionAlertDialog != null) {
                         permissionAlertDialog = null
                     }
@@ -397,11 +397,11 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
 
     override fun onNothingSelected(adapterView: AdapterView<*>?) {}
     private fun updateVersion() {
-        homeViewModel!!.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.context))
+        homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.context))
     }
 
     private fun updateLatestVersion() {
-        homeViewModel!!.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.context))
+        homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.context))
     }
 
     private fun renderVersion() {
@@ -433,7 +433,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                 .setCancelable(true)
                 .setTitle(getString(R.string.requireLogViewApp))
                 .setMessage(getString(R.string.guideRequireLogViewApp))
-                .setPositiveButton(getString(R.string.install)) { dialog: DialogInterface?, which: Int ->
+                .setPositiveButton(getString(R.string.install)) { _: DialogInterface?, _: Int ->
                     try {
                         startActivity(
                             Intent(
@@ -450,13 +450,13 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                         )
                     }
                 }
-                .setNegativeButton(getString(R.string.close)) { dialog: DialogInterface?, which: Int -> }
+                .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
                 .show()
         }
     }
 
     private val isTeslaAppInstalled: Boolean
-        private get() {
+        get() {
             if (context == null) {
                 return false
             }
@@ -473,10 +473,6 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
 
     // share mode
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-
-        if (binding == null) {
-            return
-        }
         val shareMode = if (binding.radioUsingTeslaApp.id == group.checkedRadioButtonId) {
             "app"
         } else {
@@ -542,7 +538,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                         .setMessage(getString(R.string.guideGrantOverlayPermission))
                         .setPositiveButton(
                             getString(R.string.confirm)
-                        ) { dialog: DialogInterface?, which: Int ->
+                        ) { _: DialogInterface?, _: Int ->
                             if (permissionAlertDialog != null) {
                                 permissionAlertDialog = null
                             }
@@ -553,7 +549,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                                 )
                             )
                         }
-                        .setNegativeButton(getString(R.string.deny)) { dialog: DialogInterface?, which: Int ->
+                        .setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
                             if (permissionAlertDialog != null) {
                                 permissionAlertDialog = null
                             }
