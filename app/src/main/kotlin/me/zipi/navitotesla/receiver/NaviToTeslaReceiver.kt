@@ -1,0 +1,30 @@
+package me.zipi.navitotesla.receiver
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import me.zipi.navitotesla.AppExecutors
+import me.zipi.navitotesla.R
+import me.zipi.navitotesla.util.AnalysisUtil
+import me.zipi.navitotesla.util.EnablerUtil
+
+class NaviToTeslaReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val action = intent.action
+        AnalysisUtil.log("receive NaviToTesla broadcast: $action")
+        val applicationContext = context.applicationContext
+        if (action.equals("navitotesla.ENABLE", ignoreCase = true)) {
+            AppExecutors.execute { EnablerUtil.setAppEnabled(applicationContext, true) }
+            AnalysisUtil.makeToast(
+                applicationContext,
+                applicationContext.getString(R.string.enabledApp)
+            )
+        } else if (action.equals("navitotesla.DISABLE", ignoreCase = true)) {
+            AppExecutors.execute { EnablerUtil.setAppEnabled(applicationContext, false) }
+            AnalysisUtil.makeToast(
+                applicationContext,
+                applicationContext.getString(R.string.disabledApp)
+            )
+        }
+    }
+}

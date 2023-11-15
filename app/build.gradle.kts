@@ -6,7 +6,9 @@ plugins {
     id("com.google.firebase.firebase-perf")
     id("com.google.devtools.ksp")
 }
-
+ksp {
+    arg { listOf("room.schemaLocation=$projectDir/schemas") }
+}
 android {
     compileSdk = 34
 
@@ -19,13 +21,6 @@ android {
         versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1") ?: 1
         versionName = System.getenv("RELEASE") ?: "1.0"
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += mapOf(
-                    "room.schemaLocation" to "$projectDir/schemas"
-                )
-            }
-        }
     }
 
     flavorDimensions += "store"
@@ -108,16 +103,12 @@ dependencies {
     implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
 
 
-    // noinspection AnnotationProcessorOnCompilePath
-    compileOnly("org.projectlombok:lombok:1.18.28")
-    annotationProcessor("org.projectlombok:lombok:1.18.28")
-
     implementation("org.apache.commons:commons-lang3:3.12.0")
 
     implementation("androidx.room:room-runtime:2.6.0")
     implementation("androidx.room:room-ktx:2.6.0")
     annotationProcessor("androidx.room:room-compiler:2.6.0")
-//    ksp("androidx.room:room-compiler:2.6.0")
+    ksp("androidx.room:room-compiler:2.6.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
