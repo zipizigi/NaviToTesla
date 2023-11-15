@@ -259,27 +259,30 @@ object AppUpdaterUtil {
     }
 
     private fun permissionCheck(activity: Activity?): Boolean {
-//        val granted =
-//            (activity!!.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-//                    && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-//        if (!granted) {
-//            activity.runOnUiThread {
-//                AlertDialog.Builder(activity)
-//                    .setTitle(activity.getString(R.string.grantPermission))
-//                    .setMessage(activity.getString(R.string.guideGrantStoragePermission))
-//                    .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
-//                        activity.requestPermissions(
-//                            arrayOf(
-//                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                                Manifest.permission.READ_EXTERNAL_STORAGE
-//                            ),
-//                            2
-//                        )
-//                    }
-//                    .setCancelable(false)
-//                    .show()
-//            }
-//        }
+        if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)){
+            return true
+        }
+        val granted =
+            (activity!!.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+        if (!granted) {
+            activity.runOnUiThread {
+                AlertDialog.Builder(activity)
+                    .setTitle(activity.getString(R.string.grantPermission))
+                    .setMessage(activity.getString(R.string.guideGrantStoragePermission))
+                    .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
+                        activity.requestPermissions(
+                            arrayOf(
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                            ),
+                            2
+                        )
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
+        }
         return true
     }
 
