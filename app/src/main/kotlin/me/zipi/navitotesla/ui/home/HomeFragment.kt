@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.text.method.ScrollingMovementMethod
@@ -223,31 +224,34 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         if (context == null || activity == null) {
             return
         }
-        // file write permission
-//        val granted =
-//            (requireContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-//                    && requireContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-//        if (!granted) {
-//            permissionAlertDialog = AlertDialog.Builder(requireContext())
-//                .setTitle(this.getString(R.string.grantPermission))
-//                .setMessage(this.getString(R.string.guideGrantStoragePermission))
-//                .setPositiveButton(
-//                    this.getString(R.string.confirm)
-//                ) { dialog: DialogInterface?, which: Int ->
-//                    requireActivity().requestPermissions(
-//                        arrayOf(
-//                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//                            Manifest.permission.READ_EXTERNAL_STORAGE
-//                        ),
-//                        2
-//                    )
-//                    if (permissionAlertDialog != null) {
-//                        permissionAlertDialog = null
-//                    }
-//                }
-//                .setCancelable(false)
-//                .show()
-//        }
+//         file write permission
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
+            return
+        }
+        val granted =
+            (requireContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                    && requireContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+        if (!granted) {
+            permissionAlertDialog = AlertDialog.Builder(requireContext())
+                .setTitle(this.getString(R.string.grantPermission))
+                .setMessage(this.getString(R.string.guideGrantStoragePermission))
+                .setPositiveButton(
+                    this.getString(R.string.confirm)
+                ) { _: DialogInterface?, _: Int ->
+                    requireActivity().requestPermissions(
+                        arrayOf(
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        ),
+                        2
+                    )
+                    if (permissionAlertDialog != null) {
+                        permissionAlertDialog = null
+                    }
+                }
+                .setCancelable(false)
+                .show()
+        }
     }
 
     private fun updateToken() {
