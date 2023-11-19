@@ -14,8 +14,8 @@ object PreferencesUtil {
     private const val preferencesFileName = "settings"
 
     @Throws(GeneralSecurityException::class, IOException::class)
-    private fun getSharedPreferences(context: Context?): SharedPreferences {
-        val masterKey = MasterKey.Builder(context!!)
+    private fun getSharedPreferences(context: Context): SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
         return EncryptedSharedPreferences.create(
             context,
@@ -26,7 +26,7 @@ object PreferencesUtil {
         )
     }
 
-    fun remove(context: Context?, key: String?): Boolean {
+    fun remove(context: Context, key: String): Boolean {
         return try {
             getSharedPreferences(context).edit().remove(key).apply()
             true
@@ -37,7 +37,7 @@ object PreferencesUtil {
         }
     }
 
-    fun clear(context: Context?) {
+    fun clear(context: Context) {
         try {
             getSharedPreferences(context).edit().clear().apply()
         } catch (e: Exception) {
@@ -46,9 +46,9 @@ object PreferencesUtil {
         }
     }
 
-    fun put(context: Context?, key: String?, value: Boolean?): Boolean {
+    fun put(context: Context, key: String, value: Boolean): Boolean {
         return try {
-            getSharedPreferences(context).edit().putBoolean(key, value!!).apply()
+            getSharedPreferences(context).edit().putBoolean(key, value).apply()
             true
         } catch (e: Exception) {
             Log.w(PreferencesUtil::class.java.name, "put boolean error", e)
@@ -57,9 +57,9 @@ object PreferencesUtil {
         }
     }
 
-    fun put(context: Context?, key: String?, value: Long?): Boolean {
+    fun put(context: Context, key: String, value: Long): Boolean {
         return try {
-            getSharedPreferences(context).edit().putLong(key, value!!).apply()
+            getSharedPreferences(context).edit().putLong(key, value).apply()
             true
         } catch (e: Exception) {
             Log.w(PreferencesUtil::class.java.name, "put long error", e)
@@ -68,7 +68,7 @@ object PreferencesUtil {
         }
     }
 
-    fun put(context: Context?, key: String?, value: String?): Boolean {
+    fun put(context: Context, key: String, value: String): Boolean {
         return try {
             getSharedPreferences(context).edit().putString(key, value).apply()
             true
@@ -79,7 +79,7 @@ object PreferencesUtil {
         }
     }
 
-    fun getString(context: Context?, key: String?, defaultValue: String?): String? {
+    fun getString(context: Context, key: String, defaultValue: String?): String? {
         return try {
             getSharedPreferences(context).getString(key, defaultValue)
         } catch (e: Exception) {
@@ -89,7 +89,7 @@ object PreferencesUtil {
         }
     }
 
-    fun getString(context: Context?, key: String?): String? {
+    fun getString(context: Context, key: String): String? {
         return getString(context, key, null)
     }
 
@@ -97,7 +97,7 @@ object PreferencesUtil {
 //        return getBoolean(context, key, null)
 //    }
 
-    fun getBoolean(context: Context?, key: String?, defaultValue: Boolean): Boolean {
+    fun getBoolean(context: Context, key: String, defaultValue: Boolean): Boolean {
         return try {
             getSharedPreferences(context).getBoolean(key, defaultValue)
         } catch (e: Exception) {
@@ -107,7 +107,7 @@ object PreferencesUtil {
         }
     }
 
-    fun getLong(context: Context?, key: String?): Long? {
+    fun getLong(context: Context, key: String): Long? {
         return try {
             val result = getSharedPreferences(context).getLong(key, -1)
             if (result == -1L) null else result
@@ -118,7 +118,7 @@ object PreferencesUtil {
         }
     }
 
-    fun getLong(context: Context?, key: String?, defaultValue: Long): Long {
+    fun getLong(context: Context, key: String, defaultValue: Long): Long {
         return try {
             getSharedPreferences(context).getLong(key, defaultValue)
         } catch (e: Exception) {
@@ -128,19 +128,19 @@ object PreferencesUtil {
         }
     }
 
-    fun saveToken(context: Context?, token: Token) {
+    fun saveToken(context: Context, token: Token) {
         put(context, "refreshToken", token.refreshToken)
         put(context, "accessToken", token.accessToken)
         put(context, "tokenUpdated", Calendar.getInstance().time.time)
     }
 
-    fun expireToken(context: Context?) {
+    fun expireToken(context: Context) {
         if (getString(context, "refreshToken") != null) {
             put(context, "tokenUpdated", 0L)
         }
     }
 
-    fun loadToken(context: Context?): Token? {
+    fun loadToken(context: Context): Token? {
         return if (getString(context, "refreshToken") != null) {
             Token(
                 refreshToken = getString(context, "refreshToken")!!,

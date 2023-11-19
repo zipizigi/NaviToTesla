@@ -60,12 +60,12 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setCancelable(true)
                     .setTitle(getString(R.string.removeCondition))
                     .setMessage(getString(R.string.dialogRemoveCondition))
-                    .setPositiveButton(getString(R.string.delete)) { dialog: DialogInterface?, which: Int ->
+                    .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
                         removeBluetoothDevice(
                             position
                         )
                     }
-                    .setNegativeButton(getString(R.string.cancel)) { dialog: DialogInterface?, which: Int -> }
+                    .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
                     .show()
             }
         })
@@ -148,7 +148,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.guideAppEnable))
                     .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { dialog: DialogInterface?, which: Int -> }
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .create().show()
             }
 
@@ -157,7 +157,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.guideCondition))
                     .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { dialog: DialogInterface?, which: Int -> }
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .create().show()
             }
 
@@ -166,7 +166,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.accessibility_description))
                     .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { dialog: DialogInterface?, which: Int -> }
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .create().show()
             }
 
@@ -233,7 +233,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                 .setMessage(this.getString(R.string.guideGrantBluetoothPermission))
                 .setPositiveButton(
                     this.getString(R.string.confirm)
-                ) { dialog: DialogInterface?, which: Int ->
+                ) { _: DialogInterface?, _: Int ->
                     requireActivity().requestPermissions(
                         arrayOf(permission),
                         2
@@ -262,9 +262,6 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     }
 
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-        if (settingViewModel == null) {
-            return
-        }
         if (checkedId == R.id.radioAppEnable) {
             if (settingViewModel.isAppEnabled.value == false) {
                 settingViewModel.isAppEnabled.postValue(true)
@@ -290,8 +287,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.accessibility_description))
                     .setCancelable(true)
-                    .setPositiveButton(getString(R.string.allow)) { dialog: DialogInterface?, which: Int -> openAccessibilitySettings() }
-                    .setNegativeButton(getString(R.string.deny)) { dialog: DialogInterface?, which: Int ->
+                    .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
+                    .setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
                         setAccRadio(
                             false
                         )
@@ -307,8 +304,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.disableAccessibility))
                     .setCancelable(true)
-                    .setPositiveButton(getString(R.string.title_setting)) { dialog: DialogInterface?, which: Int -> openAccessibilitySettings() }
-                    .setNegativeButton(getString(R.string.cancel)) { dialog: DialogInterface?, which: Int ->
+                    .setPositiveButton(getString(R.string.title_setting)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
+                    .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int ->
                         setAccRadio(
                             true
                         )

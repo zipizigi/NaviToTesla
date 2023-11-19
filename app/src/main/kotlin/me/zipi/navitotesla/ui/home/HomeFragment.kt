@@ -267,7 +267,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             val oldRefreshToken = binding.txtRefreshToken.text.toString()
             binding.txtRefreshToken.setText(token.refreshToken)
             binding.txtAccessToken.text = token.accessToken
-            if (oldRefreshToken == token.refreshToken) {
+            if (oldRefreshToken == token.refreshToken || homeViewModel.vehicleListLiveData.value?.size == 0) {
                 homeViewModel.refreshToken.postValue(token.refreshToken)
             } else {
                 Log.i(this.javaClass.name, "disable post value, refresh token is same")
@@ -282,10 +282,13 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
     private fun onBtnPoiCacheClearClick() {
         binding.btnPoiCacheClear.isEnabled = false
         AppExecutors.execute {
+            if (context == null || activity == null) {
+                return@execute
+            }
             try {
                 naviToTeslaService.clearPoiCache()
-                AppUpdaterUtil.clearDoNotShow(context)
-                PreferencesUtil.put(context, "lastNotifyAppVersionForAccessibility", "")
+                AppUpdaterUtil.clearDoNotShow(requireContext())
+                PreferencesUtil.put(requireContext(), "lastNotifyAppVersionForAccessibility", "")
             } catch (e: Exception) {
                 Log.w(this.javaClass.name, "clear poi cache error", e)
                 AnalysisUtil.recordException(e)
@@ -316,7 +319,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         homeViewModel.refreshToken.postValue("")
         AppExecutors.execute {
             if (context != null) {
-                PreferencesUtil.clear(context)
+                PreferencesUtil.clear(requireContext())
                 homeViewModel.tokenLiveData.postValue(naviToTeslaService.token)
                 TokenWorker.cancelBackgroundWork(requireContext())
             }
@@ -491,7 +494,9 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             return
         }
         homeViewModel.shareMode.postValue(shareMode)
-        PreferencesUtil.put(context, "shareMode", shareMode)
+        if (context != null) {
+            PreferencesUtil.put(requireContext(), "shareMode", shareMode)
+        }
     }
 
     private fun updateShareMode() {
@@ -500,7 +505,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         }
         val isAppInstalled = isTeslaAppInstalled
         val shareMode =
-            PreferencesUtil.getString(context, "shareMode", if (isAppInstalled) "app" else "api")
+            PreferencesUtil.getString(requireContext(), "shareMode", if (isAppInstalled) "app" else "api")
         homeViewModel.shareMode.postValue(shareMode)
         if (activity == null) {
             return

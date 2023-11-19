@@ -27,7 +27,7 @@ class KakaoMap {
         fun getRoadAddressName(withLocalName: Boolean): String {
             // 시도 구군구 읍동면리 (산) 123(-2)
             var address = roadAddressName ?: ""
-            val match = pattern.matcher(addressName)
+            val match = pattern.matcher(addressName ?: "")
             if (match.find() && withLocalName) {
                 val lowerAddrName = match.group(1)
                 if (lowerAddrName != null && lowerAddrName.isNotEmpty()) {

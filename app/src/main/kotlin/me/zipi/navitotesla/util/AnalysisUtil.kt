@@ -32,8 +32,8 @@ object AnalysisUtil {
         }
     }
 
-    fun logEvent(event: String?, param: Bundle?) {
-        firebaseAnalytics!!.logEvent(event!!, param)
+    fun logEvent(event: String, param: Bundle) {
+        firebaseAnalytics?.logEvent(event, param)
     }
 
     fun log(message: String) {
@@ -67,8 +67,8 @@ object AnalysisUtil {
         }
     }
 
-    fun setCustomKey(key: String?, value: String?) {
-        firebaseCrashlytics.setCustomKey(key!!, value!!)
+    fun setCustomKey(key: String, value: String) {
+        firebaseCrashlytics.setCustomKey(key, value)
     }
 
     fun sendUnsentReports() {
@@ -84,7 +84,7 @@ object AnalysisUtil {
             Calendar.getInstance().time
         )
         val text = String.format("%s %s %s", dateTime, logLevel, message)
-        if (externalDir != null && !File(externalDir).exists() && !File(externalDir).mkdirs()) {
+        if (externalDir != null && !File(externalDir!!).exists() && !File(externalDir!!).mkdirs()) {
             firebaseCrashlytics.log("create document directory fail")
             return
         }
@@ -126,7 +126,9 @@ object AnalysisUtil {
             Log.i(AnalysisUtil::class.java.name, text)
             log(text)
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+                if (context != null) {
+                    Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+                }
             }
         } catch (e: Exception) {
             recordException(e)

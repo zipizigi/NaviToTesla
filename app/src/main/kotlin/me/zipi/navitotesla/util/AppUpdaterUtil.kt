@@ -43,16 +43,16 @@ object AppUpdaterUtil {
         .build().create(GithubApi::class.java)
     private var dialogLastCheck = 0L
     private var notificationLastCheck = 0L
-    fun clearDoNotShow(context: Context?) {
+    fun clearDoNotShow(context: Context) {
         PreferencesUtil.remove(context, "updateDoNotShow")
     }
 
-    private fun doNotShow(context: Context?) {
+    private fun doNotShow(context: Context) {
         val until = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L
         PreferencesUtil.put(context, "updateDoNotShow", until)
     }
 
-    private fun isDoNotShow(context: Context?): Boolean {
+    private fun isDoNotShow(context: Context): Boolean {
         val until = PreferencesUtil.getLong(context, "updateDoNotShow", 0L)
         return System.currentTimeMillis() - until < 0
     }
@@ -60,6 +60,10 @@ object AppUpdaterUtil {
     @JvmOverloads
     fun dialog(activity: Activity?, isForce: Boolean = false) {
         try {
+            if(activity == null){
+                return
+            }
+
             if (!isForce && (abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow(
                     activity
                 ))
@@ -97,7 +101,7 @@ object AppUpdaterUtil {
                     val releaseDescription =
                         if (release == null) "" else release.tagName + "\n" + release.body
 
-                    activity!!.runOnUiThread {
+                    activity.runOnUiThread {
                         AlertDialog.Builder(
                             activity
                         )
@@ -117,7 +121,7 @@ object AppUpdaterUtil {
                                     .setTitle(activity.getString(R.string.guide))
                                     .setMessage(activity.getString(R.string.guideIgnoreUpdate))
                                     .setCancelable(false)
-                                    .setPositiveButton(activity.getString(R.string.confirm)) { d: DialogInterface?, w: Int ->
+                                    .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
                                         doNotShow(
                                             activity
                                         )
@@ -142,13 +146,13 @@ object AppUpdaterUtil {
     }
 
     @Suppress("KotlinConstantConditions")
-    private fun startUpdate(context: Context?, apkUrl: String) {
+    private fun startUpdate(context: Context, apkUrl: String) {
         try {
             AnalysisUtil.log("Start update app")
-            val appPackageName = if (BuildConfig.DEBUG) context!!.packageName.replace(
+            val appPackageName = if (BuildConfig.DEBUG) context.packageName.replace(
                 ".debug",
                 ""
-            ) else context!!.packageName
+            ) else context.packageName
             if (isPlayStoreInstalled(context) && BuildConfig.BUILD_MODE == "playstore") {
                 try {
                     AnalysisUtil.log("Start update app - open play store")
@@ -191,7 +195,7 @@ object AppUpdaterUtil {
         }
     }
 
-    fun getLatestVersion(): String {
+    private fun getLatestVersion(): String {
         try {
             val latestUrl = String.format(
                 "https://github.com/%s/%s/releases/latest",
@@ -259,12 +263,12 @@ object AppUpdaterUtil {
         return latestVersion != "1.0" && currentVersionNumber < latestVersionNumber
     }
 
-    private fun permissionCheck(activity: Activity?): Boolean {
+    private fun permissionCheck(activity: Activity): Boolean {
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
             return true
         }
         val granted =
-            (activity!!.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+            (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                     && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
         if (!granted) {
             activity.runOnUiThread {
@@ -327,9 +331,9 @@ object AppUpdaterUtil {
         notificationLastCheck = System.currentTimeMillis()
     }
 
-    private fun isPlayStoreInstalled(context: Context?): Boolean {
+    private fun isPlayStoreInstalled(context: Context): Boolean {
         return try {
-            context!!.packageManager.getPackageInfo("com.android.vending", 0)
+            context.packageManager.getPackageInfo("com.android.vending", 0)
             true
         } catch (e: PackageManager.NameNotFoundException) {
             false

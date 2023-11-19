@@ -74,8 +74,8 @@ class NaviToTeslaService(context: Context) {
             return
         }
         AnalysisUtil.setCustomKey("packageName", packageName)
-        AnalysisUtil.setCustomKey("notificationTitle", notificationTitle)
-        AnalysisUtil.setCustomKey("notificationText", notificationText)
+        AnalysisUtil.setCustomKey("notificationTitle", notificationTitle ?: "")
+        AnalysisUtil.setCustomKey("notificationText", notificationText ?: "")
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
         try {
@@ -190,7 +190,7 @@ class NaviToTeslaService(context: Context) {
     }
 
     fun refreshToken(refreshToken: String?): Token? {
-        var refreshToken = refreshToken
+        var actualRefreshToken = refreshToken
         if (refreshToken == null) {
             val token = PreferencesUtil.loadToken(context)
             if (token == null) {
@@ -199,14 +199,14 @@ class NaviToTeslaService(context: Context) {
             } else if (!token.isExpire()) {
                 return token
             } else {
-                refreshToken = token.refreshToken
+                actualRefreshToken = token.refreshToken
             }
         }
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
             val newToken: Response<Token?> = appRepository.teslaAuthApi
-                .refreshAccessToken(TeslaRefreshTokenRequest(refreshToken)).execute()
+                .refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!)).execute()
             if (newToken.isSuccessful && newToken.body() != null) {
                 PreferencesUtil.saveToken(context, newToken.body()!!)
                 token = newToken.body()
@@ -226,11 +226,11 @@ class NaviToTeslaService(context: Context) {
 
     @AddTrace(name = "getVehicles")
     fun getVehicles(token: Token?): List<Vehicle> {
-        var token = token
+        var actualToken = token
         if (token == null) {
-            token = PreferencesUtil.loadToken(context)
+            actualToken = PreferencesUtil.loadToken(context)
         }
-        if (token?.refreshToken == null) {
+        if (actualToken?.refreshToken == null) {
             makeToast(context.getString(R.string.requireToken))
             return ArrayList()
         }
@@ -259,7 +259,7 @@ class NaviToTeslaService(context: Context) {
         return vehicles
     }
 
-    fun saveVehicleId(id: Long?) {
+    fun saveVehicleId(id: Long) {
         PreferencesUtil.put(context, "vehicleId", id)
     }
 
