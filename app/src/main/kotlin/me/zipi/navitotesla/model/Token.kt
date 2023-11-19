@@ -30,7 +30,7 @@ class Token(
     }
 
     override fun hashCode(): Int {
-        return refreshToken.hashCode() ?: 0
+        return refreshToken.hashCode()
     }
 
 }

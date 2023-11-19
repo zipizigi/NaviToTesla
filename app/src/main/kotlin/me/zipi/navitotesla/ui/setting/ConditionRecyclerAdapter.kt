@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import me.zipi.navitotesla.R
 import java.lang.ref.WeakReference
 
-class ConditionRecyclerAdapter(val listener: OnDeleteButtonClicked) :
+class ConditionRecyclerAdapter(private val listener: OnDeleteButtonClicked) :
     RecyclerView.Adapter<ConditionRecyclerAdapter.ViewHolder>() {
     private var items: List<String> = mutableListOf()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -37,11 +37,11 @@ class ConditionRecyclerAdapter(val listener: OnDeleteButtonClicked) :
         fun onClick(position: Int)
     }
 
-    class ViewHolder(itemView: View, listener: OnDeleteButtonClicked?) :
+    class ViewHolder(itemView: View, listener: OnDeleteButtonClicked) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
-        val nameView: TextView
-        val deleteButton: Button
-        private val listenerRef: WeakReference<OnDeleteButtonClicked?>?
+        private val nameView: TextView
+        private val deleteButton: Button
+        private val listenerRef: WeakReference<OnDeleteButtonClicked>
 
         init {
             nameView = itemView.findViewById(R.id.recylcer_bluetooth)
@@ -57,9 +57,7 @@ class ConditionRecyclerAdapter(val listener: OnDeleteButtonClicked) :
         }
 
         override fun onClick(view: View) {
-            if (listenerRef != null && listenerRef.get() != null) {
-                listenerRef.get()!!.onClick(adapterPosition)
-            }
+            listenerRef.get()?.onClick(adapterPosition)
         }
     }
 }

@@ -23,7 +23,7 @@ import java.util.Date
 
 class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListener,
     View.OnClickListener, RadioGroup.OnCheckedChangeListener {
-    var poiArrayAdapter: PoiArrayAdapter? = null
+    private var poiArrayAdapter: PoiArrayAdapter? = null
     private var dest: String? = null
 
     var onDismissListener: Runnable? = null
@@ -39,10 +39,8 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        favoriteDialogViewModel = ViewModelProvider(this).get(
-            FavoriteDialogViewModel::class.java
-        )
+    ): View {
+        favoriteDialogViewModel = ViewModelProvider(this)[FavoriteDialogViewModel::class.java]
         binding = FavoriteDialogFragmentBinding.inflate(inflater, container, false)
         poiArrayAdapter = PoiArrayAdapter(context, android.R.layout.simple_spinner_item)
         poiArrayAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -76,12 +74,16 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
         if (binding == null) {
             return
         }
-        if (v.id == binding!!.btnDestSearch.id) {
-            searchDest()
-        } else if (v.id == binding!!.btnFavoriteDismiss.id) {
-            dismiss()
-        } else if (v.id == binding!!.btnFavoriteSave.id) {
-            saveFavorite()
+        when (v.id) {
+            binding!!.btnDestSearch.id -> {
+                searchDest()
+            }
+            binding!!.btnFavoriteDismiss.id -> {
+                dismiss()
+            }
+            binding!!.btnFavoriteSave.id -> {
+                saveFavorite()
+            }
         }
     }
 
@@ -105,7 +107,7 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
         if (binding == null) {
             return
         }
-        val entity: PoiAddressEntity =
+        val entity =
 
             PoiAddressEntity(
                 poi = binding!!.txtDest.text.toString(),
@@ -178,7 +180,7 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
             view.isSingleLine = false
             val poi = getItem(position)
             var shortAddress = poi!!.getRoadAddress()
-            val addressSplit = shortAddress!!.split(" ")
+            val addressSplit = shortAddress.split(" ")
             if (addressSplit.size > 3) {
                 shortAddress = addressSplit[0] + " " + addressSplit[1] + " " + addressSplit[2]
             }
@@ -192,7 +194,7 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
             val view = super.getDropDownView(position, convertView, parent) as TextView
             view.isSingleLine = false
             val poi = getItem(position)
-            val text: String = poi!!.poiName + "\n" + poi!!.getRoadAddress()
+            val text: String = poi!!.poiName + "\n" + poi.getRoadAddress()
             view.text = text
             view.textSize = 12f
             return view

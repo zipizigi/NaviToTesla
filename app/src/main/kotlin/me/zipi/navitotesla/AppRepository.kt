@@ -63,7 +63,7 @@ class AppRepository private constructor(context: Context?, private val database:
             )
             .build().create(TeslaAuthApi::class.java)
     }
-
+    @Suppress("unused")
     fun getPoi(poiName: String): LiveData<PoiAddressEntity> {
         return database.poiAddressDao().findPoi(poiName)
     }
@@ -89,7 +89,7 @@ class AppRepository private constructor(context: Context?, private val database:
         // remove expire poi. (20% over)
         val expireDate: Long =
             (Date().time - PoiAddressEntity.expireDay * 1000 * 60 * 60 * 24 * 1.2).toLong()
-        for (entity in database!!.poiAddressDao().findExpired(expireDate)) {
+        for (entity in database.poiAddressDao().findExpired(expireDate)) {
             database.runInTransaction {
                 database.poiAddressDao().delete(entity)
             }
@@ -97,7 +97,7 @@ class AppRepository private constructor(context: Context?, private val database:
     }
 
     fun clearAllPoi() {
-        database!!.runInTransaction {
+        database.runInTransaction {
             database.poiAddressDao().deleteAllNotRegistered()
         }
     }

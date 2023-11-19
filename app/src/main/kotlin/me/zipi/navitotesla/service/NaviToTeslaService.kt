@@ -122,7 +122,7 @@ class NaviToTeslaService(context: Context) {
     fun share(address: String) {
         PreferencesUtil.put(context, "lastAddress", address)
         if (address.isNotEmpty()) {
-            makeToast(context.getString(R.string.requestSend) + "\n" + address);
+            makeToast(context.getString(R.string.requestSend) + "\n" + address)
             val shareMode = PreferencesUtil.getString(context, "shareMode", "app")
             if (shareMode == "api" && PreferencesUtil.loadToken(context) != null) {
                 if (refreshToken() == null) {
@@ -264,11 +264,10 @@ class NaviToTeslaService(context: Context) {
     }
 
     fun loadVehicleId(): Long {
-        val vid = PreferencesUtil.getLong(context, "vehicleId", 0L)
-        return vid ?: 0L
+        return PreferencesUtil.getLong(context, "vehicleId", 0L)
     }
 
     fun clearPoiCache() {
-        appRepository!!.clearAllPoi()
+        appRepository.clearAllPoi()
     }
 }

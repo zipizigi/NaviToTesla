@@ -96,7 +96,7 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
             .setAutoCancel(true)
             .setVibrate(longArrayOf(0L))
             .setSound(null)
-            .build();
+            .build()
     }
 
     companion object {

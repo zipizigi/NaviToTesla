@@ -71,7 +71,7 @@ class TMap {
 
         val address: String
             get() {
-                if (firstNo == null || firstNo!!.length == 0) {
+                if (firstNo == null || firstNo!!.isEmpty()) {
                     return ""
                 }
                 val sb = StringBuilder()

@@ -11,6 +11,7 @@ data class Poi(
     var longitude: String? = null,
     var latitude: String? = null,
 ) {
+    @Suppress("unused")
     fun isAddressEmpty(): Boolean =
         (roadAddress == null || roadAddress == "") && (address == null || address == "")
 

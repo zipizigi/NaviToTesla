@@ -53,7 +53,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         if (this.activity != null) {
             this.requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         }

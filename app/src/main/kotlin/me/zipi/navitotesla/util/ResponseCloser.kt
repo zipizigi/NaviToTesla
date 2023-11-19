@@ -2,7 +2,6 @@ package me.zipi.navitotesla.util
 
 import android.util.Log
 import retrofit2.Response
-import java.util.Objects
 
 object ResponseCloser {
     fun closeAll(response: Response<*>) {

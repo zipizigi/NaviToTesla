@@ -19,6 +19,6 @@ class Application : Application() {
         }
     }
 
-    val database: AppDatabase
+    private val database: AppDatabase
         get() = AppDatabase.getInstance(this)
 }

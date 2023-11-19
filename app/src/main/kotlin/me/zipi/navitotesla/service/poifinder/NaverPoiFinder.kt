@@ -37,7 +37,7 @@ class NaverPoiFinder : PoiFinder {
         if (response.isSuccessful && response.body()?.result?.site?.list != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (place in response.body()!!.result!!.site!!.list!!) {
-                val poi: Poi = Poi(
+                val poi = Poi(
                     poiName = place.name,
                     roadAddress = place.getRoadAddressName(withLocalName),
                     address = place.address,
