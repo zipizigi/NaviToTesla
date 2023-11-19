@@ -24,6 +24,14 @@
 -dontwarn androidx.room.paging.**
 -keep class me.zipi.navitotesla.model.** { *; }
 
+# https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md
+# r8 full mode
+-if interface * { @retrofit2.http.* public *** *(...); }
+-keep,allowoptimization,allowshrinking,allowobfuscation class <3>
+-keepclassmembers,allowobfuscation class * {
+ @com.google.gson.annotations.SerializedName <fields>;
+}
+
 
 -keepattributes SourceFile,LineNumberTable        # Keep file names and line numbers.
 -keep public class * extends java.lang.Exception  # Optional: Keep custom exceptions.

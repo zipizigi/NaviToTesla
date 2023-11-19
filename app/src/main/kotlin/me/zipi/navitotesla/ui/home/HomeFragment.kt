@@ -264,9 +264,14 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             binding.txtRefreshToken.setText("")
             binding.txtAccessToken.text = ""
         } else {
+            val oldRefreshToken = binding.txtRefreshToken.text.toString()
             binding.txtRefreshToken.setText(token.refreshToken)
             binding.txtAccessToken.text = token.accessToken
-            homeViewModel.refreshToken.postValue(token.refreshToken)
+            if (oldRefreshToken == token.refreshToken) {
+                homeViewModel.refreshToken.postValue(token.refreshToken)
+            } else {
+                Log.i(this.javaClass.name, "disable post value, refresh token is same")
+            }
         }
     }
 
@@ -346,7 +351,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         AppExecutors.execute {
             try {
                 val token = naviToTeslaService.refreshToken(refreshToken)
-                if (homeViewModel.tokenLiveData.value == token) {
+                if (homeViewModel.tokenLiveData.value != token) {
                     homeViewModel.tokenLiveData.postValue(token)
                     TokenWorker.startBackgroundWork(context)
                 }

@@ -8,5 +8,5 @@ import retrofit2.http.POST
 
 interface TeslaAuthApi {
     @POST("/oauth2/v3/token")
-    fun refreshAccessToken(@Body request: TeslaRefreshTokenRequest?): Call<Token?>
+    fun refreshAccessToken(@Body request: TeslaRefreshTokenRequest): Call<Token>
 }
