@@ -15,7 +15,7 @@ interface TeslaApi {
 
     @POST("/api/1/vehicles/{id}/command/share")
     fun share(
-        @Path("id") id: Long?,
-        @Body request: ShareRequest?
+        @Path("id") id: Long,
+        @Body request: ShareRequest
     ): Call<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>>
 }

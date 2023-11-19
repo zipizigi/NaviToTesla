@@ -8,7 +8,7 @@ import retrofit2.http.Path
 interface GithubApi {
     @GET("/repos/{owner}/{repo}/releases?per_page=10")
     fun getReleases(
-        @Path("owner") owner: String?,
-        @Path("repo") repo: String?
-    ): Call<List<Release?>?>
+        @Path("owner") owner: String,
+        @Path("repo") repo: String
+    ): Call<List<Release>>
 }
