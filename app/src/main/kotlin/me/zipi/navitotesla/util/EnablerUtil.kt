@@ -74,13 +74,13 @@ object EnablerUtil {
     }
 
     fun setAppEnabled(context: Context, enabled: Boolean) {
-        if (PreferencesUtil.getBoolean(context, "appEnabled", true) !== enabled) {
+        if (PreferencesUtil.getBoolean(context, "appEnabled", true) != enabled) {
             PreferencesUtil.put(context, "appEnabled", enabled)
         }
     }
 
     fun setConditionEnabled(context: Context, enabled: Boolean) {
-        if (PreferencesUtil.getBoolean(context, "appCondition", false) !== enabled) {
+        if (PreferencesUtil.getBoolean(context, "appCondition", false) != enabled) {
             PreferencesUtil.put(context, "appCondition", enabled)
         }
     }

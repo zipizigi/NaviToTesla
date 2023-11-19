@@ -143,7 +143,7 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
                     }
                 }
             }
-            .setNegativeButton(getString(R.string.cancel)) { dialog: DialogInterface?, which: Int -> }
+            .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
             .show()
     }
 
@@ -177,7 +177,7 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
                 .setTitle(getString(R.string.guide))
                 .setMessage(getString(R.string.guideFavorite))
                 .setCancelable(true)
-                .setPositiveButton(getString(R.string.confirm)) { dialog: DialogInterface?, which: Int -> }
+                .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                 .create().show()
         } else if (v.id == binding!!.btnFavoriteAdd.id) {
             addFavorite()

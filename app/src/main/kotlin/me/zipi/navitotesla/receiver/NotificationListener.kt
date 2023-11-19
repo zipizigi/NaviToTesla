@@ -14,7 +14,6 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
-import org.apache.commons.lang3.StringUtils
 
 class NotificationListener : NotificationListenerService() {
     private var naviToTeslaService: NaviToTeslaService? = null
@@ -52,10 +51,10 @@ class NotificationListener : NotificationListenerService() {
             AnalysisUtil.setCustomKey("packageName", sbn.packageName)
             lastNotificationPosted = sbn.postTime
             val extras = sbn.notification.extras
-            val title = StringUtils.defaultString(extras.getString(Notification.EXTRA_TITLE), "")
-            val text = StringUtils.defaultString(extras.getString(Notification.EXTRA_TEXT), "")
-            val subText =
-                StringUtils.defaultString(extras.getString(Notification.EXTRA_SUB_TEXT), "")
+            val title =  extras.getString(Notification.EXTRA_TITLE) ?: ""
+            val text = extras.getString(Notification.EXTRA_TEXT) ?: ""
+            val subText = extras.getString(Notification.EXTRA_SUB_TEXT) ?: ""
+
             Log.i(
                 this.javaClass.name, "onNotificationPosted ~ " +
                         " packageName: " + sbn.packageName +

@@ -15,7 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-class AppRepository private constructor(context: Context?, private val database: AppDatabase) {
+class AppRepository private constructor(context: Context, private val database: AppDatabase) {
     val teslaApi: TeslaApi
 
     val teslaAuthApi: TeslaAuthApi
@@ -104,7 +104,7 @@ class AppRepository private constructor(context: Context?, private val database:
 
     companion object {
         private var instance: AppRepository? = null
-        fun getInstance(context: Context?, database: AppDatabase): AppRepository {
+        fun getInstance(context: Context, database: AppDatabase): AppRepository {
             if (instance == null) {
                 synchronized(AppRepository::class.java) {
                     if (instance == null) {
