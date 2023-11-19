@@ -23,7 +23,7 @@ class TMapPoiFinder : PoiFinder {
             출발지 > 경유지 > 목적지
             출발지 > 경유지1 > 경유지2 > 목적지
          */
-        return notificationText!!.split(">".toRegex()).dropLastWhile { it.isEmpty() }
+        return notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }
             .toTypedArray()[notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }
             .toTypedArray().size - 1].trim { it <= ' ' }
     }
@@ -39,7 +39,7 @@ class TMapPoiFinder : PoiFinder {
         if (response.isSuccessful && response.body()?.searchPoiInfo != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (item in response.body()!!.searchPoiInfo!!.pois.poi) {
-                val poi: Poi = Poi(
+                val poi = Poi(
                     poiName = item.name,
                     roadAddress = item.getRoadAddress(withLocalName),
                     address = item.address,

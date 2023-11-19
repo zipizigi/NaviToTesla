@@ -54,7 +54,7 @@ object AppUpdaterUtil {
 
     private fun isDoNotShow(context: Context?): Boolean {
         val until = PreferencesUtil.getLong(context, "updateDoNotShow", 0L)
-        return System.currentTimeMillis() - until!! < 0
+        return System.currentTimeMillis() - until < 0
     }
 
     @JvmOverloads
@@ -87,7 +87,7 @@ object AppUpdaterUtil {
                         }
                     } else {
                         for (r in response.body()!!) {
-                            if (r?.isPreRelease == false) {
+                            if (r.isPreRelease == false) {
                                 release = r
                                 break
                             }
@@ -141,6 +141,7 @@ object AppUpdaterUtil {
         }
     }
 
+    @Suppress("KotlinConstantConditions")
     private fun startUpdate(context: Context?, apkUrl: String) {
         try {
             AnalysisUtil.log("Start update app")
@@ -220,7 +221,7 @@ object AppUpdaterUtil {
         if (release?.assets == null || release.assets!!.isEmpty()) {
             return defaultApkUrl
         }
-        release!!.assets!!.forEach {
+        release.assets!!.forEach {
             if (it.contentType.equals("application/vnd.android.package-archive")) {
                 defaultApkUrl = it.downloadUrl ?: ""
             }
@@ -249,17 +250,17 @@ object AppUpdaterUtil {
         val currentVersion = getCurrentVersion(context)
         if (latestVersion.contains(".")) {
             latestVersionNumber =
-                parseFloat(latestVersion.split("[.-]".toRegex())[0] + "." + latestVersion.split("[.-]".toRegex())[1]);
+                parseFloat(latestVersion.split("[.-]".toRegex())[0] + "." + latestVersion.split("[.-]".toRegex())[1])
         }
         if (currentVersion.contains(".")) {
             currentVersionNumber =
-                parseFloat(currentVersion.split("[.-]".toRegex())[0] + "." + currentVersion.split("[.-]".toRegex())[1]);
+                parseFloat(currentVersion.split("[.-]".toRegex())[0] + "." + currentVersion.split("[.-]".toRegex())[1])
         }
         return latestVersion != "1.0" && currentVersionNumber < latestVersionNumber
     }
 
     private fun permissionCheck(activity: Activity?): Boolean {
-        if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)){
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
             return true
         }
         val granted =
@@ -286,6 +287,7 @@ object AppUpdaterUtil {
         return true
     }
 
+    @Suppress("KotlinConstantConditions")
     fun notification(context: Context) {
         if (BuildConfig.BUILD_MODE == "playstore") {
             return

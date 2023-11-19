@@ -34,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
         mIsDatabaseCreated.postValue(true)
     }
 
+    @Suppress("unused")
     val databaseCreated: LiveData<Boolean>
         get() = mIsDatabaseCreated
 
@@ -44,7 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
             if (instance == null) {
                 synchronized(AppDatabase::class.java) {
                     if (instance == null) {
-                        instance = buildDatabase(context!!.applicationContext)
+                        instance = buildDatabase(context.applicationContext)
                         instance!!.updateDatabaseCreated(context.applicationContext)
                     }
                 }

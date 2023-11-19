@@ -3,6 +3,7 @@ package me.zipi.navitotesla.model
 import com.google.gson.annotations.SerializedName
 
 
+@Suppress("unused")
 class Github {
     data class Release(
         var id: Long? = null,

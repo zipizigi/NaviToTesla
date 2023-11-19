@@ -22,6 +22,7 @@ class VersionCheckWorker(context: Context, workerParams: WorkerParameters) :
     }
 
     companion object {
+        @Suppress("KotlinConstantConditions")
         fun startVersionCheck(context: Context) {
             if (BuildConfig.BUILD_MODE == "playstore") {
                 return

@@ -21,11 +21,11 @@ class PoiAddressRecyclerAdapter(val listener: OnFavoriteButtonClicked) :
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.onBind(items!![position])
+        holder.onBind(items[position])
     }
 
     override fun getItemCount(): Int {
-        return items!!.size
+        return items.size
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -39,14 +39,14 @@ class PoiAddressRecyclerAdapter(val listener: OnFavoriteButtonClicked) :
         fun onShareClick(position: Int)
     }
 
-    class ViewHolder(itemView: View, listener: OnFavoriteButtonClicked?) :
+    class ViewHolder(itemView: View, listener: OnFavoriteButtonClicked) :
         RecyclerView.ViewHolder(itemView), View.OnClickListener {
-        val poiView: TextView
-        val addressView: TextView
-        val button: Button
-        val shareButton: Button
-        var isRegistered = false
-        private val listenerRef: WeakReference<OnFavoriteButtonClicked?>?
+        private val poiView: TextView
+        private val addressView: TextView
+        private val button: Button
+        private val shareButton: Button
+        private var isRegistered = false
+        private val listenerRef: WeakReference<OnFavoriteButtonClicked>
 
         init {
             poiView = itemView.findViewById(R.id.recylcer_poi)
@@ -72,11 +72,11 @@ class PoiAddressRecyclerAdapter(val listener: OnFavoriteButtonClicked) :
         }
 
         override fun onClick(view: View) {
-            if (listenerRef != null && listenerRef.get() != null) {
+            listenerRef.get()?.let {
                 if (view.id == shareButton.id) {
-                    listenerRef.get()!!.onShareClick(adapterPosition)
+                    listenerRef.get()?.onShareClick(adapterPosition)
                 } else {
-                    listenerRef.get()!!.onClick(adapterPosition)
+                    listenerRef.get()?.onClick(adapterPosition)
                 }
             }
         }

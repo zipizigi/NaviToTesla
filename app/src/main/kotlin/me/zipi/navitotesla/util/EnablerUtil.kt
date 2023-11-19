@@ -28,6 +28,7 @@ object EnablerUtil {
         connectedBluetoothDevice.remove(name.lowercase())
     }
 
+    @Deprecated("not used")
     fun addWifiCondition(context: Context, ssid: String) {
         addCondition(context, "wifi", ssid)
     }
@@ -58,7 +59,7 @@ object EnablerUtil {
         val result = mutableListOf<String>()
         for (entity in AppDatabase.getInstance(context).conditionDao()
             .findConditionSync("wifi")) {
-            result.add(entity.name ?: "")
+            result.add(entity.name)
         }
         return result
     }
@@ -140,7 +141,10 @@ object EnablerUtil {
     fun getPairedBluetooth(context: Context?): List<String> {
         val permission =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
-        if (ActivityCompat.checkSelfPermission(context!!, permission) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                context!!,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
             return ArrayList()
         }

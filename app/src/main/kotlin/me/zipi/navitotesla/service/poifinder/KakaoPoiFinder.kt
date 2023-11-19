@@ -19,7 +19,7 @@ class KakaoPoiFinder : PoiFinder {
         /*
          * 목적지 : ~~~~
          */
-        return notificationText!!.replace("목적지 : ", "").trim { it <= ' ' }
+        return notificationText.replace("목적지 : ", "").trim { it <= ' ' }
     }
 
     @Throws(IOException::class)
@@ -37,7 +37,7 @@ class KakaoPoiFinder : PoiFinder {
         ) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (place in response.body()!!.documents) {
-                val poi: Poi =Poi(
+                val poi =Poi(
                     poiName = place.placeName,
                     roadAddress = place.getRoadAddressName(withLocalName),
                     address = place.addressName,

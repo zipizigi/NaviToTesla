@@ -35,7 +35,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 goalList.addAll(parseNaverNaviDestination(portrait))
                 goalList.addAll(parseNaverNaviDestination(landscape))
                 if (goalList.size > 0) {
-                    NaverPoiFinder.Companion.addDestination(goalList[0])
+                    NaverPoiFinder.addDestination(goalList[0])
                 }
             }
         } catch (e: Exception) {
@@ -49,7 +49,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         val result: MutableList<String> = ArrayList()
         if (goalList != null) {
             for (node in goalList) {
-                if (node?.text != null && (node?.text?.toString()?.length ?: 0) > 0) {
+                if (node.text != null && (node.text?.toString()?.length ?: 0) > 0) {
                     result.add(node.text.toString())
                 }
             }

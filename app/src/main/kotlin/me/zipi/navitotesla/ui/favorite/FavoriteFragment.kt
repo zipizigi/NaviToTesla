@@ -28,7 +28,7 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         favoriteViewModel = ViewModelProvider(this)[FavoriteViewModel::class.java]
         binding = FragmentFavoriteBinding.inflate(inflater, container, false)
         val root = binding!!.root

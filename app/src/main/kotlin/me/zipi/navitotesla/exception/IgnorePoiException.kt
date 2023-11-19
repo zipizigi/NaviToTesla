@@ -1,3 +1,4 @@
 package me.zipi.navitotesla.exception
 
-class IgnorePoiException(val packageName: String) : RuntimeException()
+@Suppress("unused")
+class IgnorePoiException(packageName: String) : RuntimeException(packageName)

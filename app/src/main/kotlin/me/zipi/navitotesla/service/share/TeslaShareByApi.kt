@@ -39,7 +39,7 @@ class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShar
         if (response.isSuccessful) {
             result = response.body()
         }
-        if (result != null && result.error == null && (result?.response?.result == true)) {
+        if (result != null && result.error == null && (result.response?.result == true)) {
             AnalysisUtil.makeToast(
                 context,
                 context.getString(R.string.sendDestinationSuccess) + "\n" + address

@@ -30,7 +30,7 @@ class KakaoMap {
             val match = pattern.matcher(addressName)
             if (match.find() && withLocalName) {
                 val lowerAddrName = match.group(1)
-                if (lowerAddrName != null && lowerAddrName.length > 0) {
+                if (lowerAddrName != null && lowerAddrName.isNotEmpty()) {
                     val lastChar = lowerAddrName.substring(lowerAddrName.length - 1)
                     if (lastChar == "동" || lastChar == "로" || lastChar == "가") {
                         address += " ($lowerAddrName)"

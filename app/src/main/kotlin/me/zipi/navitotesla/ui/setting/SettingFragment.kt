@@ -35,8 +35,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        settingViewModel = ViewModelProvider(this).get(SettingViewModel::class.java)
+    ): View {
+        settingViewModel = ViewModelProvider(this)[SettingViewModel::class.java]
         binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
         binding.btnBluetoothAdd.setOnClickListener(this)
@@ -99,7 +99,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                 val appEnabled = EnablerUtil.getAppEnabled(requireContext())
                 val conditionEnabled = EnablerUtil.getConditionEnabled(requireContext())
                 val accEnabled: Boolean =
-                    NaviToTeslaAccessibilityService.Companion.isAccessibilityServiceEnabled(
+                    NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
                         context
                     )
                 if (activity == null) {
@@ -117,17 +117,17 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
             }
         }
         AppExecutors.execute {
-            settingViewModel.bluetoothConditions?.postValue(
+            settingViewModel.bluetoothConditions.postValue(
                 EnablerUtil.listBluetoothCondition(requireContext())
             )
         }
         AppExecutors.execute {
-            settingViewModel.isAppEnabled?.postValue(
+            settingViewModel.isAppEnabled.postValue(
                 EnablerUtil.getAppEnabled(requireContext())
             )
         }
         AppExecutors.execute {
-            settingViewModel.isConditionEnabled?.postValue(
+            settingViewModel.isConditionEnabled.postValue(
                 EnablerUtil.getConditionEnabled(requireContext())
             )
         }
@@ -299,7 +299,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .create().show()
             }
         } else if (checkedId == R.id.radioAccDisable) {
-            if (activity != null && NaviToTeslaAccessibilityService.Companion.isAccessibilityServiceEnabled(
+            if (activity != null && NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
                     activity
                 )
             ) {
