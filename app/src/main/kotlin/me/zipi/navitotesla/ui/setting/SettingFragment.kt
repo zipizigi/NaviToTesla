@@ -53,20 +53,20 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
 
         conditionRecyclerAdapter = ConditionRecyclerAdapter(object : OnDeleteButtonClicked {
             override fun onClick(position: Int) {
-                if (activity == null || context == null) {
-                    return
+                activity?.run {
+                    AlertDialog.Builder(this)
+                        .setCancelable(true)
+                        .setTitle(getString(R.string.removeCondition))
+                        .setMessage(getString(R.string.dialogRemoveCondition))
+                        .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
+                            removeBluetoothDevice(
+                                position
+                            )
+                        }
+                        .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                        .show()
                 }
-                AlertDialog.Builder(requireActivity())
-                    .setCancelable(true)
-                    .setTitle(getString(R.string.removeCondition))
-                    .setMessage(getString(R.string.dialogRemoveCondition))
-                    .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
-                        removeBluetoothDevice(
-                            position
-                        )
-                    }
-                    .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
-                    .show()
+
             }
         })
         binding.recylerBluetooth.adapter = conditionRecyclerAdapter
@@ -83,7 +83,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
             }
             val bluetooth: String =
                 settingViewModel.bluetoothConditions.value!![position]
-            EnablerUtil.removeBluetoothCondition(requireContext(), bluetooth)
+            context?.run { EnablerUtil.removeBluetoothCondition(this, bluetooth) }
             updateConditions()
         }
     }
@@ -96,16 +96,14 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     private fun updateConditions() {
         AppExecutors.execute {
             if (context != null && activity != null) {
-                val appEnabled = EnablerUtil.getAppEnabled(requireContext())
-                val conditionEnabled = EnablerUtil.getConditionEnabled(requireContext())
+                val appEnabled = context?.let { EnablerUtil.getAppEnabled(it) } ?: true
+                val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled(it) } ?: false
                 val accEnabled: Boolean =
-                    NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
-                        context
-                    )
-                if (activity == null) {
-                    return@execute
-                }
-                requireActivity().runOnUiThread {
+                    context?.let {
+                        NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
+                    } ?: false
+
+                activity?.runOnUiThread {
                     binding.radioGroupAppEnable.check(if (appEnabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
                     binding.radioGroupConditionEnable.check(if (conditionEnabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id)
                     if (accEnabled) {
@@ -117,19 +115,25 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
             }
         }
         AppExecutors.execute {
-            settingViewModel.bluetoothConditions.postValue(
-                EnablerUtil.listBluetoothCondition(requireContext())
-            )
+            context?.run {
+                settingViewModel.bluetoothConditions.postValue(
+                    EnablerUtil.listBluetoothCondition(this)
+                )
+            }
         }
         AppExecutors.execute {
-            settingViewModel.isAppEnabled.postValue(
-                EnablerUtil.getAppEnabled(requireContext())
-            )
+            context?.run {
+                settingViewModel.isAppEnabled.postValue(
+                    EnablerUtil.getAppEnabled(this)
+                )
+            }
         }
         AppExecutors.execute {
-            settingViewModel.isConditionEnabled.postValue(
-                EnablerUtil.getConditionEnabled(requireContext())
-            )
+            context?.run {
+                settingViewModel.isConditionEnabled.postValue(
+                    EnablerUtil.getConditionEnabled(this)
+                )
+            }
         }
     }
 
