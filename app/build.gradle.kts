@@ -89,7 +89,7 @@ dependencies {
     implementation("net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-    implementation("androidx.work:work-runtime-ktx:2.8.1")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     val lifecycleVersion = "2.6.2"
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
