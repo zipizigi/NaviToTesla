@@ -9,5 +9,11 @@
   "labels": [
     "renovate",
     "type: build"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "automerge": true
+    }
   ]
 }
