@@ -1,11 +1,11 @@
 plugins {
-    id("com.android.application")
     kotlin("android")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-    id("com.google.firebase.firebase-perf")
-    id("com.google.devtools.ksp")
-    id("org.jlleitschuh.gradle.ktlint")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.google.gms.service)
+    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.firebase.perf)
+    alias(libs.plugins.ktlint)
 }
 ksp {
     arg { listOf("room.schemaLocation=$projectDir/schemas") }
@@ -19,7 +19,7 @@ android {
         minSdk = 23
         targetSdk = 34
 
-        versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1") ?: 1
+        versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1")
         versionName = System.getenv("RELEASE") ?: "1.0"
     }
 
@@ -79,49 +79,35 @@ android {
 
 dependencies {
 
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.10.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.security.crypto)
 
-    implementation("com.github.Piashsarker:AndroidAppUpdateLibrary:1.0.4")
-    implementation("net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation(libs.androidAppUpdateLibrary)
+    implementation(libs.keyboardvisibilityevent)
+    implementation(libs.gson)
+    implementation(libs.androidx.work.runtime.ktx)
 
-    val lifecycleVersion = "2.6.2"
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
-    val navigationVersion = "2.7.5"
-    implementation("androidx.navigation:navigation-fragment-ktx:$navigationVersion")
-    implementation("androidx.navigation:navigation-ui-ktx:$navigationVersion")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
+    implementation(libs.bundles.androidx.lifecycle)
+    implementation(libs.bundles.androidx.navigation)
+    implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.androidx.concurrent.futures.ktx)
 
-    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation(libs.commons.lang3)
 
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    annotationProcessor("androidx.room:room-compiler:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation(libs.bundles.room)
+    annotationProcessor(libs.room.compiler)
+    ksp(libs.room.compiler)
 
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.bundles.retrofit)
 
-    implementation("android.arch.lifecycle:extensions:1.1.1")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.bundles.firebase)
 
-    implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
-    implementation("com.google.firebase:firebase-config")
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("com.google.firebase:firebase-perf")
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.espresso)
 }
 ktlint {
     android.set(true)
