@@ -1,0 +1,68 @@
+[versions]
+kotlin = "1.9.21"
+room = "2.6.1"
+androidx-navigation = "2.7.5"
+androidx-lifecycle = "2.6.2"
+retrofit = "2.9.0"
+
+[plugins]
+android-application = "com.android.application:8.2.0"
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
+ksp = "com.google.devtools.ksp:1.9.21-1.0.15"
+google-gms-service = "com.google.gms.google-services:4.4.0"
+firebase-crashlytics = "com.google.firebase.crashlytics:2.9.9"
+firebase-perf = "com.google.firebase.firebase-perf:1.4.2"
+ktlint = "org.jlleitschuh.gradle.ktlint:12.0.2"
+
+[libraries]
+
+androidAppUpdateLibrary = "com.github.Piashsarker:AndroidAppUpdateLibrary:1.0.4"
+androidx-appcompat = "androidx.appcompat:appcompat:1.6.1"
+
+androidx-concurrent-futures-ktx = "androidx.concurrent:concurrent-futures-ktx:1.1.0"
+androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.1.4"
+androidx-legacy-support-v4 = "androidx.legacy:legacy-support-v4:1.0.0"
+androidx-security-crypto = "androidx.security:security-crypto:1.1.0-alpha06"
+androidx-work-runtime-ktx = "androidx.work:work-runtime-ktx:2.9.0"
+
+
+commons-lang3 = "org.apache.commons:commons-lang3:3.14.0"
+
+gson = "com.google.code.gson:gson:2.10.1"
+keyboardvisibilityevent = "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3"
+material = "com.google.android.material:material:1.10.0"
+
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-sqlite = "androidx.sqlite:sqlite-ktx:2.4.0"
+
+androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidx-navigation" }
+androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidx-navigation" }
+
+androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-extensions = "android.arch.lifecycle:extensions:1.1.1"
+
+firebase-bom = "com.google.firebase:firebase-bom:32.6.0"
+firebase-config = { module = "com.google.firebase:firebase-config" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+firebase-perf = { module = "com.google.firebase:firebase-perf" }
+
+junit = "junit:junit:4.13.2"
+androidx-test-junit = "androidx.test.ext:junit:1.1.5"
+androidx-test-espresso = "androidx.test.espresso:espresso-core:3.5.1"
+
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-converter = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+okhttp3 = "com.squareup.okhttp3:okhttp:4.12.0"
+
+[bundles]
+room = ["room-runtime", "room-ktx", "androidx-sqlite"]
+androidx-navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
+androidx-lifecycle = ["androidx-lifecycle-livedata", "androidx-lifecycle-viewmodel", "androidx-lifecycle-common", "androidx-lifecycle-extensions"]
+retrofit = ["retrofit", "retrofit-converter", "okhttp3"]
+firebase = ["firebase-config", "firebase-analytics", "firebase-crashlytics", "firebase-perf"]
+#androidx-compose = [ "androidx-compose-foundation", "androidx-compose-ui", "androidx-compose-material", "androidx-compose-uiTooling" ]
