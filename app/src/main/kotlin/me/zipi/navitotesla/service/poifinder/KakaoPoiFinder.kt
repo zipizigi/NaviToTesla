@@ -15,8 +15,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class KakaoPoiFinder : PoiFinder {
-    override fun parseDestination(notificationText: String): String {
-        /*
+    override fun parseDestination(notificationText: String): String {/*
          * 목적지 : ~~~~
          */
         return notificationText.replace("목적지 : ", "").trim { it <= ' ' }
@@ -28,13 +27,9 @@ class KakaoPoiFinder : PoiFinder {
         val response = kakaoMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "Kakao api error: " + response.errorBody())
-            AnalysisUtil.log(
-                "Kakao api error: " + if (response.errorBody() == null) "" else response.errorBody()!!
-                    .string()
-            )
+            AnalysisUtil.log("Kakao api error: " + if (response.errorBody() == null) "" else response.errorBody()!!.string())
         }
-        if (response.isSuccessful && response.body() != null
-        ) {
+        if (response.isSuccessful && response.body() != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (place in response.body()!!.documents) {
                 val poi = Poi(
@@ -42,7 +37,7 @@ class KakaoPoiFinder : PoiFinder {
                     roadAddress = place.getRoadAddressName(withLocalName),
                     address = place.addressName,
                     longitude = place.longitude,
-                    latitude = place.latitude
+                    latitude = place.latitude,
                 )
                 poiList.add(poi)
             }
@@ -56,25 +51,17 @@ class KakaoPoiFinder : PoiFinder {
     }
 
     companion object {
-        private val kakaoMapApi = Retrofit.Builder()
-            .baseUrl("https://dapi.kakao.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(Interceptor { chain: Interceptor.Chain ->
-                        val request = chain.request().newBuilder()
-                            .addHeader(
-                                "Authorization",
-                                "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey")
-                            )
-                            .build()
+        private val kakaoMapApi =
+            Retrofit.Builder().baseUrl("https://dapi.kakao.com").addConverterFactory(GsonConverterFactory.create()).client(
+                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).addInterceptor(
+                    Interceptor { chain: Interceptor.Chain ->
+                        val request = chain.request().newBuilder().addHeader(
+                            "Authorization",
+                            "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
+                        ).build()
                         chain.proceed(request)
-                    })
-                    .addInterceptor(HttpRetryInterceptor(10))
-                    .build()
-            )
-            .build().create(KakaoMapApi::class.java)
+                    },
+                ).addInterceptor(HttpRetryInterceptor(10)).build(),
+            ).build().create(KakaoMapApi::class.java)
     }
 }
