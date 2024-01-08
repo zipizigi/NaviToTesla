@@ -26,16 +26,18 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val DATABASE_NAME = "data.sqlite"
-        private var instance: AppDatabase? = null
-        fun getInstance(context: Context): AppDatabase {
-            if (instance == null) {
-                synchronized(AppDatabase::class.java) {
-                    if (instance == null) {
-                        instance = buildDatabase(context.applicationContext)
-                    }
+        private lateinit var instance: AppDatabase
+
+        fun initialize(applicationContext: Context) {
+            if (!this::instance.isInitialized) {
+                synchronized(AppDatabase::class) {
+                    instance = buildDatabase(applicationContext.applicationContext)
                 }
             }
-            return instance!!
+        }
+
+        fun getInstance(): AppDatabase {
+            return instance
         }
 
         /**

@@ -6,9 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
-import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
+import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
@@ -16,16 +16,14 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.google.common.util.concurrent.ListenableFuture
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 
 class ShareWorker(context: Context, workerParams: WorkerParameters) :
-    Worker(context, workerParams) {
+    CoroutineWorker(context, workerParams) {
     private val naviToTeslaService: NaviToTeslaService
     private val channelId = "location_share_channel"
 
@@ -33,13 +31,11 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
         naviToTeslaService = NaviToTeslaService(context)
     }
 
-    override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
-        return CallbackToFutureAdapter.getFuture {
-            it.set(ForegroundInfo(1, createNotification()))
-        }
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        return ForegroundInfo(1, createNotification())
     }
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         AnalysisUtil.log("Start share worker")
         val inputData = inputData
         val packageName = inputData.getString("packageName")!!

@@ -12,7 +12,8 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
-import me.zipi.navitotesla.AppExecutors
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import me.zipi.navitotesla.databinding.FavoriteDialogFragmentBinding
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
@@ -23,12 +24,12 @@ import java.util.Date
 
 class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListener,
     View.OnClickListener, RadioGroup.OnCheckedChangeListener {
-    private var poiArrayAdapter: PoiArrayAdapter? = null
+    private lateinit var poiArrayAdapter: PoiArrayAdapter
     private var dest: String? = null
 
     var onDismissListener: Runnable? = null
-    private var favoriteDialogViewModel: FavoriteDialogViewModel? = null
-    private var binding: FavoriteDialogFragmentBinding? = null
+    private lateinit var favoriteDialogViewModel: FavoriteDialogViewModel
+    private lateinit var binding: FavoriteDialogFragmentBinding
 
     constructor() : super()
     constructor(dest: String?) : super() {
@@ -43,101 +44,88 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
         favoriteDialogViewModel = ViewModelProvider(this)[FavoriteDialogViewModel::class.java]
         binding = FavoriteDialogFragmentBinding.inflate(inflater, container, false)
         poiArrayAdapter = PoiArrayAdapter(context, android.R.layout.simple_spinner_item)
-        poiArrayAdapter!!.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val spinner = binding!!.addressSelector
+        poiArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val spinner = binding.addressSelector
         spinner.adapter = poiArrayAdapter
         spinner.onItemSelectedListener = this
-        binding!!.btnDestSearch.setOnClickListener(this)
-        binding!!.btnFavoriteDismiss.setOnClickListener(this)
-        binding!!.btnFavoriteSave.setOnClickListener(this)
-        binding!!.radioGroup.setOnCheckedChangeListener(this)
-        favoriteDialogViewModel!!.poiList.observe(viewLifecycleOwner) { updateSpinner() }
-        return binding!!.root
+        binding.btnDestSearch.setOnClickListener(this)
+        binding.btnFavoriteDismiss.setOnClickListener(this)
+        binding.btnFavoriteSave.setOnClickListener(this)
+        binding.radioGroup.setOnCheckedChangeListener(this)
+        favoriteDialogViewModel.poiList.observe(viewLifecycleOwner) { updateSpinner() }
+        return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        if (dest != null && binding != null) {
-            binding!!.txtDest.setText(dest)
+        if (dest != null) {
+            binding.txtDest.setText(dest)
             searchDest()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        binding = null
-        poiArrayAdapter = null
         dest = null
     }
 
     override fun onClick(v: View) {
-        if (binding == null) {
-            return
-        }
         when (v.id) {
-            binding!!.btnDestSearch.id -> {
+            binding.btnDestSearch.id -> {
                 searchDest()
             }
-            binding!!.btnFavoriteDismiss.id -> {
+
+            binding.btnFavoriteDismiss.id -> {
                 dismiss()
             }
-            binding!!.btnFavoriteSave.id -> {
+
+            binding.btnFavoriteSave.id -> {
                 saveFavorite()
             }
         }
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-        if (binding == null || favoriteDialogViewModel?.poiList?.value == null) {
+        if (favoriteDialogViewModel.poiList.value == null) {
             return
         }
-        val poi: Poi = favoriteDialogViewModel!!.poiList.value!![position]
-        favoriteDialogViewModel!!.selectedPoi.postValue(poi)
-        if (binding!!.radioRoadAddress.isChecked) {
-            binding!!.txtAddress.setText(poi.getRoadAddress())
-        } else if (binding!!.radioAddress.isChecked) {
-            binding!!.txtAddress.setText(poi.getAddress())
+        val poi: Poi = favoriteDialogViewModel.poiList.value!![position]
+        favoriteDialogViewModel.selectedPoi.postValue(poi)
+        if (binding.radioRoadAddress.isChecked) {
+            binding.txtAddress.setText(poi.getRoadAddress())
+        } else if (binding.radioAddress.isChecked) {
+            binding.txtAddress.setText(poi.getAddress())
         } else {
-            binding!!.txtAddress.setText(poi.getGpsAddress())
+            binding.txtAddress.setText(poi.getGpsAddress())
         }
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {}
     private fun saveFavorite() {
-        if (binding == null) {
-            return
-        }
-        val entity =
-
-            PoiAddressEntity(
-                poi = binding!!.txtDest.text.toString(),
-                address = binding!!.txtAddress.text.toString(),
-                registered = true,
-                created = Date()
-            )
-
-        AppExecutors.execute {
+        val entity = PoiAddressEntity(
+            poi = binding.txtDest.text.toString(),
+            address = binding.txtAddress.text.toString(),
+            registered = true,
+            created = Date()
+        )
+        viewLifecycleOwner.lifecycleScope.launch {
             context?.let {
-                AppDatabase.getInstance(it).poiAddressDao().insertPoi(entity)
+                AppDatabase.getInstance().poiAddressDao().insertPoi(entity)
                 activity?.let { activity ->
                     activity.runOnUiThread { dismiss() }
                     onDismissListener?.run()
                 }
             }
-
         }
     }
 
     private fun searchDest() {
-        AppExecutors.execute {
-            if (binding == null) {
-                return@execute
-            }
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val pois = PoiFinderFactory.kakaoPoiFinder.listPoiAddress(
-                    binding!!.txtDest.text.toString().trim()
+                    binding.txtDest.text.toString().trim()
                 )
-                favoriteDialogViewModel?.poiList?.postValue(pois)
+                favoriteDialogViewModel.poiList.postValue(pois)
             } catch (e: Exception) {
                 AnalysisUtil.recordException(e)
             }
@@ -145,29 +133,28 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
     }
 
     private fun updateSpinner() {
-        if (poiArrayAdapter != null) {
-            poiArrayAdapter!!.clear()
-            poiArrayAdapter!!.addAll(favoriteDialogViewModel?.poiList?.value ?: listOf())
-            poiArrayAdapter!!.notifyDataSetChanged()
-        }
+        poiArrayAdapter.clear()
+        poiArrayAdapter.addAll(favoriteDialogViewModel.poiList.value ?: listOf())
+        poiArrayAdapter.notifyDataSetChanged()
+
     }
 
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-        if (favoriteDialogViewModel?.selectedPoi?.value == null || binding == null) {
+        if (favoriteDialogViewModel.selectedPoi.value == null) {
             return
         }
 
-        if (binding!!.radioRoadAddress.id == group.checkedRadioButtonId) {
-            binding!!.txtAddress.setText(
-                favoriteDialogViewModel!!.selectedPoi.value?.getRoadAddress()
+        if (binding.radioRoadAddress.id == group.checkedRadioButtonId) {
+            binding.txtAddress.setText(
+                favoriteDialogViewModel.selectedPoi.value?.getRoadAddress()
             )
-        } else if (binding!!.radioAddress.id == group.checkedRadioButtonId) {
-            binding!!.txtAddress.setText(
-                favoriteDialogViewModel!!.selectedPoi.value?.getAddress()
+        } else if (binding.radioAddress.id == group.checkedRadioButtonId) {
+            binding.txtAddress.setText(
+                favoriteDialogViewModel.selectedPoi.value?.getAddress()
             )
         } else {
-            binding!!.txtAddress.setText(
-                favoriteDialogViewModel!!.selectedPoi.value?.getGpsAddress()
+            binding.txtAddress.setText(
+                favoriteDialogViewModel.selectedPoi.value?.getGpsAddress()
             )
         }
     }
