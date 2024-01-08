@@ -22,8 +22,8 @@ import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 import java.util.Date
 
-class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListener,
-    View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+class FavoriteDialogFragment
+    : DialogFragment, AdapterView.OnItemSelectedListener, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
     private lateinit var poiArrayAdapter: PoiArrayAdapter
     private var dest: String? = null
 
@@ -39,7 +39,7 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         favoriteDialogViewModel = ViewModelProvider(this)[FavoriteDialogViewModel::class.java]
         binding = FavoriteDialogFragmentBinding.inflate(inflater, container, false)
@@ -106,7 +106,7 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
             poi = binding.txtDest.text.toString(),
             address = binding.txtAddress.text.toString(),
             registered = true,
-            created = Date()
+            created = Date(),
         )
         viewLifecycleOwner.lifecycleScope.launch {
             context?.let {
@@ -123,7 +123,7 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val pois = PoiFinderFactory.kakaoPoiFinder.listPoiAddress(
-                    binding.txtDest.text.toString().trim()
+                    binding.txtDest.text.toString().trim(),
                 )
                 favoriteDialogViewModel.poiList.postValue(pois)
             } catch (e: Exception) {
@@ -146,21 +146,21 @@ class FavoriteDialogFragment : DialogFragment, AdapterView.OnItemSelectedListene
 
         if (binding.radioRoadAddress.id == group.checkedRadioButtonId) {
             binding.txtAddress.setText(
-                favoriteDialogViewModel.selectedPoi.value?.getRoadAddress()
+                favoriteDialogViewModel.selectedPoi.value?.getRoadAddress(),
             )
         } else if (binding.radioAddress.id == group.checkedRadioButtonId) {
             binding.txtAddress.setText(
-                favoriteDialogViewModel.selectedPoi.value?.getAddress()
+                favoriteDialogViewModel.selectedPoi.value?.getAddress(),
             )
         } else {
             binding.txtAddress.setText(
-                favoriteDialogViewModel.selectedPoi.value?.getGpsAddress()
+                favoriteDialogViewModel.selectedPoi.value?.getGpsAddress(),
             )
         }
     }
 
     class PoiArrayAdapter(context: Context?, @LayoutRes resource: Int) : ArrayAdapter<Poi?>(
-        context!!, resource
+        context!!, resource,
     ) {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val view = super.getView(position, convertView, parent) as TextView

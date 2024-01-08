@@ -15,15 +15,14 @@ import me.zipi.navitotesla.util.ResponseCloser
 import retrofit2.Response
 import java.io.IOException
 
-class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShareBase(context),
-    TeslaShare {
+class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShareBase(context), TeslaShare {
     @Throws(IOException::class)
     override suspend fun share(address: String) {
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 Skip\n$address")
             try {
                 Thread.sleep(500)
-            } catch (ignore: InterruptedException) {
+            } catch (_: InterruptedException) {
             }
             return
         }
@@ -38,18 +37,12 @@ class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShar
             result = response.body()
         }
         if (result != null && result.error == null && (result.response?.result == true)) {
-            AnalysisUtil.makeToast(
-                context,
-                context.getString(R.string.sendDestinationSuccess) + "\n" + address
-            )
+            AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationSuccess) + "\n" + address)
             AnalysisUtil.log("send_success")
             AnalysisUtil.logEvent("share_by_api_success", Bundle())
         } else {
             Log.w(NaviToTeslaService::class.java.name, response.toString())
-            AnalysisUtil.makeToast(
-                context,
-                context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: "")
-            )
+            AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: ""))
 
             AnalysisUtil.log("send_fail")
             AnalysisUtil.setCustomKey("address", address)

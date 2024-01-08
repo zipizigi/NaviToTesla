@@ -9,21 +9,16 @@ object PoiFinderFactory {
     private const val kakaoPackage = "com.locnall.KimGiSa"
     private const val naverPackage = "com.nhn.android.nmap"
     fun isNaviSupport(packageName: String): Boolean {
-        return (packageName.equals(tmapPackage, ignoreCase = true)
-                || packageName.equals(tmapSKPackage, ignoreCase = true)
-                || packageName.equals(kakaoPackage, ignoreCase = true)
-                || packageName.equals(
-            naverPackage,
-            ignoreCase = true
-        ))
+        return (packageName.equals(tmapPackage, ignoreCase = true) ||
+            packageName.equals(tmapSKPackage, ignoreCase = true) ||
+            packageName.equals(kakaoPackage, ignoreCase = true) ||
+            packageName.equals(naverPackage, ignoreCase = true))
     }
 
     @Throws(NotSupportedNaviException::class)
     fun getPoiFinder(packageName: String): PoiFinder {
-        if (packageName.equals(tmapPackage, ignoreCase = true) || packageName.equals(
-                tmapSKPackage,
-                ignoreCase = true
-            )
+        if (packageName.equals(tmapPackage, ignoreCase = true) ||
+            packageName.equals(tmapSKPackage, ignoreCase = true)
         ) {
             return TMapPoiFinder()
         } else if (packageName.equals(kakaoPackage, ignoreCase = true)) {

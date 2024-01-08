@@ -29,10 +29,7 @@ class NaverPoiFinder : PoiFinder {
         val response = naverMapApi.search(String.format("\"%s\"", poiName))
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "naver api error: " + response.errorBody())
-            AnalysisUtil.log(
-                "naver api error: " + if (response.errorBody() == null) "" else response.errorBody()!!
-                    .string()
-            )
+            AnalysisUtil.log("naver api error: " + if (response.errorBody() == null) "" else response.errorBody()!!.string())
         }
         if (response.isSuccessful && response.body()?.result?.site?.list != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
@@ -42,7 +39,7 @@ class NaverPoiFinder : PoiFinder {
                     roadAddress = place.getRoadAddressName(withLocalName),
                     address = place.address,
                     longitude = place.longitude,
-                    latitude = place.latitude
+                    latitude = place.latitude,
                 )
                 poiList.add(poi)
             }
@@ -57,17 +54,11 @@ class NaverPoiFinder : PoiFinder {
     }
 
     companion object {
-        private val naverMapApi = Retrofit.Builder()
-            .baseUrl("https://m.map.naver.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(HttpRetryInterceptor(10))
-                    .build()
-            )
-            .build().create(NaverMapApi::class.java)
+        private val naverMapApi =
+            Retrofit.Builder().baseUrl("https://m.map.naver.com").addConverterFactory(GsonConverterFactory.create()).client(
+                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS)
+                    .addInterceptor(HttpRetryInterceptor(10)).build(),
+            ).build().create(NaverMapApi::class.java)
 
         // 접근성 도구로 판단한 목적지 임시 저장
         private var destination: String? = null

@@ -140,12 +140,12 @@ class NaviToTeslaService(context: Context) {
         NotSupportedNaviException::class,
         DuplicatePoiException::class,
         IgnorePoiException::class,
-        IOException::class
+        IOException::class,
     )
     private suspend fun getAddress(
         packageName: String,
         notificationTitle: String?,
-        notificationText: String?
+        notificationText: String?,
     ): String {
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
@@ -153,7 +153,7 @@ class NaviToTeslaService(context: Context) {
         val poiName = poiFinder.parseDestination(notificationText ?: "")
         if (poiName.isEmpty() || poiFinder.isIgnore(
                 notificationTitle ?: "",
-                notificationText ?: ""
+                notificationText ?: "",
             )
         ) {
             AnalysisUtil.logEvent("address_ignore_or_not_found", eventParam)

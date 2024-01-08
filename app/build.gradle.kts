@@ -111,6 +111,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso)
 }
 ktlint {
+    version.set("1.1.0")
     android.set(true)
     outputColorName.set("RED")
 }

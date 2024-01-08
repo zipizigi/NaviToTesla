@@ -42,7 +42,7 @@ object AppUpdaterUtil {
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .addInterceptor(HttpRetryInterceptor(10))
-                .build()
+                .build(),
         )
         .build().create(GithubApi::class.java)
     private var dialogLastCheck = 0L
@@ -82,7 +82,7 @@ object AppUpdaterUtil {
                     var release: Release? = null
                     val response = githubApi.getReleases(
                         RemoteConfigUtil.getString("repoOwner"),
-                        RemoteConfigUtil.getString("repoName")
+                        RemoteConfigUtil.getString("repoName"),
                     )
 
                     if (response.code() == 403) {
@@ -106,7 +106,7 @@ object AppUpdaterUtil {
                         if (release == null) "" else release.tagName + "\n" + release.body
 
                     AlertDialog.Builder(
-                        activity
+                        activity,
                     )
                         .setCancelable(true)
                         .setTitle(activity.getString(R.string.existsUpdate))
@@ -114,12 +114,12 @@ object AppUpdaterUtil {
                         .setPositiveButton(activity.getString(R.string.update)) { _: DialogInterface?, _: Int ->
                             startUpdate(
                                 activity,
-                                apkUrl
+                                apkUrl,
                             )
                         }
                         .setNeutralButton(activity.getString(R.string.ignoreUpdate)) { _: DialogInterface?, _: Int ->
                             AlertDialog.Builder(
-                                activity
+                                activity,
                             )
                                 .setTitle(activity.getString(R.string.guide))
                                 .setMessage(activity.getString(R.string.guideIgnoreUpdate))
@@ -153,7 +153,7 @@ object AppUpdaterUtil {
             AnalysisUtil.log("Start update app")
             val appPackageName = if (BuildConfig.DEBUG) context.packageName.replace(
                 ".debug",
-                ""
+                "",
             ) else context.packageName
             if (isPlayStoreInstalled(context) && BuildConfig.BUILD_MODE == "playstore") {
                 try {
@@ -161,8 +161,8 @@ object AppUpdaterUtil {
                     context.startActivity(
                         Intent(
                             Intent.ACTION_VIEW,
-                            Uri.parse("market://details?id=$appPackageName")
-                        )
+                            Uri.parse("market://details?id=$appPackageName"),
+                        ),
                     )
                     clearDoNotShow()
                     return
@@ -176,16 +176,19 @@ object AppUpdaterUtil {
                     DownloadApk(context).startDownloadingApk(
                         apkUrl,
                         apkUrl.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                            .toTypedArray()[apkUrl.split("/".toRegex())
-                            .dropLastWhile { it.isEmpty() }
-                            .toTypedArray().size - 1].replace(".apk", ""))
+                            .toTypedArray()[
+                            apkUrl.split("/".toRegex())
+                                .dropLastWhile { it.isEmpty() }
+                                .toTypedArray().size - 1,
+                        ].replace(".apk", ""),
+                    )
                 } else {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)))
                 }
             } else {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName")
+                    Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName"),
                 )
                 context.startActivity(intent)
             }
@@ -201,7 +204,7 @@ object AppUpdaterUtil {
         try {
             val latestUrl = String.format(
                 "https://github.com/%s/%s/releases/latest",
-                RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName")
+                RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"),
             )
             val con = URL(latestUrl).openConnection() as HttpURLConnection
             con.instanceFollowRedirects = false
@@ -209,8 +212,10 @@ object AppUpdaterUtil {
             if (con.responseCode == 302 || con.responseCode == 304) {
                 val location = con.getHeaderField("Location")
                 return@withContext location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()[location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray().size - 1]
+                    .toTypedArray()[
+                    location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+                        .toTypedArray().size - 1,
+                ]
             }
         } catch (e: Exception) {
             Log.w(AppUpdaterUtil::class.java.name, "getLatestVersion fail", e)
@@ -222,7 +227,7 @@ object AppUpdaterUtil {
     fun getLatestApkUrl(release: Release?): String {
         var defaultApkUrl = String.format(
             "https://github.com/%s/%s/releases/latest",
-            RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName")
+            RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"),
         )
         if (release?.assets == null || release.assets!!.isEmpty()) {
             return defaultApkUrl
@@ -271,7 +276,7 @@ object AppUpdaterUtil {
         }
         val granted =
             (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                    && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
         if (!granted) {
             activity.runOnUiThread {
                 AlertDialog.Builder(activity)
@@ -281,9 +286,9 @@ object AppUpdaterUtil {
                         activity.requestPermissions(
                             arrayOf(
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
                             ),
-                            2
+                            2,
                         )
                     }
                     .setCancelable(false)
@@ -307,7 +312,7 @@ object AppUpdaterUtil {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val mChannel = NotificationChannel(
                     "update_notification_channel", "Update notification",
-                    NotificationManager.IMPORTANCE_LOW
+                    NotificationManager.IMPORTANCE_LOW,
                 )
                 notificationManager.createNotificationChannel(mChannel)
             }
@@ -315,7 +320,7 @@ object AppUpdaterUtil {
                 context,
                 0,
                 context.packageManager.getLaunchIntentForPackage(context.packageName),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             val notification = NotificationCompat.Builder(context, "update_notification_channel")
                 .setContentIntent(contentIntent)
