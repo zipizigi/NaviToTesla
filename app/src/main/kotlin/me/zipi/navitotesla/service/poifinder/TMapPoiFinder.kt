@@ -29,9 +29,9 @@ class TMapPoiFinder : PoiFinder {
     }
 
     @Throws(IOException::class)
-    override fun listPoiAddress(poiName: String): List<Poi> {
+    override suspend fun listPoiAddress(poiName: String): List<Poi> {
         val listPoi: MutableList<Poi> = ArrayList()
-        val response = tMapApi.search(poiName).execute()
+        val response = tMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "Tmap api error: " + response.errorBody())
             AnalysisUtil.log("Tmap api error: " + response.errorBody())

@@ -6,7 +6,6 @@ import android.util.Log
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
-import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.model.ShareRequest
 import me.zipi.navitotesla.model.TeslaApiResponse
@@ -19,7 +18,7 @@ import java.io.IOException
 class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShareBase(context),
     TeslaShare {
     @Throws(IOException::class)
-    override fun share(address: String) {
+    override suspend fun share(address: String) {
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 Skip\n$address")
             try {
@@ -29,11 +28,10 @@ class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShar
             return
         }
         AnalysisUtil.log("share using tesla api share")
-        val appRepository =
-            AppRepository.getInstance(context, AppDatabase.getInstance(context))
+        val appRepository = AppRepository.getInstance()
 
         val response: Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> =
-            appRepository.teslaApi.share(vehicleId, ShareRequest(address)).execute()
+            appRepository.teslaApi.share(vehicleId, ShareRequest(address))
 
         var result: TeslaApiResponse.ObjectType<TeslaApiResponse.Result>? = null
         if (response.isSuccessful) {

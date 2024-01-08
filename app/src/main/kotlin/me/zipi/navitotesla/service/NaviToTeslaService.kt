@@ -7,9 +7,11 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.perf.metrics.AddTrace
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
-import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.exception.DuplicatePoiException
 import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.exception.IgnorePoiException
@@ -37,10 +39,7 @@ class NaviToTeslaService(context: Context) {
 
     init {
         this.context = context.applicationContext
-        appRepository = AppRepository.getInstance(
-            this.context,
-            AppDatabase.getInstance(this.context)
-        )
+        appRepository = AppRepository.getInstance()
     }
 
     fun isAddress(text: String): Boolean {
@@ -63,13 +62,13 @@ class NaviToTeslaService(context: Context) {
     /**
      * 안내 종료
      */
-    fun notificationClear() {
-        PreferencesUtil.put(context, "lastAddress", "")
+    fun notificationClear() = CoroutineScope(Dispatchers.IO).launch {
+        PreferencesUtil.put("lastAddress", "")
     }
 
     @AddTrace(name = "share")
-    fun share(packageName: String, notificationTitle: String?, notificationText: String?) {
-        if (!EnablerUtil.isSendingCheck(context)) {
+    suspend fun share(packageName: String, notificationTitle: String?, notificationText: String?) {
+        if (!EnablerUtil.isSendingCheck()) {
             AnalysisUtil.log("skip send share because condition")
             return
         }
@@ -80,7 +79,7 @@ class NaviToTeslaService(context: Context) {
         eventParam.putString("package", packageName)
         try {
             val address = getAddress(packageName, notificationTitle, notificationText)
-            val lastAddress = PreferencesUtil.getString(context, "lastAddress", "")
+            val lastAddress = PreferencesUtil.getString("lastAddress", "")
             if (lastAddress != address) {
                 try {
                     share(address)
@@ -119,12 +118,12 @@ class NaviToTeslaService(context: Context) {
     }
 
     @Throws(IOException::class, ForbiddenException::class)
-    fun share(address: String) {
-        PreferencesUtil.put(context, "lastAddress", address)
+    suspend fun share(address: String) {
+        PreferencesUtil.put("lastAddress", address)
         if (address.isNotEmpty()) {
             makeToast(context.getString(R.string.requestSend) + "\n" + address)
-            val shareMode = PreferencesUtil.getString(context, "shareMode", "app")
-            if (shareMode == "api" && PreferencesUtil.loadToken(context) != null) {
+            val shareMode = PreferencesUtil.getString("shareMode", "app")
+            if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
                 if (refreshToken() == null) {
                     return
                 }
@@ -143,7 +142,7 @@ class NaviToTeslaService(context: Context) {
         IgnorePoiException::class,
         IOException::class
     )
-    private fun getAddress(
+    private suspend fun getAddress(
         packageName: String,
         notificationTitle: String?,
         notificationText: String?
@@ -177,22 +176,26 @@ class NaviToTeslaService(context: Context) {
         return address
     }
 
-    val token: Token?
-        get() = PreferencesUtil.loadToken(context)
+//    val token: Token?
+//        get() = PreferencesUtil.loadToken()
 
-    fun expireToken() {
-        PreferencesUtil.expireToken(context)
+    suspend fun getToken(): Token? {
+        return PreferencesUtil.loadToken()
+    }
+
+    private suspend fun expireToken() {
+        PreferencesUtil.expireToken()
     }
 
     @AddTrace(name = "refreshToken")
-    fun refreshToken(): Token? {
+    suspend fun refreshToken(): Token? {
         return this.refreshToken(null)
     }
 
-    fun refreshToken(refreshToken: String?): Token? {
+    suspend fun refreshToken(refreshToken: String?): Token? {
         var actualRefreshToken = refreshToken
         if (refreshToken == null) {
-            val token = PreferencesUtil.loadToken(context)
+            val token = PreferencesUtil.loadToken()
             if (token == null) {
                 makeToast(context.getString(R.string.notExistsToken))
                 return null
@@ -205,10 +208,10 @@ class NaviToTeslaService(context: Context) {
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
-            val newToken: Response<Token?> = appRepository.teslaAuthApi
-                .refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!)).execute()
+            val newToken: Response<Token> = appRepository.teslaAuthApi
+                .refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
             if (newToken.isSuccessful && newToken.body() != null) {
-                PreferencesUtil.saveToken(context, newToken.body()!!)
+                PreferencesUtil.saveToken(newToken.body()!!)
                 token = newToken.body()
                 AnalysisUtil.log("Success refresh access token")
             }
@@ -225,10 +228,10 @@ class NaviToTeslaService(context: Context) {
     }
 
     @AddTrace(name = "getVehicles")
-    fun getVehicles(token: Token?): List<Vehicle> {
+    suspend fun getVehicles(token: Token?): List<Vehicle> {
         var actualToken = token
         if (token == null) {
-            actualToken = PreferencesUtil.loadToken(context)
+            actualToken = PreferencesUtil.loadToken()
         }
         if (actualToken?.refreshToken == null) {
             makeToast(context.getString(R.string.requireToken))
@@ -239,8 +242,8 @@ class NaviToTeslaService(context: Context) {
             if (refreshToken() == null) {
                 return vehicles
             }
-            val response: Response<TeslaApiResponse.ListType<Vehicle>?> =
-                appRepository.teslaApi.vehicles().execute()
+            val response: Response<TeslaApiResponse.ListType<Vehicle>> =
+                appRepository.teslaApi.vehicles()
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
             } else if (response.isSuccessful && response.body() != null) {
@@ -260,14 +263,16 @@ class NaviToTeslaService(context: Context) {
     }
 
     fun saveVehicleId(id: Long) {
-        PreferencesUtil.put(context, "vehicleId", id)
+        CoroutineScope(Dispatchers.IO).launch {
+            PreferencesUtil.put("vehicleId", id)
+        }
     }
 
-    fun loadVehicleId(): Long {
-        return PreferencesUtil.getLong(context, "vehicleId", 0L)
+    suspend fun loadVehicleId(): Long {
+        return PreferencesUtil.getLong("vehicleId", 0L)
     }
 
-    fun clearPoiCache() {
+    suspend fun clearPoiCache() {
         appRepository.clearAllPoi()
     }
 }

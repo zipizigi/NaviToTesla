@@ -29,7 +29,10 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import me.zipi.navitotesla.AppExecutors
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.background.TokenWorker
@@ -51,8 +54,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
     private lateinit var binding: FragmentHomeBinding
     private lateinit var naviToTeslaService: NaviToTeslaService
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         if (this.activity != null) {
             this.requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
@@ -60,8 +62,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        homeViewModel.vehicleListLiveData
-            .observe(viewLifecycleOwner) { updateSpinner() }
+        homeViewModel.vehicleListLiveData.observe(viewLifecycleOwner) { updateSpinner() }
         homeViewModel.tokenLiveData.observe(viewLifecycleOwner) { renderToken() }
         homeViewModel.appVersion.observe(viewLifecycleOwner) { renderVersion() }
         homeViewModel.isUpdateAvailable.observe(viewLifecycleOwner) { renderVersion() }
@@ -71,15 +72,16 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         homeViewModel.isInstalledTeslaApp.observe(viewLifecycleOwner) { isInstalled: Boolean ->
             onChangeTeslaAppInstalled(isInstalled)
         }
-        homeViewModel.shareMode
-            .observe(viewLifecycleOwner) { mode: String -> onChangedTeslaShareMode(mode) }
+        homeViewModel.shareMode.observe(viewLifecycleOwner) { mode: String ->
+            onChangedTeslaShareMode(
+                mode
+            )
+        }
         binding.txtAccessToken.movementMethod = ScrollingMovementMethod()
         binding.radioGroupShareMode.setOnCheckedChangeListener(this)
-        setEventListener(
-            requireActivity(),
-            KeyboardVisibilityEventListener { isOpen: Boolean ->
-                binding.txtVersion.visibility = if (isOpen) View.INVISIBLE else View.VISIBLE
-            })
+        setEventListener(requireActivity(), KeyboardVisibilityEventListener { isOpen: Boolean ->
+            binding.txtVersion.visibility = if (isOpen) View.INVISIBLE else View.VISIBLE
+        })
         binding.btnSave.setOnClickListener(this)
         binding.btnPoiCacheClear.setOnClickListener(this)
         binding.btnPaste.setOnClickListener(this)
@@ -93,17 +95,15 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         super.onResume()
         accessibilityGrantedCheck()
         permissionGrantedCheck()
-        AppExecutors.execute { updateVersion() }
-        AppExecutors.execute { updateToken() }
-        AppExecutors.execute { updateLatestVersion() }
-        AppExecutors.execute { updateShareMode() }
-        AppExecutors.execute {
-            homeViewModel.isInstalledTeslaApp.postValue(
-                isTeslaAppInstalled
-            )
-        }
-        if (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing) {
-            AppExecutors.execute { AppUpdaterUtil.dialog(activity) }
+        lifecycleScope.launch {
+            launch { updateVersion() }
+            launch { updateToken() }
+            launch { updateLatestVersion() }
+            launch { updateShareMode() }
+            launch { homeViewModel.isInstalledTeslaApp.postValue(isTeslaAppInstalled) }
+            if (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing) {
+                launch { AppUpdaterUtil.dialog(activity, false) }
+            }
         }
     }
 
@@ -118,27 +118,28 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
     }
 
     override fun onLongClick(view: View): Boolean {
-        if (activity == null || !AnalysisUtil.isWritableLog) {
+        if (activity == null) {
             return false
         }
-        if (view.id == binding.txtVersion.id) {
-            var size = (AnalysisUtil.logFileSize / 1024.0).toInt()
-            var type = "KB"
-            if (size > 1024) {
-                type = "MB"
-                size /= 1024
-            }
-            AlertDialog.Builder(requireActivity())
-                .setCancelable(true)
-                .setTitle(getString(R.string.viewLogFile))
-                .setMessage(getString(R.string.guideViewLogFile, size, type))
-                .setPositiveButton(getString(R.string.open)) { _: DialogInterface?, _: Int -> openLogFile() }
-                .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
-                .setNeutralButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
-                    AppExecutors.execute { AnalysisUtil.deleteLogFile() }
+        lifecycleScope.launch {
+            if (view.id == binding.txtVersion.id && AnalysisUtil.isWritableLog) {
+                var size = (AnalysisUtil.logFileSize / 1024.0).toInt()
+                var type = "KB"
+                if (size > 1024) {
+                    type = "MB"
+                    size /= 1024
                 }
-                .show()
-            return true
+                launch(Dispatchers.Main) {
+                    AlertDialog.Builder(requireActivity()).setCancelable(true)
+                        .setTitle(getString(R.string.viewLogFile))
+                        .setMessage(getString(R.string.guideViewLogFile, size, type))
+                        .setPositiveButton(getString(R.string.open)) { _: DialogInterface?, _: Int -> openLogFile() }
+                        .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+                        .setNeutralButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
+                            AnalysisUtil.deleteLogFile()
+                        }.show()
+                }
+            }
         }
         return false
     }
@@ -186,8 +187,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                     .setTitle(getString(R.string.requireAccessibility))
                     .setMessage(getString(R.string.guideRequireAccessibility))
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .setCancelable(true)
-                    .show()
+                    .setCancelable(true).show()
                 nextAction = null
             }
         }
@@ -206,19 +206,17 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             requireContext()
         )
         if (!sets.contains(requireContext().packageName)) {
-            permissionAlertDialog = AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.grantPermission))
-                .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
-                .setPositiveButton(
-                    getString(R.string.confirm)
-                ) { _: DialogInterface?, _: Int ->
-                    if (permissionAlertDialog != null) {
-                        permissionAlertDialog = null
-                    }
-                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                }
-                .setCancelable(false)
-                .show()
+            permissionAlertDialog =
+                AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
+                    .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
+                    .setPositiveButton(
+                        getString(R.string.confirm)
+                    ) { _: DialogInterface?, _: Int ->
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    }.setCancelable(false).show()
             return
         }
         if (context == null || activity == null) {
@@ -229,33 +227,30 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             return
         }
         val granted =
-            (requireContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                    && requireContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            (requireContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && requireContext().checkSelfPermission(
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED)
         if (!granted) {
             permissionAlertDialog = AlertDialog.Builder(requireContext())
                 .setTitle(this.getString(R.string.grantPermission))
-                .setMessage(this.getString(R.string.guideGrantStoragePermission))
-                .setPositiveButton(
+                .setMessage(this.getString(R.string.guideGrantStoragePermission)).setPositiveButton(
                     this.getString(R.string.confirm)
                 ) { _: DialogInterface?, _: Int ->
                     requireActivity().requestPermissions(
                         arrayOf(
                             Manifest.permission.WRITE_EXTERNAL_STORAGE,
                             Manifest.permission.READ_EXTERNAL_STORAGE
-                        ),
-                        2
+                        ), 2
                     )
                     if (permissionAlertDialog != null) {
                         permissionAlertDialog = null
                     }
-                }
-                .setCancelable(false)
-                .show()
+                }.setCancelable(false).show()
         }
     }
 
-    private fun updateToken() {
-        homeViewModel.tokenLiveData.postValue(naviToTeslaService.token)
+    private suspend fun updateToken() {
+        homeViewModel.tokenLiveData.postValue(naviToTeslaService.getToken())
     }
 
     private fun renderToken() {
@@ -276,25 +271,27 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
     }
 
     private fun onTxtVersionClicked() {
-        AppExecutors.execute { AppUpdaterUtil.dialog(activity, true) }
+        lifecycleScope.launch { AppUpdaterUtil.dialog(activity, true) }
     }
 
     private fun onBtnPoiCacheClearClick() {
         binding.btnPoiCacheClear.isEnabled = false
-        AppExecutors.execute {
+        lifecycleScope.launch {
             if (context == null || activity == null) {
-                return@execute
+                return@launch
             }
             try {
                 naviToTeslaService.clearPoiCache()
-                AppUpdaterUtil.clearDoNotShow(requireContext())
-                PreferencesUtil.put(requireContext(), "lastNotifyAppVersionForAccessibility", "")
+                AppUpdaterUtil.clearDoNotShow()
+                PreferencesUtil.put("lastNotifyAppVersionForAccessibility", "")
             } catch (e: Exception) {
                 Log.w(this.javaClass.name, "clear poi cache error", e)
                 AnalysisUtil.recordException(e)
             }
             if (activity != null) {
-                requireActivity().runOnUiThread { binding.btnPoiCacheClear.isEnabled = true }
+                withContext(Dispatchers.Main) {
+                    binding.btnPoiCacheClear.isEnabled = true
+                }
             }
         }
     }
@@ -305,8 +302,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                 requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
             if (clipboard.primaryClip?.getItemAt(0)?.text != null) {
-                val pasteData =
-                    clipboard.primaryClip!!.getItemAt(0).text.toString().trim()
+                val pasteData = clipboard.primaryClip!!.getItemAt(0).text.toString().trim()
                 if (pasteData.matches("(^[\\w-]*\\.[\\w-]*\\.[\\w-]*$)".toRegex())) {
                     binding.txtRefreshToken.setText(pasteData)
                 }
@@ -315,12 +311,12 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
     }
 
     private fun onBtnTokenClearClick() {
-        homeViewModel.vehicleListLiveData.postValue(mutableListOf())
-        homeViewModel.refreshToken.postValue("")
-        AppExecutors.execute {
+        lifecycleScope.launch {
+            homeViewModel.vehicleListLiveData.postValue(mutableListOf())
+            homeViewModel.refreshToken.postValue("")
             if (context != null) {
-                PreferencesUtil.clear(requireContext())
-                homeViewModel.tokenLiveData.postValue(naviToTeslaService.token)
+                PreferencesUtil.clear()
+                homeViewModel.tokenLiveData.postValue(naviToTeslaService.getToken())
                 TokenWorker.cancelBackgroundWork(requireContext())
             }
         }
@@ -351,7 +347,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             }
         }
         val context: Activity = requireActivity()
-        AppExecutors.execute {
+        lifecycleScope.launch {
             try {
                 val token = naviToTeslaService.refreshToken(refreshToken)
                 if (homeViewModel.tokenLiveData.value != token) {
@@ -365,7 +361,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                     }
                 }
                 homeViewModel.vehicleListLiveData.postValue(vehicleList)
-                context.runOnUiThread {
+                withContext(Dispatchers.Main) {
                     binding.btnSave.isEnabled = true
                     binding.btnSave.text = context.getString(R.string.save)
                 }
@@ -376,11 +372,11 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         }
     }
 
-    private fun updateSpinner() {
+    private fun updateSpinner() = lifecycleScope.launch {
         val id = naviToTeslaService.loadVehicleId()
         val spinnerArray: MutableList<String> = ArrayList()
         if (homeViewModel.vehicleListLiveData.value == null) {
-            return
+            return@launch
         }
         var spinnerIndex = 0
         for (i in 0 until homeViewModel.vehicleListLiveData.value!!.size) {
@@ -396,12 +392,11 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         val spinner = binding.vehicleSelector
         spinner.adapter = adapter
         spinner.setSelection(spinnerIndex)
-        spinner.onItemSelectedListener = this
+        spinner.onItemSelectedListener = this@HomeFragment
     }
 
     override fun onItemSelected(adapterView: AdapterView<*>?, view: View?, i: Int, l: Long) {
-        if (homeViewModel.vehicleListLiveData.value != null
-        ) {
+        if (homeViewModel.vehicleListLiveData.value != null) {
             val vid: Long = homeViewModel.vehicleListLiveData.value!![i].id
             naviToTeslaService.saveVehicleId(vid)
         }
@@ -412,8 +407,8 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.context))
     }
 
-    private fun updateLatestVersion() {
-        homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(this.context))
+    private suspend fun updateLatestVersion() {
+        homeViewModel.isUpdateAvailable.postValue(AppUpdaterUtil.isUpdateAvailable(context))
     }
 
     private fun renderVersion() {
@@ -441,16 +436,14 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            AlertDialog.Builder(requireActivity())
-                .setCancelable(true)
+            AlertDialog.Builder(requireActivity()).setCancelable(true)
                 .setTitle(getString(R.string.requireLogViewApp))
                 .setMessage(getString(R.string.guideRequireLogViewApp))
                 .setPositiveButton(getString(R.string.install)) { _: DialogInterface?, _: Int ->
                     try {
                         startActivity(
                             Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("market://search?q=log viewer")
+                                Intent.ACTION_VIEW, Uri.parse("market://search?q=log viewer")
                             )
                         )
                     } catch (anfe: ActivityNotFoundException) {
@@ -461,8 +454,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                             )
                         )
                     }
-                }
-                .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+                }.setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
                 .show()
         }
     }
@@ -485,40 +477,49 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
 
     // share mode
     override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
-        val shareMode = if (binding.radioUsingTeslaApp.id == group.checkedRadioButtonId) {
-            "app"
-        } else {
-            "api"
-        }
-        if (homeViewModel.shareMode.value == shareMode) {
-            return
-        }
-        homeViewModel.shareMode.postValue(shareMode)
-        if (context != null) {
-            PreferencesUtil.put(requireContext(), "shareMode", shareMode)
+        lifecycleScope.launch {
+            val shareMode = if (binding.radioUsingTeslaApp.id == group.checkedRadioButtonId) {
+                "app"
+            } else {
+                "api"
+            }
+            if (homeViewModel.shareMode.value == shareMode) {
+                return@launch
+            }
+            homeViewModel.shareMode.postValue(shareMode)
+            if (context != null) {
+                PreferencesUtil.put("shareMode", shareMode)
+            }
         }
     }
 
-    private fun updateShareMode() {
+    private suspend fun updateShareMode() {
         if (activity == null) {
             return
         }
         val isAppInstalled = isTeslaAppInstalled
-        val shareMode =
-            PreferencesUtil.getString(requireContext(), "shareMode", if (isAppInstalled) "app" else "api")
+        var shareMode = PreferencesUtil.getString("shareMode", null)
+        if (shareMode == null) {
+            if (isAppInstalled) {
+                PreferencesUtil.put("shareMode", "app")
+                shareMode = "app"
+            } else {
+                PreferencesUtil.put("shareMode", "api")
+                shareMode = "api"
+            }
+        }
         homeViewModel.shareMode.postValue(shareMode)
         if (activity == null) {
             return
         }
-        if (shareMode == "api") {
-            requireActivity().runOnUiThread {
+
+        withContext(Dispatchers.Main) {
+            if (shareMode == "api") {
                 binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-            }
-        } else {
-            requireActivity().runOnUiThread {
+            } else {
                 binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.id)
+                overlayPermissionGrantedCheck()
             }
-            overlayPermissionGrantedCheck()
         }
     }
 
@@ -544,8 +545,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             requireActivity().runOnUiThread {
                 if (context != null && !Settings.canDrawOverlays(
                         context
-                    )
-                    && (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
+                    ) && (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
                 ) {
                     permissionAlertDialog = AlertDialog.Builder(requireContext())
                         .setTitle(getString(R.string.grantPermission))
@@ -568,9 +568,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                                 permissionAlertDialog = null
                             }
                             binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-                        }
-                        .setCancelable(false)
-                        .show()
+                        }.setCancelable(false).show()
                 }
             }
         }
