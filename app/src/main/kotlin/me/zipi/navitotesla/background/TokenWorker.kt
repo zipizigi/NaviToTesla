@@ -41,8 +41,8 @@ class TokenWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
                 }
                 AnalysisUtil.log("Add background refresh token")
                 val workRequest: PeriodicWorkRequest = PeriodicWorkRequestBuilder<TokenWorker>(350, TimeUnit.MINUTES).setConstraints(
-                        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-                    ).build()
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+                ).build()
                 WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                     workName,
                     ExistingPeriodicWorkPolicy.KEEP,
