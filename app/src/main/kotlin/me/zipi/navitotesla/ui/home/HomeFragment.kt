@@ -48,13 +48,13 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent.set
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 import java.io.File
 
-class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClickListener,
-    OnLongClickListener, RadioGroup.OnCheckedChangeListener {
+class HomeFragment
+    : Fragment(), AdapterView.OnItemSelectedListener, View.OnClickListener, OnLongClickListener, RadioGroup.OnCheckedChangeListener {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var naviToTeslaService: NaviToTeslaService
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
     ): View {
         if (this.activity != null) {
             this.requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
@@ -74,14 +74,17 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         }
         homeViewModel.shareMode.observe(viewLifecycleOwner) { mode: String ->
             onChangedTeslaShareMode(
-                mode
+                mode,
             )
         }
         binding.txtAccessToken.movementMethod = ScrollingMovementMethod()
         binding.radioGroupShareMode.setOnCheckedChangeListener(this)
-        setEventListener(requireActivity(), KeyboardVisibilityEventListener { isOpen: Boolean ->
-            binding.txtVersion.visibility = if (isOpen) View.INVISIBLE else View.VISIBLE
-        })
+        setEventListener(
+            requireActivity(),
+            KeyboardVisibilityEventListener { isOpen: Boolean ->
+                binding.txtVersion.visibility = if (isOpen) View.INVISIBLE else View.VISIBLE
+            },
+        )
         binding.btnSave.setOnClickListener(this)
         binding.btnPoiCacheClear.setOnClickListener(this)
         binding.btnPaste.setOnClickListener(this)
@@ -130,8 +133,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                     size /= 1024
                 }
                 launch(Dispatchers.Main) {
-                    AlertDialog.Builder(requireActivity()).setCancelable(true)
-                        .setTitle(getString(R.string.viewLogFile))
+                    AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.viewLogFile))
                         .setMessage(getString(R.string.guideViewLogFile, size, type))
                         .setPositiveButton(getString(R.string.open)) { _: DialogInterface?, _: Int -> openLogFile() }
                         .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
@@ -183,11 +185,9 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
 
             // accessibility check
             if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)) {
-                permissionAlertDialog = AlertDialog.Builder(requireContext())
-                    .setTitle(getString(R.string.requireAccessibility))
+                permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(getString(R.string.requireAccessibility))
                     .setMessage(getString(R.string.guideRequireAccessibility))
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .setCancelable(true).show()
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }.setCancelable(true).show()
                 nextAction = null
             }
         }
@@ -203,20 +203,19 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
 
         // notification listener
         val sets = NotificationManagerCompat.getEnabledListenerPackages(
-            requireContext()
+            requireContext(),
         )
         if (!sets.contains(requireContext().packageName)) {
-            permissionAlertDialog =
-                AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
-                    .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
-                    .setPositiveButton(
-                        getString(R.string.confirm)
-                    ) { _: DialogInterface?, _: Int ->
-                        if (permissionAlertDialog != null) {
-                            permissionAlertDialog = null
-                        }
-                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                    }.setCancelable(false).show()
+            permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
+                .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
+                .setPositiveButton(
+                    getString(R.string.confirm),
+                ) { _: DialogInterface?, _: Int ->
+                    if (permissionAlertDialog != null) {
+                        permissionAlertDialog = null
+                    }
+                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                }.setCancelable(false).show()
             return
         }
         if (context == null || activity == null) {
@@ -228,19 +227,19 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         }
         val granted =
             (requireContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && requireContext().checkSelfPermission(
-                Manifest.permission.READ_EXTERNAL_STORAGE
+                Manifest.permission.READ_EXTERNAL_STORAGE,
             ) == PackageManager.PERMISSION_GRANTED)
         if (!granted) {
-            permissionAlertDialog = AlertDialog.Builder(requireContext())
-                .setTitle(this.getString(R.string.grantPermission))
+            permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(this.getString(R.string.grantPermission))
                 .setMessage(this.getString(R.string.guideGrantStoragePermission)).setPositiveButton(
-                    this.getString(R.string.confirm)
+                    this.getString(R.string.confirm),
                 ) { _: DialogInterface?, _: Int ->
                     requireActivity().requestPermissions(
                         arrayOf(
                             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE
-                        ), 2
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                        ),
+                        2,
                     )
                     if (permissionAlertDialog != null) {
                         permissionAlertDialog = null
@@ -298,8 +297,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
 
     private fun onBtnPasteClick() {
         if (activity != null) {
-            val clipboard =
-                requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboard = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
             if (clipboard.primaryClip?.getItemAt(0)?.text != null) {
                 val pasteData = clipboard.primaryClip!!.getItemAt(0).text.toString().trim()
@@ -341,8 +339,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         if (activity != null) {
             val focusView = requireActivity().currentFocus
             if (focusView != null) {
-                val imm =
-                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(focusView.windowToken, 0)
             }
         }
@@ -386,8 +383,7 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                 spinnerIndex = i
             }
         }
-        val adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerArray)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerArray)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         val spinner = binding.vehicleSelector
         spinner.adapter = adapter
@@ -429,33 +425,31 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
             val uri = FileProvider.getUriForFile(
                 requireActivity(),
                 BuildConfig.APPLICATION_ID + ".provider",
-                File(AnalysisUtil.logFilePath)
+                File(AnalysisUtil.logFilePath),
             )
             val intent = Intent(Intent.ACTION_VIEW)
             intent.setDataAndType(uri, "plain/text")
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            AlertDialog.Builder(requireActivity()).setCancelable(true)
-                .setTitle(getString(R.string.requireLogViewApp))
+            AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.requireLogViewApp))
                 .setMessage(getString(R.string.guideRequireLogViewApp))
                 .setPositiveButton(getString(R.string.install)) { _: DialogInterface?, _: Int ->
                     try {
                         startActivity(
                             Intent(
-                                Intent.ACTION_VIEW, Uri.parse("market://search?q=log viewer")
-                            )
+                                Intent.ACTION_VIEW, Uri.parse("market://search?q=log viewer"),
+                            ),
                         )
                     } catch (anfe: ActivityNotFoundException) {
                         startActivity(
                             Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("https://play.google.com/store/apps/search?q=log viewer")
-                            )
+                                Uri.parse("https://play.google.com/store/apps/search?q=log viewer"),
+                            ),
                         )
                     }
-                }.setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
-                .show()
+                }.setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }.show()
         }
     }
 
@@ -544,14 +538,12 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
         if (activity != null) {
             requireActivity().runOnUiThread {
                 if (context != null && !Settings.canDrawOverlays(
-                        context
+                        context,
                     ) && (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
                 ) {
-                    permissionAlertDialog = AlertDialog.Builder(requireContext())
-                        .setTitle(getString(R.string.grantPermission))
-                        .setMessage(getString(R.string.guideGrantOverlayPermission))
-                        .setPositiveButton(
-                            getString(R.string.confirm)
+                    permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
+                        .setMessage(getString(R.string.guideGrantOverlayPermission)).setPositiveButton(
+                            getString(R.string.confirm),
                         ) { _: DialogInterface?, _: Int ->
                             if (permissionAlertDialog != null) {
                                 permissionAlertDialog = null
@@ -559,11 +551,10 @@ class HomeFragment : Fragment(), AdapterView.OnItemSelectedListener, View.OnClic
                             startActivity(
                                 Intent(
                                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    Uri.parse("package:" + requireContext().packageName)
-                                )
+                                    Uri.parse("package:" + requireContext().packageName),
+                                ),
                             )
-                        }
-                        .setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
+                        }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
                             if (permissionAlertDialog != null) {
                                 permissionAlertDialog = null
                             }

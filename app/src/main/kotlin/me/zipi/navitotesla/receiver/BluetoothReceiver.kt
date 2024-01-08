@@ -17,7 +17,7 @@ class BluetoothReceiver : BroadcastReceiver() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
         if (ActivityCompat.checkSelfPermission(
                 context,
-                permission
+                permission,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return
@@ -25,14 +25,13 @@ class BluetoothReceiver : BroadcastReceiver() {
         val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
         } else {
-            @Suppress("DEPRECATION")
-            intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE)
+            @Suppress("DEPRECATION") intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE)
         }
 
         AnalysisUtil.log("receive bluetooth broadcast: " + intent.action + " - " + device!!.name)
         when (intent.action) {
             BluetoothDevice.ACTION_ACL_CONNECTED -> EnablerUtil.addConnectedBluetooth(
-                device.name
+                device.name,
             )
 
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> EnablerUtil.removeConnectedBluetooth(device.name)

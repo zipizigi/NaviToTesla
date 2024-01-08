@@ -83,7 +83,7 @@ object AnalysisUtil {
         CoroutineScope(Dispatchers.IO).launch {
             Log.i(AnalysisUtil::class.java.name, message)
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
-                Calendar.getInstance().time
+                Calendar.getInstance().time,
             )
             val text = String.format("%s %s %s", dateTime, logLevel, message)
             if (externalDir != null && !File(externalDir!!).exists() && !File(externalDir!!).mkdirs()) {
@@ -138,5 +138,4 @@ object AnalysisUtil {
             e.printStackTrace()
         }
     }
-
 }

@@ -37,7 +37,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         settingViewModel = ViewModelProvider(this)[SettingViewModel::class.java]
         binding = FragmentSettingsBinding.inflate(inflater, container, false)
@@ -54,24 +54,26 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         settingViewModel.isAppEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedAppEnabled(enabled) }
 
-        conditionRecyclerAdapter = ConditionRecyclerAdapter(object : OnDeleteButtonClicked {
-            override fun onClick(position: Int) {
-                activity?.run {
-                    AlertDialog.Builder(this)
-                        .setCancelable(true)
-                        .setTitle(getString(R.string.removeCondition))
-                        .setMessage(getString(R.string.dialogRemoveCondition))
-                        .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
-                            removeBluetoothDevice(
-                                position
-                            )
-                        }
-                        .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
-                        .show()
-                }
+        conditionRecyclerAdapter = ConditionRecyclerAdapter(
+            object : OnDeleteButtonClicked {
+                override fun onClick(position: Int) {
+                    activity?.run {
+                        AlertDialog.Builder(this)
+                            .setCancelable(true)
+                            .setTitle(getString(R.string.removeCondition))
+                            .setMessage(getString(R.string.dialogRemoveCondition))
+                            .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
+                                removeBluetoothDevice(
+                                    position,
+                                )
+                            }
+                            .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                            .show()
+                    }
 
-            }
-        })
+                }
+            },
+        )
         binding.recylerBluetooth.adapter = conditionRecyclerAdapter
         binding.recylerBluetooth.layoutManager = LinearLayoutManager(context)
         settingViewModel.bluetoothConditions
@@ -117,21 +119,21 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         launch {
             context?.run {
                 settingViewModel.bluetoothConditions.postValue(
-                    EnablerUtil.listBluetoothCondition()
+                    EnablerUtil.listBluetoothCondition(),
                 )
             }
         }
         launch {
             context?.run {
                 settingViewModel.isAppEnabled.postValue(
-                    EnablerUtil.getAppEnabled()
+                    EnablerUtil.getAppEnabled(),
                 )
             }
         }
         launch {
             context?.run {
                 settingViewModel.isConditionEnabled.postValue(
-                    EnablerUtil.getConditionEnabled()
+                    EnablerUtil.getConditionEnabled(),
                 )
             }
         }
@@ -188,7 +190,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         val dialogView =
             (activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(
                 R.layout.custom_spinner_dialog_layout,
-                null
+                null,
             )
         val dialogSpinner = dialogView.findViewById<View>(R.id.spinnerDialog) as Spinner
         val pairedDevices = EnablerUtil.getPairedBluetooth(context)
@@ -196,7 +198,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
             ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_spinner_dropdown_item,
-                pairedDevices
+                pairedDevices,
             )
         AlertDialog.Builder(activity)
             .setCancelable(true)
@@ -211,7 +213,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     if (context != null) {
                         EnablerUtil.addBluetoothCondition(selectedDevice)
                         settingViewModel.bluetoothConditions.postValue(
-                            EnablerUtil.listBluetoothCondition()
+                            EnablerUtil.listBluetoothCondition(),
                         )
                     }
                 }
@@ -229,18 +231,18 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
         val granted = ActivityCompat.checkSelfPermission(
             requireContext(),
-            permission
+            permission,
         ) == PackageManager.PERMISSION_GRANTED
         if (!granted) {
             AlertDialog.Builder(requireContext())
                 .setTitle(this.getString(R.string.grantPermission))
                 .setMessage(this.getString(R.string.guideGrantBluetoothPermission))
                 .setPositiveButton(
-                    this.getString(R.string.confirm)
+                    this.getString(R.string.confirm),
                 ) { _: DialogInterface?, _: Int ->
                     requireActivity().requestPermissions(
                         arrayOf(permission),
-                        2
+                        2,
                     )
                 }
                 .setCancelable(false)
@@ -284,7 +286,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
             }
         } else if (checkedId == R.id.radioAccEnable) {
             if (activity != null && !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
-                    activity
+                    activity,
                 )
             ) {
                 AlertDialog.Builder(requireActivity())
@@ -294,14 +296,14 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
                     .setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
                         setAccRadio(
-                            false
+                            false,
                         )
                     }
                     .create().show()
             }
         } else if (checkedId == R.id.radioAccDisable) {
             if (activity != null && NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
-                    activity
+                    activity,
                 )
             ) {
                 AlertDialog.Builder(requireActivity())
@@ -311,7 +313,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .setPositiveButton(getString(R.string.title_setting)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
                     .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int ->
                         setAccRadio(
-                            true
+                            true,
                         )
                     }
                     .create().show()

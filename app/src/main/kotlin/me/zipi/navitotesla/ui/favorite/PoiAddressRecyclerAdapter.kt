@@ -11,12 +11,11 @@ import me.zipi.navitotesla.R
 import me.zipi.navitotesla.db.PoiAddressEntity
 import java.lang.ref.WeakReference
 
-class PoiAddressRecyclerAdapter(val listener: OnFavoriteButtonClicked) :
+class PoiAddressRecyclerAdapter(private val listener: OnFavoriteButtonClicked) :
     RecyclerView.Adapter<PoiAddressRecyclerAdapter.ViewHolder>() {
     private var items: List<PoiAddressEntity> = listOf()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.poi_address_view, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.poi_address_view, parent, false)
         return ViewHolder(view, listener)
     }
 
@@ -39,8 +38,7 @@ class PoiAddressRecyclerAdapter(val listener: OnFavoriteButtonClicked) :
         fun onShareClick(position: Int)
     }
 
-    class ViewHolder(itemView: View, listener: OnFavoriteButtonClicked) :
-        RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    class ViewHolder(itemView: View, listener: OnFavoriteButtonClicked) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
         private val poiView: TextView
         private val addressView: TextView
         private val button: Button

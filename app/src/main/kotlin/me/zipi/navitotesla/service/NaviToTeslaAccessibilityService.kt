@@ -95,7 +95,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val mChannel = NotificationChannel(
                         "notification_channel", "Notification",
-                        NotificationManager.IMPORTANCE_LOW
+                        NotificationManager.IMPORTANCE_LOW,
                     )
                     notificationManager.createNotificationChannel(mChannel)
                 }
@@ -103,7 +103,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 intent!!.putExtra("noti_action", "requireAccessibility")
                 val contentIntent = PendingIntent.getActivity(
                     context, 1, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
                 val notification = NotificationCompat.Builder(context, "notification_channel")
                     .setContentIntent(contentIntent)

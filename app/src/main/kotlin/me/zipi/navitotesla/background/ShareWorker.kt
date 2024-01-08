@@ -22,8 +22,7 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 
-class ShareWorker(context: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(context, workerParams) {
+class ShareWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
     private val naviToTeslaService: NaviToTeslaService
     private val channelId = "location_share_channel"
 
@@ -49,12 +48,10 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // create channel
-        val mChannel =
-            NotificationChannel(channelId, "Share notification", NotificationManager.IMPORTANCE_LOW)
+        val mChannel = NotificationChannel(channelId, "Share notification", NotificationManager.IMPORTANCE_LOW)
         mChannel.setSound(null, null)
         mChannel.setShowBadge(false)
         mChannel.description = "차량에 위치를 공유할 때 알림이 나타납니다."
@@ -82,17 +79,12 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
             context,
             0,
             context.packageManager.getLaunchIntentForPackage(context.packageName),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        return NotificationCompat.Builder(context, channelId)
-            .setContentIntent(contentIntent)
+        return NotificationCompat.Builder(context, channelId).setContentIntent(contentIntent)
             .setContentText(context.getString(R.string.sendingDestination) + "\n" + address)
-            .setTicker(context.getString(R.string.sendingDestination) + "\n" + poiName)
-            .setSmallIcon(R.drawable.ic_baseline_share_24)
-            .setAutoCancel(true)
-            .setVibrate(longArrayOf(0L))
-            .setSound(null)
-            .build()
+            .setTicker(context.getString(R.string.sendingDestination) + "\n" + poiName).setSmallIcon(R.drawable.ic_baseline_share_24)
+            .setAutoCancel(true).setVibrate(longArrayOf(0L)).setSound(null).build()
     }
 
     companion object {
@@ -100,25 +92,16 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
             context: Context,
             packageName: String,
             notificationTitle: String?,
-            notificationText: String?
+            notificationText: String?,
         ) {
             AnalysisUtil.log("Register share worker")
-            val workRequest: WorkRequest =
-                OneTimeWorkRequestBuilder<ShareWorker>()//(ShareWorker::class.java)
-                    .setInputData(
-                        Data.Builder()
-                            .putString("packageName", packageName)
-                            .putString("notificationTitle", notificationTitle)
-                            .putString("notificationText", notificationText)
-                            .build()
-                    )
-                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                    .setConstraints(
-                        Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build()
-                    )
-                    .build()
+            val workRequest: WorkRequest = OneTimeWorkRequestBuilder<ShareWorker>()//(ShareWorker::class.java)
+                .setInputData(
+                    Data.Builder().putString("packageName", packageName).putString("notificationTitle", notificationTitle)
+                        .putString("notificationText", notificationText).build(),
+                ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).setConstraints(
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+                ).build()
             WorkManager.getInstance(context).enqueue(workRequest)
         }
     }

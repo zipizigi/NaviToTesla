@@ -28,8 +28,9 @@ class NotificationListener : NotificationListenerService() {
         super.onNotificationRemoved(sbn)
         if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
             Log.i(
-                this.javaClass.name, "onNotificationRemoved ~ " +
-                        " packageName: " + sbn.packageName
+                this.javaClass.name,
+                "onNotificationRemoved ~ " +
+                    " packageName: " + sbn.packageName,
             )
             naviToTeslaService.notificationClear()
             val param = Bundle()
@@ -54,18 +55,19 @@ class NotificationListener : NotificationListenerService() {
                 val subText = extras.getString(Notification.EXTRA_SUB_TEXT) ?: ""
 
                 Log.i(
-                    this.javaClass.name, "onNotificationPosted ~ " +
-                            " packageName: " + sbn.packageName +
-                            " id: " + sbn.id +
-                            " postTime: " + sbn.postTime +
-                            " title: " + title +
-                            " text : " + text +
-                            " subText: " + subText
+                    this.javaClass.name,
+                    "onNotificationPosted ~ " +
+                        " packageName: " + sbn.packageName +
+                        " id: " + sbn.id +
+                        " postTime: " + sbn.postTime +
+                        " title: " + title +
+                        " text : " + text +
+                        " subText: " + subText,
                 )
                 ShareWorker.startShare(applicationContext, sbn.packageName, title, text)
                 NaviToTeslaAccessibilityService.notifyIfAvailable(
                     applicationContext,
-                    sbn.packageName
+                    sbn.packageName,
                 )
                 RemoteConfigUtil.initialize()
                 VersionCheckWorker.startVersionCheck(applicationContext)

@@ -16,16 +16,15 @@ import java.util.concurrent.TimeUnit
 
 class TMapPoiFinder : PoiFinder {
     override fun parseDestination(notificationText: String): String {
-
         /*
             안심주행
             출발지 > 목적지
             출발지 > 경유지 > 목적지
             출발지 > 경유지1 > 경유지2 > 목적지
          */
-        return notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()[notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray().size - 1].trim { it <= ' ' }
+        return notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[
+            notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().size - 1,
+        ].trim { it <= ' ' }
     }
 
     @Throws(IOException::class)
@@ -44,7 +43,7 @@ class TMapPoiFinder : PoiFinder {
                     roadAddress = item.getRoadAddress(withLocalName),
                     address = item.address,
                     longitude = item.latitude,
-                    latitude = item.longitude
+                    latitude = item.longitude,
                 )
 
                 listPoi.add(poi)
@@ -59,30 +58,19 @@ class TMapPoiFinder : PoiFinder {
     }
 
     companion object {
-        private val tMapApi = Retrofit.Builder()
-            .baseUrl("https://apis.openapi.sk.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(Interceptor { chain: Interceptor.Chain ->
-                        val request = chain.request().newBuilder()
-                            .url(
-                                chain.request().url.newBuilder()
-                                    .addQueryParameter("version", "1")
-                                    .addQueryParameter(
-                                        "appKey",
-                                        RemoteConfigUtil.getString("tmapApiKey")
-                                    )
-                                    .build()
-                            )
-                            .build()
+        private val tMapApi =
+            Retrofit.Builder().baseUrl("https://apis.openapi.sk.com").addConverterFactory(GsonConverterFactory.create()).client(
+                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).addInterceptor(
+                    Interceptor { chain: Interceptor.Chain ->
+                        val request = chain.request().newBuilder().url(
+                            chain.request().url.newBuilder().addQueryParameter("version", "1").addQueryParameter(
+                                "appKey",
+                                RemoteConfigUtil.getString("tmapApiKey"),
+                            ).build(),
+                        ).build()
                         chain.proceed(request)
-                    })
-                    .addInterceptor(HttpRetryInterceptor(10))
-                    .build()
-            )
-            .build().create(TMapApi::class.java)
+                    },
+                ).addInterceptor(HttpRetryInterceptor(10)).build(),
+            ).build().create(TMapApi::class.java)
     }
 }
