@@ -21,8 +21,12 @@ class AppRepository private constructor(private val database: AppDatabase) {
                 Interceptor { chain: Interceptor.Chain ->
                     val token = PreferencesUtil.loadTokenSync()
                     val accessToken = token?.accessToken ?: ""
-                    val request = chain.request().newBuilder().addHeader("User-Agent", "Navi_To_Tesla").addHeader("Accept", "*/*")
-                        .addHeader("Content-Type", "application/json").addHeader("Authorization", "Bearer $accessToken").build()
+                    val request = chain.request().newBuilder()
+                        .addHeader("User-Agent", "Navi_To_Tesla")
+                        .addHeader("Accept", "*/*")
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Bearer $accessToken")
+                        .build()
                     chain.proceed(request)
                 },
             ).addInterceptor(HttpRetryInterceptor(20)).build(),
