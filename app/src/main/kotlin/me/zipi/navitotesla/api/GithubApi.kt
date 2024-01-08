@@ -9,6 +9,6 @@ interface GithubApi {
     @GET("/repos/{owner}/{repo}/releases?per_page=10")
     suspend fun getReleases(
         @Path("owner") owner: String,
-        @Path("repo") repo: String
+        @Path("repo") repo: String,
     ): Response<List<Release>>
 }

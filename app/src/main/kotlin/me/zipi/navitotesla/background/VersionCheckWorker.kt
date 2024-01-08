@@ -37,7 +37,7 @@ class VersionCheckWorker(context: Context, workerParams: WorkerParameters) :
                 .setConstraints(
                     Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
+                        .build(),
                 )
                 .setInitialDelay(1, TimeUnit.MINUTES)
                 .build()

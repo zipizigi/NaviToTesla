@@ -82,7 +82,7 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
             context,
             0,
             context.packageManager.getLaunchIntentForPackage(context.packageName),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         return NotificationCompat.Builder(context, channelId)
             .setContentIntent(contentIntent)
@@ -100,7 +100,7 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
             context: Context,
             packageName: String,
             notificationTitle: String?,
-            notificationText: String?
+            notificationText: String?,
         ) {
             AnalysisUtil.log("Register share worker")
             val workRequest: WorkRequest =
@@ -110,13 +110,13 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) :
                             .putString("packageName", packageName)
                             .putString("notificationTitle", notificationTitle)
                             .putString("notificationText", notificationText)
-                            .build()
+                            .build(),
                     )
                     .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                     .setConstraints(
                         Constraints.Builder()
                             .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build()
+                            .build(),
                     )
                     .build()
             WorkManager.getInstance(context).enqueue(workRequest)
