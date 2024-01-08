@@ -6,7 +6,7 @@ import java.io.IOException
 
 interface PoiFinder {
     @Throws(DuplicatePoiException::class, IOException::class)
-    fun findPoiAddress(poiName: String): String {
+    suspend fun findPoiAddress(poiName: String): String {
         val listPoi = listPoiAddress(poiName)
         var address = ""
         var sameCount = 0
@@ -26,6 +26,6 @@ interface PoiFinder {
     fun parseDestination(notificationText: String): String
 
     @Throws(IOException::class)
-    fun listPoiAddress(poiName: String): List<Poi>
+    suspend fun listPoiAddress(poiName: String): List<Poi>
     fun isIgnore(notificationTitle: String, notificationText: String): Boolean
 }

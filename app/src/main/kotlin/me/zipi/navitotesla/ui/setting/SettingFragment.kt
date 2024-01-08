@@ -20,8 +20,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import me.zipi.navitotesla.AppExecutors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentSettingsBinding
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
@@ -77,15 +80,13 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     }
 
     private fun removeBluetoothDevice(position: Int) {
-        AppExecutors.execute {
-            if (context == null || settingViewModel.bluetoothConditions.value == null) {
-                return@execute
-            }
-            val bluetooth: String =
-                settingViewModel.bluetoothConditions.value!![position]
-            context?.run { EnablerUtil.removeBluetoothCondition(this, bluetooth) }
-            updateConditions()
+        if (context == null || settingViewModel.bluetoothConditions.value == null) {
+            return
         }
+        settingViewModel.bluetoothConditions.value!![position]
+            .run { EnablerUtil.removeBluetoothCondition(this) }
+
+        updateConditions()
     }
 
     override fun onResume() {
@@ -93,45 +94,44 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         updateConditions()
     }
 
-    private fun updateConditions() {
-        AppExecutors.execute {
-            if (context != null && activity != null) {
-                val appEnabled = context?.let { EnablerUtil.getAppEnabled(it) } ?: true
-                val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled(it) } ?: false
-                val accEnabled: Boolean =
-                    context?.let {
-                        NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
-                    } ?: false
+    private fun updateConditions() = lifecycleScope.launch {
+        if (context != null && activity != null) {
+            val appEnabled = context?.let { EnablerUtil.getAppEnabled() } ?: true
+            val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled() } ?: false
+            val accEnabled: Boolean =
+                context?.let {
+                    NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
+                } ?: false
 
-                activity?.runOnUiThread {
-                    binding.radioGroupAppEnable.check(if (appEnabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
-                    binding.radioGroupConditionEnable.check(if (conditionEnabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id)
-                    if (accEnabled) {
-                        binding.radioAccEnable.isChecked = true
-                    } else {
-                        binding.radioAccDisable.isChecked = true
-                    }
+            withContext(Dispatchers.Main) {
+                binding.radioGroupAppEnable.check(if (appEnabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
+                binding.radioGroupConditionEnable.check(if (conditionEnabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id)
+                if (accEnabled) {
+                    binding.radioAccEnable.isChecked = true
+                } else {
+                    binding.radioAccDisable.isChecked = true
                 }
             }
         }
-        AppExecutors.execute {
+
+        launch {
             context?.run {
                 settingViewModel.bluetoothConditions.postValue(
-                    EnablerUtil.listBluetoothCondition(this)
+                    EnablerUtil.listBluetoothCondition()
                 )
             }
         }
-        AppExecutors.execute {
+        launch {
             context?.run {
                 settingViewModel.isAppEnabled.postValue(
-                    EnablerUtil.getAppEnabled(this)
+                    EnablerUtil.getAppEnabled()
                 )
             }
         }
-        AppExecutors.execute {
+        launch {
             context?.run {
                 settingViewModel.isConditionEnabled.postValue(
-                    EnablerUtil.getConditionEnabled(this)
+                    EnablerUtil.getConditionEnabled()
                 )
             }
         }
@@ -207,11 +207,11 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     return@setPositiveButton
                 }
                 val selectedDevice = dialogSpinner.selectedItem.toString()
-                AppExecutors.execute {
+                lifecycleScope.launch {
                     if (context != null) {
-                        EnablerUtil.addBluetoothCondition(requireContext(), selectedDevice)
+                        EnablerUtil.addBluetoothCondition(selectedDevice)
                         settingViewModel.bluetoothConditions.postValue(
-                            EnablerUtil.listBluetoothCondition(requireContext())
+                            EnablerUtil.listBluetoothCondition()
                         )
                     }
                 }
@@ -250,17 +250,17 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     }
 
     private fun onChangedAppEnabled(enabled: Boolean) {
-        AppExecutors.execute {
+        lifecycleScope.launch {
             if (context != null) {
-                EnablerUtil.setAppEnabled(requireContext(), enabled)
+                EnablerUtil.setAppEnabled(enabled)
             }
         }
     }
 
     private fun onChangedConditionEnabled(enabled: Boolean) {
-        AppExecutors.execute {
+        lifecycleScope.launch {
             if (context != null) {
-                EnablerUtil.setConditionEnabled(requireContext(), enabled)
+                EnablerUtil.setConditionEnabled(enabled)
             }
         }
     }

@@ -6,6 +6,9 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.ConditionEntity
 import java.util.Date
@@ -28,80 +31,74 @@ object EnablerUtil {
         connectedBluetoothDevice.remove(name.lowercase())
     }
 
-    @Deprecated("not used")
-    fun addWifiCondition(context: Context, ssid: String) {
-        addCondition(context, "wifi", ssid)
+
+    fun addBluetoothCondition(name: String) = CoroutineScope(Dispatchers.IO).launch {
+        addCondition("bluetooth", name)
     }
 
-    fun addBluetoothCondition(context: Context, name: String) {
-        addCondition(context, "bluetooth", name)
+    fun removeBluetoothCondition(name: String) = CoroutineScope(Dispatchers.IO).launch {
+        removeCondition("bluetooth", name)
     }
 
-    fun removeBluetoothCondition(context: Context, name: String) {
-        removeCondition(context, "bluetooth", name)
-    }
-
-    private fun addCondition(context: Context, type: String, name: String) {
-        AppDatabase.getInstance(context).conditionDao().insertCondition(
+    private suspend fun addCondition(type: String, name: String) {
+        AppDatabase.getInstance().conditionDao().insertCondition(
             ConditionEntity(name = name, type = type, created = Date())
         )
     }
 
-    private fun removeCondition(context: Context, type: String, name: String) {
-        val entity: ConditionEntity? = AppDatabase.getInstance(context).conditionDao()
-            .findConditionByNameSync(type, name)
+    private suspend fun removeCondition(type: String, name: String) {
+        val entity: ConditionEntity? =
+            AppDatabase.getInstance().conditionDao().findConditionByName(type, name)
         if (entity != null) {
-            AppDatabase.getInstance(context).conditionDao().delete(entity)
+            AppDatabase.getInstance().conditionDao().delete(entity)
         }
     }
 
-    fun listWifiCondition(context: Context): List<String> {
+    suspend fun listWifiCondition(): List<String> {
         val result = mutableListOf<String>()
-        for (entity in AppDatabase.getInstance(context).conditionDao()
-            .findConditionSync("wifi")) {
+        for (entity in AppDatabase.getInstance().conditionDao().findCondition("wifi")) {
             result.add(entity.name)
         }
         return result
     }
 
-    fun listBluetoothCondition(context: Context): MutableList<String> {
+    suspend fun listBluetoothCondition(): MutableList<String> {
         val result: MutableList<String> = mutableListOf()
-        for (entity in AppDatabase.getInstance(context).conditionDao()
-            .findConditionSync("bluetooth")) {
+        for (entity in AppDatabase.getInstance().conditionDao().findCondition("bluetooth")) {
             result.add(entity.name)
         }
         return result
     }
 
-    fun setAppEnabled(context: Context, enabled: Boolean) {
-        if (PreferencesUtil.getBoolean(context, "appEnabled", true) != enabled) {
-            PreferencesUtil.put(context, "appEnabled", enabled)
+    suspend fun setAppEnabled(enabled: Boolean) {
+        if (PreferencesUtil.getBoolean("appEnabled", true) != enabled) {
+            PreferencesUtil.put("appEnabled", enabled)
         }
     }
 
-    fun setConditionEnabled(context: Context, enabled: Boolean) {
-        if (PreferencesUtil.getBoolean(context, "appCondition", false) != enabled) {
-            PreferencesUtil.put(context, "appCondition", enabled)
+    suspend fun setConditionEnabled(enabled: Boolean) {
+        if (PreferencesUtil.getBoolean("appCondition", false) != enabled) {
+            PreferencesUtil.put("appCondition", enabled)
         }
     }
 
-    fun getAppEnabled(context: Context): Boolean {
-        return PreferencesUtil.getBoolean(context, "appEnabled", true)
+    suspend fun getAppEnabled(): Boolean {
+        return PreferencesUtil.getBoolean("appEnabled", true)
     }
 
-    fun getConditionEnabled(context: Context): Boolean {
-        return PreferencesUtil.getBoolean(context, "appCondition", false)
+    suspend fun getConditionEnabled(): Boolean {
+        return PreferencesUtil.getBoolean("appCondition", false)
     }
 
-    fun isSendingCheck(context: Context): Boolean {
-        if (!PreferencesUtil.getBoolean(context, "appEnabled", true)) {
+    suspend fun isSendingCheck(): Boolean {
+        if (!PreferencesUtil.getBoolean("appEnabled", true)) {
             return false
         }
-        if (!PreferencesUtil.getBoolean(context, "appCondition", false)) {
+        if (!PreferencesUtil.getBoolean("appCondition", false)) {
             return true
         }
-        val wifiCondition = listWifiCondition(context)
-        val bluetoothCondition = listBluetoothCondition(context)
+        val wifiCondition = listWifiCondition()
+        val bluetoothCondition = listBluetoothCondition()
         if (wifiCondition.isEmpty() && bluetoothCondition.isEmpty()) {
             return true
         }
@@ -112,8 +109,7 @@ object EnablerUtil {
                 }
             }
             AnalysisUtil.log("Bluetooth not connected")
-        }
-        /*
+        }/*
         // Android 11+ Get wifi ssid required background location
         if (wifiCondition.size() > 0) {
             try {
@@ -142,8 +138,7 @@ object EnablerUtil {
         val permission =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
         if (ActivityCompat.checkSelfPermission(
-                context!!,
-                permission
+                context!!, permission
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return ArrayList()

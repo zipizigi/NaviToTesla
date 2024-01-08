@@ -2,12 +2,13 @@ package me.zipi.navitotesla.util
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileNotFoundException
@@ -79,30 +80,32 @@ object AnalysisUtil {
         get() = File("$externalDir/NaviToTesla.log").toString()
 
     private fun appendLog(logLevel: String, message: String) {
-        Log.i(AnalysisUtil::class.java.name, message)
-        val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
-            Calendar.getInstance().time
-        )
-        val text = String.format("%s %s %s", dateTime, logLevel, message)
-        if (externalDir != null && !File(externalDir!!).exists() && !File(externalDir!!).mkdirs()) {
-            firebaseCrashlytics.log("create document directory fail")
-            return
-        }
-        if (!isWritableLog) {
-            return
-        }
-        val file = File("$externalDir/NaviToTesla.log")
-        if (file.exists() && file.length() > 50 * 1024) {
-            file.delete()
-        }
-        try {
-            BufferedWriter(FileWriter(file, true)).use { buf ->
-                buf.append(text)
-                buf.newLine()
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.i(AnalysisUtil::class.java.name, message)
+            val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
+                Calendar.getInstance().time
+            )
+            val text = String.format("%s %s %s", dateTime, logLevel, message)
+            if (externalDir != null && !File(externalDir!!).exists() && !File(externalDir!!).mkdirs()) {
+                firebaseCrashlytics.log("create document directory fail")
+                return@launch
             }
-        } catch (ignore: FileNotFoundException) {
-        } catch (e: IOException) {
-            firebaseCrashlytics.recordException(e)
+            if (!isWritableLog) {
+                return@launch
+            }
+            val file = File("$externalDir/NaviToTesla.log")
+            if (file.exists() && file.length() > 50 * 1024) {
+                file.delete()
+            }
+            try {
+                BufferedWriter(FileWriter(file, true)).use { buf ->
+                    buf.append(text)
+                    buf.newLine()
+                }
+            } catch (_: FileNotFoundException) {
+            } catch (e: IOException) {
+                firebaseCrashlytics.recordException(e)
+            }
         }
     }
 
@@ -114,7 +117,7 @@ object AnalysisUtil {
             } else file.length()
         }
 
-    fun deleteLogFile() {
+    fun deleteLogFile() = CoroutineScope(Dispatchers.IO).launch {
         val file = File("$externalDir/NaviToTesla.log")
         if (file.exists()) {
             file.delete()
@@ -125,7 +128,7 @@ object AnalysisUtil {
         try {
             Log.i(AnalysisUtil::class.java.name, text)
             log(text)
-            Handler(Looper.getMainLooper()).post {
+            CoroutineScope(Dispatchers.Main).launch {
                 if (context != null) {
                     Toast.makeText(context, text, Toast.LENGTH_LONG).show()
                 }
@@ -135,4 +138,5 @@ object AnalysisUtil {
             e.printStackTrace()
         }
     }
+
 }

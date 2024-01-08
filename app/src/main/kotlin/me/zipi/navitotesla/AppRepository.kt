@@ -1,7 +1,6 @@
 package me.zipi.navitotesla
 
-import android.content.Context
-import androidx.lifecycle.LiveData
+import androidx.room.withTransaction
 import me.zipi.navitotesla.api.TeslaApi
 import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
@@ -15,65 +14,56 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-class AppRepository private constructor(context: Context, private val database: AppDatabase) {
-    val teslaApi: TeslaApi
+class AppRepository private constructor(private val database: AppDatabase) {
+    val teslaApi: TeslaApi = Retrofit.Builder()
+        .baseUrl("https://owner-api.teslamotors.com")
+        .addConverterFactory(GsonConverterFactory.create())
+        .client(
+            OkHttpClient.Builder()
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .addInterceptor(Interceptor { chain: Interceptor.Chain ->
+                    val token = PreferencesUtil.loadTokenSync()
+                    val accessToken = token?.accessToken ?: ""
+                    val request = chain.request().newBuilder()
+                        .addHeader("User-Agent", "Navi_To_Tesla")
+                        .addHeader("Accept", "*/*")
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Bearer $accessToken")
+                        .build()
+                    chain.proceed(request)
+                })
+                .addInterceptor(HttpRetryInterceptor(20))
+                .build()
+        )
+        .build().create(TeslaApi::class.java)
 
-    val teslaAuthApi: TeslaAuthApi
-
-    init {
-        teslaApi = Retrofit.Builder()
-            .baseUrl("https://owner-api.teslamotors.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(Interceptor { chain: Interceptor.Chain ->
-                        val token = PreferencesUtil.loadToken(context)
-                        val accessToken = token?.accessToken ?: ""
-                        val request = chain.request().newBuilder()
-                            .addHeader("User-Agent", "Navi_To_Tesla")
-                            .addHeader("Accept", "*/*")
-                            .addHeader("Content-Type", "application/json")
-                            .addHeader("Authorization", "Bearer $accessToken")
-                            .build()
-                        chain.proceed(request)
-                    })
-                    .addInterceptor(HttpRetryInterceptor(20))
-                    .build()
-            )
-            .build().create(TeslaApi::class.java)
-        teslaAuthApi = Retrofit.Builder()
-            .baseUrl("https://auth.tesla.com")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(120, TimeUnit.SECONDS)
-                    .readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(Interceptor { chain: Interceptor.Chain ->
-                        val request = chain.request().newBuilder()
-                            .addHeader("User-Agent", "Navi_To_Tesla")
-                            .addHeader("Accept", "*/*")
-                            .addHeader("Content-Type", "application/json")
-                            .build()
-                        chain.proceed(request)
-                    })
-                    .addInterceptor(HttpRetryInterceptor(20))
-                    .build()
-            )
-            .build().create(TeslaAuthApi::class.java)
-    }
-    @Suppress("unused")
-    fun getPoi(poiName: String): LiveData<PoiAddressEntity> {
+    val teslaAuthApi: TeslaAuthApi = Retrofit.Builder()
+        .baseUrl("https://auth.tesla.com")
+        .addConverterFactory(GsonConverterFactory.create())
+        .client(
+            OkHttpClient.Builder()
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .addInterceptor(Interceptor { chain: Interceptor.Chain ->
+                    val request = chain.request().newBuilder()
+                        .addHeader("User-Agent", "Navi_To_Tesla")
+                        .addHeader("Accept", "*/*")
+                        .addHeader("Content-Type", "application/json")
+                        .build()
+                    chain.proceed(request)
+                })
+                .addInterceptor(HttpRetryInterceptor(20))
+                .build()
+        )
+        .build().create(TeslaAuthApi::class.java)
+    
+    suspend fun getPoiSync(poiName: String): PoiAddressEntity? {
         return database.poiAddressDao().findPoi(poiName)
     }
 
-    fun getPoiSync(poiName: String): PoiAddressEntity? {
-        return database.poiAddressDao().findPoiSync(poiName)
-    }
-
-    fun savePoi(poiName: String, address: String, registered: Boolean) {
-        database.runInTransaction {
+    suspend fun savePoi(poiName: String, address: String, registered: Boolean) {
+        database.withTransaction {
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
                     poi = poiName,
@@ -85,34 +75,35 @@ class AppRepository private constructor(context: Context, private val database: 
         }
     }
 
-    fun clearExpiredPoi() {
+    suspend fun clearExpiredPoi() {
         // remove expire poi. (20% over)
         val expireDate: Long =
             (Date().time - PoiAddressEntity.expireDay * 1000 * 60 * 60 * 24 * 1.2).toLong()
         for (entity in database.poiAddressDao().findExpired(expireDate)) {
-            database.runInTransaction {
+            database.withTransaction {
                 database.poiAddressDao().delete(entity)
             }
         }
     }
 
-    fun clearAllPoi() {
-        database.runInTransaction {
+    suspend fun clearAllPoi() {
+        database.withTransaction {
             database.poiAddressDao().deleteAllNotRegistered()
         }
     }
 
     companion object {
-        private var instance: AppRepository? = null
-        fun getInstance(context: Context, database: AppDatabase): AppRepository {
-            if (instance == null) {
-                synchronized(AppRepository::class.java) {
-                    if (instance == null) {
-                        instance = AppRepository(context, database)
-                    }
+        private lateinit var instance: AppRepository
+        fun initialize(database: AppDatabase) {
+            if (!this::instance.isInitialized) {
+                synchronized(AppDatabase::class) {
+                    instance = AppRepository(database)
                 }
             }
-            return instance!!
+        }
+
+        fun getInstance(): AppRepository {
+            return instance
         }
     }
 }

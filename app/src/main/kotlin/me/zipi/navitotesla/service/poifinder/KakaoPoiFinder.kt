@@ -23,9 +23,9 @@ class KakaoPoiFinder : PoiFinder {
     }
 
     @Throws(IOException::class)
-    override fun listPoiAddress(poiName: String): List<Poi> {
+    override suspend fun listPoiAddress(poiName: String): List<Poi> {
         val poiList: MutableList<Poi> = ArrayList()
-        val response = kakaoMapApi.search(poiName).execute()
+        val response = kakaoMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "Kakao api error: " + response.errorBody())
             AnalysisUtil.log(
@@ -37,7 +37,7 @@ class KakaoPoiFinder : PoiFinder {
         ) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (place in response.body()!!.documents) {
-                val poi =Poi(
+                val poi = Poi(
                     poiName = place.placeName,
                     roadAddress = place.getRoadAddressName(withLocalName),
                     address = place.addressName,

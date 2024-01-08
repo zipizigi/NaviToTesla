@@ -16,6 +16,10 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import com.dcastalia.localappupdate.DownloadApk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.api.GithubApi
@@ -43,43 +47,43 @@ object AppUpdaterUtil {
         .build().create(GithubApi::class.java)
     private var dialogLastCheck = 0L
     private var notificationLastCheck = 0L
-    fun clearDoNotShow(context: Context) {
-        PreferencesUtil.remove(context, "updateDoNotShow")
+    fun clearDoNotShow() {
+        CoroutineScope(Dispatchers.IO).launch {
+            PreferencesUtil.remove("updateDoNotShow")
+        }
     }
 
-    private fun doNotShow(context: Context) {
-        val until = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L
-        PreferencesUtil.put(context, "updateDoNotShow", until)
+    private fun doNotShow() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val until = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L
+            PreferencesUtil.put("updateDoNotShow", until)
+        }
     }
 
-    private fun isDoNotShow(context: Context): Boolean {
-        val until = PreferencesUtil.getLong(context, "updateDoNotShow", 0L)
+    private suspend fun isDoNotShow(): Boolean {
+        val until = PreferencesUtil.getLong("updateDoNotShow", 0L)
         return System.currentTimeMillis() - until < 0
     }
 
-    @JvmOverloads
-    fun dialog(activity: Activity?, isForce: Boolean = false) {
+    suspend fun dialog(activity: Activity?, isForce: Boolean) = withContext(Dispatchers.Main) {
         try {
-            if(activity == null){
-                return
+            if (activity == null) {
+                return@withContext
             }
 
-            if (!isForce && (abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow(
-                    activity
-                ))
-            ) {
-                return
+            if (!isForce && (abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow())) {
+                return@withContext
             }
             if (isUpdateAvailable(activity)) {
                 if (!permissionCheck(activity)) {
-                    return
+                    return@withContext
                 }
                 try {
                     var release: Release? = null
                     val response = githubApi.getReleases(
                         RemoteConfigUtil.getString("repoOwner"),
                         RemoteConfigUtil.getString("repoName")
-                    ).execute()
+                    )
 
                     if (response.code() == 403) {
                         AnalysisUtil.log("github api rate limit exceed")
@@ -101,36 +105,33 @@ object AppUpdaterUtil {
                     val releaseDescription =
                         if (release == null) "" else release.tagName + "\n" + release.body
 
-                    activity.runOnUiThread {
-                        AlertDialog.Builder(
-                            activity
-                        )
-                            .setCancelable(true)
-                            .setTitle(activity.getString(R.string.existsUpdate))
-                            .setMessage(releaseDescription)
-                            .setPositiveButton(activity.getString(R.string.update)) { _: DialogInterface?, _: Int ->
-                                startUpdate(
-                                    activity,
-                                    apkUrl
-                                )
-                            }
-                            .setNeutralButton(activity.getString(R.string.ignoreUpdate)) { _: DialogInterface?, _: Int ->
-                                AlertDialog.Builder(
-                                    activity
-                                )
-                                    .setTitle(activity.getString(R.string.guide))
-                                    .setMessage(activity.getString(R.string.guideIgnoreUpdate))
-                                    .setCancelable(false)
-                                    .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
-                                        doNotShow(
-                                            activity
-                                        )
-                                    }
-                                    .show()
-                            }
-                            .setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
-                            .show()
-                    }
+                    AlertDialog.Builder(
+                        activity
+                    )
+                        .setCancelable(true)
+                        .setTitle(activity.getString(R.string.existsUpdate))
+                        .setMessage(releaseDescription)
+                        .setPositiveButton(activity.getString(R.string.update)) { _: DialogInterface?, _: Int ->
+                            startUpdate(
+                                activity,
+                                apkUrl
+                            )
+                        }
+                        .setNeutralButton(activity.getString(R.string.ignoreUpdate)) { _: DialogInterface?, _: Int ->
+                            AlertDialog.Builder(
+                                activity
+                            )
+                                .setTitle(activity.getString(R.string.guide))
+                                .setMessage(activity.getString(R.string.guideIgnoreUpdate))
+                                .setCancelable(false)
+                                .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
+                                    doNotShow()
+                                }
+                                .show()
+                        }
+                        .setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+                        .show()
+
                     permissionCheck(activity)
                     dialogLastCheck = System.currentTimeMillis()
                     ResponseCloser.closeAll(response)
@@ -144,6 +145,7 @@ object AppUpdaterUtil {
             Log.w(AppUpdaterUtil::class.java.name, "activity is null", e)
         }
     }
+
 
     @Suppress("KotlinConstantConditions")
     private fun startUpdate(context: Context, apkUrl: String) {
@@ -162,7 +164,7 @@ object AppUpdaterUtil {
                             Uri.parse("market://details?id=$appPackageName")
                         )
                     )
-                    clearDoNotShow(context)
+                    clearDoNotShow()
                     return
                 } catch (e: ActivityNotFoundException) {
                     AnalysisUtil.log("play store is installed, but launch error")
@@ -187,7 +189,7 @@ object AppUpdaterUtil {
                 )
                 context.startActivity(intent)
             }
-            clearDoNotShow(context)
+            clearDoNotShow()
         } catch (e: Exception) {
             Log.w(AppUpdaterUtil::class.java.name, "fail update")
             AnalysisUtil.log("fail update")
@@ -195,7 +197,7 @@ object AppUpdaterUtil {
         }
     }
 
-    private fun getLatestVersion(): String {
+    private suspend fun getLatestVersion(): String = withContext(Dispatchers.IO) {
         try {
             val latestUrl = String.format(
                 "https://github.com/%s/%s/releases/latest",
@@ -206,7 +208,7 @@ object AppUpdaterUtil {
             con.connect()
             if (con.responseCode == 302 || con.responseCode == 304) {
                 val location = con.getHeaderField("Location")
-                return location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+                return@withContext location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
                     .toTypedArray()[location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
                     .toTypedArray().size - 1]
             }
@@ -214,7 +216,7 @@ object AppUpdaterUtil {
             Log.w(AppUpdaterUtil::class.java.name, "getLatestVersion fail", e)
             AnalysisUtil.recordException(e)
         }
-        return "1.0"
+        return@withContext "1.0"
     }
 
     fun getLatestApkUrl(release: Release?): String {
@@ -247,7 +249,7 @@ object AppUpdaterUtil {
         return version
     }
 
-    fun isUpdateAvailable(context: Context?): Boolean {
+    suspend fun isUpdateAvailable(context: Context?): Boolean {
         var latestVersionNumber = 1.0f
         var currentVersionNumber = 1.0f
         val latestVersion = getLatestVersion()
@@ -292,14 +294,11 @@ object AppUpdaterUtil {
     }
 
     @Suppress("KotlinConstantConditions")
-    fun notification(context: Context) {
+    suspend fun notification(context: Context) {
         if (BuildConfig.BUILD_MODE == "playstore") {
             return
         }
-        if (abs(System.currentTimeMillis() - notificationLastCheck) < 5 * 60 * 1000 || isDoNotShow(
-                context
-            )
-        ) {
+        if (abs(System.currentTimeMillis() - notificationLastCheck) < 5 * 60 * 1000 || isDoNotShow()) {
             return
         }
         if (isUpdateAvailable(context)) {

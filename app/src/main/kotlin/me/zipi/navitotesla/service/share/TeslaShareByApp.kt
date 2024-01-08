@@ -8,7 +8,7 @@ import android.os.Bundle
 import me.zipi.navitotesla.util.AnalysisUtil
 
 class TeslaShareByApp(context: Context) : TeslaShareBase(context), TeslaShare {
-    override fun share(address: String) {
+    override suspend fun share(address: String) {
         AnalysisUtil.log("share using tesla app share")
         val intent = Intent()
         intent.action = "android.intent.action.SEND"

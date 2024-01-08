@@ -4,5 +4,5 @@ import java.io.IOException
 
 interface TeslaShare {
     @Throws(IOException::class)
-    fun share(address: String)
+    suspend fun share(address: String)
 }

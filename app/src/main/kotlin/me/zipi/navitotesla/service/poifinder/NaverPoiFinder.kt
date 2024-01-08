@@ -24,9 +24,9 @@ class NaverPoiFinder : PoiFinder {
     }
 
     @Throws(IOException::class)
-    override fun listPoiAddress(poiName: String): List<Poi> {
+    override suspend fun listPoiAddress(poiName: String): List<Poi> {
         val poiList: MutableList<Poi> = ArrayList()
-        val response = naverMapApi.search(String.format("\"%s\"", poiName)).execute()
+        val response = naverMapApi.search(String.format("\"%s\"", poiName))
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "naver api error: " + response.errorBody())
             AnalysisUtil.log(

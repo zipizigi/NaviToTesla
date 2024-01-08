@@ -45,7 +45,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
         getByName("debug") {
@@ -53,7 +53,7 @@ android {
             isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
@@ -78,6 +78,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.kotlin.coroutine)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

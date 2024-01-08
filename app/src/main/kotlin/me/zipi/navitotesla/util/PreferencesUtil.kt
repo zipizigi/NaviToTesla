@@ -5,147 +5,206 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.model.Token
 import java.io.IOException
 import java.security.GeneralSecurityException
 import java.util.Calendar
 
 object PreferencesUtil {
-    private const val preferencesFileName = "settings"
+    private lateinit var instance: SharedPreferences
 
     @Throws(GeneralSecurityException::class, IOException::class)
-    private fun getSharedPreferences(context: Context): SharedPreferences {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
-        return EncryptedSharedPreferences.create(
-            context,
-            preferencesFileName,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-    }
-
-    fun remove(context: Context, key: String): Boolean {
-        return try {
-            getSharedPreferences(context).edit().remove(key).apply()
-            true
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "remove  error", e)
-            AnalysisUtil.recordException(e)
-            false
+    fun initialize(applicationContext: Context) {
+        if (!this::instance.isInitialized) {
+            synchronized(PreferencesUtil::class) {
+                val masterKey = MasterKey.Builder(applicationContext)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+                instance = EncryptedSharedPreferences.create(
+                    applicationContext,
+                    preferencesFileName,
+                    masterKey,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                )
+            }
         }
     }
 
-    fun clear(context: Context) {
-        try {
-            getSharedPreferences(context).edit().clear().apply()
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "clear error", e)
-            AnalysisUtil.recordException(e)
+    private const val preferencesFileName = "settings"
+
+    suspend fun remove(key: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.edit().remove(key).apply()
+                true
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "remove  error", e)
+                AnalysisUtil.recordException(e)
+                false
+            }
         }
     }
 
-    fun put(context: Context, key: String, value: Boolean): Boolean {
-        return try {
-            getSharedPreferences(context).edit().putBoolean(key, value).apply()
-            true
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "put boolean error", e)
-            AnalysisUtil.recordException(e)
-            false
+    suspend fun clear() {
+        withContext(Dispatchers.IO) {
+            try {
+                instance.edit().clear().apply()
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "clear error", e)
+                AnalysisUtil.recordException(e)
+            }
         }
     }
 
-    fun put(context: Context, key: String, value: Long): Boolean {
-        return try {
-            getSharedPreferences(context).edit().putLong(key, value).apply()
-            true
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "put long error", e)
-            AnalysisUtil.recordException(e)
-            false
+    suspend fun put(key: String, value: Boolean): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.edit().putBoolean(key, value).apply()
+                true
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "put boolean error", e)
+                AnalysisUtil.recordException(e)
+                false
+            }
         }
     }
 
-    fun put(context: Context, key: String, value: String): Boolean {
-        return try {
-            getSharedPreferences(context).edit().putString(key, value).apply()
-            true
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "put string error", e)
-            AnalysisUtil.recordException(e)
-            false
+    suspend fun put(key: String, value: Long): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.edit().putLong(key, value).apply()
+                true
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "put long error", e)
+                AnalysisUtil.recordException(e)
+                false
+            }
         }
     }
 
-    fun getString(context: Context, key: String, defaultValue: String?): String? {
+    suspend fun put(key: String, value: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.edit().putString(key, value).apply()
+                true
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "put string error", e)
+                AnalysisUtil.recordException(e)
+                false
+            }
+        }
+    }
+
+    suspend fun getString(key: String, defaultValue: String?): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.getString(key, defaultValue)
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "get string error", e)
+                AnalysisUtil.recordException(e)
+                defaultValue
+            }
+        }
+    }
+
+    fun getStringSync(key: String, defaultValue: String?): String? {
         return try {
-            getSharedPreferences(context).getString(key, defaultValue)
+            instance.getString(key, defaultValue)
         } catch (e: Exception) {
             Log.w(PreferencesUtil::class.java.name, "get string error", e)
             AnalysisUtil.recordException(e)
             defaultValue
         }
+
     }
 
-    fun getString(context: Context, key: String): String? {
-        return getString(context, key, null)
+    suspend fun getString(key: String): String? {
+        return getString(key, null)
     }
 
 //    fun getBoolean(context: Context?, key: String?): Boolean? {
 //        return getBoolean(context, key, null)
 //    }
 
-    fun getBoolean(context: Context, key: String, defaultValue: Boolean): Boolean {
-        return try {
-            getSharedPreferences(context).getBoolean(key, defaultValue)
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "get boolean error", e)
-            AnalysisUtil.recordException(e)
-            defaultValue
+    suspend fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.getBoolean(key, defaultValue)
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "get boolean error", e)
+                AnalysisUtil.recordException(e)
+                defaultValue
+            }
         }
     }
 
-    fun getLong(context: Context, key: String): Long? {
+    suspend fun getLong(key: String): Long? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val result = instance.getLong(key, -1)
+                if (result == -1L) null else result
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "get long error", e)
+                AnalysisUtil.recordException(e)
+                null
+            }
+        }
+    }
+
+    fun getLongSync(key: String): Long? {
         return try {
-            val result = getSharedPreferences(context).getLong(key, -1)
+            val result = instance.getLong(key, -1)
             if (result == -1L) null else result
         } catch (e: Exception) {
             Log.w(PreferencesUtil::class.java.name, "get long error", e)
             AnalysisUtil.recordException(e)
             null
         }
+
     }
 
-    fun getLong(context: Context, key: String, defaultValue: Long): Long {
-        return try {
-            getSharedPreferences(context).getLong(key, defaultValue)
-        } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "get long error", e)
-            AnalysisUtil.recordException(e)
-            defaultValue
+    suspend fun getLong(key: String, defaultValue: Long): Long {
+        return withContext(Dispatchers.IO) {
+            try {
+                instance.getLong(key, defaultValue)
+            } catch (e: Exception) {
+                Log.w(PreferencesUtil::class.java.name, "get long error", e)
+                AnalysisUtil.recordException(e)
+                defaultValue
+            }
         }
     }
 
-    fun saveToken(context: Context, token: Token) {
-        put(context, "refreshToken", token.refreshToken)
-        put(context, "accessToken", token.accessToken)
-        put(context, "tokenUpdated", Calendar.getInstance().time.time)
+    suspend fun saveToken(token: Token) {
+        put("refreshToken", token.refreshToken)
+        put("accessToken", token.accessToken)
+        put("tokenUpdated", Calendar.getInstance().time.time)
     }
 
-    fun expireToken(context: Context) {
-        if (getString(context, "refreshToken") != null) {
-            put(context, "tokenUpdated", 0L)
+    suspend fun expireToken() {
+        if (getString("refreshToken") != null) {
+            put("tokenUpdated", 0L)
         }
     }
 
-    fun loadToken(context: Context): Token? {
-        return if (getString(context, "refreshToken") != null) {
+    suspend fun loadToken(): Token? {
+        return if (getString("refreshToken") != null) {
             Token(
-                refreshToken = getString(context, "refreshToken")!!,
-                accessToken = getString(context, "accessToken")!!,
-                updated = getLong(context, "tokenUpdated")!!,
+                refreshToken = getString("refreshToken")!!,
+                accessToken = getString("accessToken")!!,
+                updated = getLong("tokenUpdated")!!,
+            )
+        } else null
+    }
+
+    fun loadTokenSync(): Token? {
+        return if (getStringSync("refreshToken", null) != null) {
+            Token(
+                refreshToken = getStringSync("refreshToken", null)!!,
+                accessToken = getStringSync("accessToken", null)!!,
+                updated = getLongSync("tokenUpdated")!!,
             )
         } else null
     }
