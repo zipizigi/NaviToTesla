@@ -14,11 +14,10 @@ object RemoteConfigUtil {
         remoteConfig.setConfigSettingsAsync(configSettings)
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
         remoteConfig.fetchAndActivate().addOnCompleteListener {
-            Log.i(
-                RemoteConfigUtil::class.java.name, "Remote config fetch ok"
-            )
+            Log.i(RemoteConfigUtil::class.java.name, "Remote config fetch ok")
         }
     }
+
     fun getString(key: String): String {
         val remoteConfig = FirebaseRemoteConfig.getInstance()
         return remoteConfig.getString(key)

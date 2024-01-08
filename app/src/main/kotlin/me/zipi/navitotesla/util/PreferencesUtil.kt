@@ -26,7 +26,7 @@ object PreferencesUtil {
                     preferencesFileName,
                     masterKey,
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
                 )
             }
         }

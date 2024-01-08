@@ -42,13 +42,12 @@ object EnablerUtil {
 
     private suspend fun addCondition(type: String, name: String) {
         AppDatabase.getInstance().conditionDao().insertCondition(
-            ConditionEntity(name = name, type = type, created = Date())
+            ConditionEntity(name = name, type = type, created = Date()),
         )
     }
 
     private suspend fun removeCondition(type: String, name: String) {
-        val entity: ConditionEntity? =
-            AppDatabase.getInstance().conditionDao().findConditionByName(type, name)
+        val entity: ConditionEntity? = AppDatabase.getInstance().conditionDao().findConditionByName(type, name)
         if (entity != null) {
             AppDatabase.getInstance().conditionDao().delete(entity)
         }
@@ -138,13 +137,13 @@ object EnablerUtil {
         val permission =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
         if (ActivityCompat.checkSelfPermission(
-                context!!, permission
+                context!!, permission,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return ArrayList()
         }
         val bluetoothManager = context.applicationContext.getSystemService(
-            BluetoothManager::class.java
+            BluetoothManager::class.java,
         )
         val adapter = bluetoothManager.adapter ?: return ArrayList()
         val result: MutableList<String> = ArrayList()
