@@ -7,7 +7,7 @@ retrofit = "2.9.0"
 
 [plugins]
 android-application = "com.android.application:8.2.1"
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin"}
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = "com.google.devtools.ksp:1.9.22-1.0.16"
 google-gms-service = "com.google.gms.google-services:4.4.0"
 firebase-crashlytics = "com.google.firebase.crashlytics:2.9.9"
@@ -58,11 +58,12 @@ androidx-test-espresso = "androidx.test.espresso:espresso-core:3.5.1"
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 okhttp3 = "com.squareup.okhttp3:okhttp:4.12.0"
+okhttp3-logging = "com.squareup.okhttp3:logging-interceptor:4.12.0"
 
 [bundles]
 room = ["room-runtime", "room-ktx", "androidx-sqlite"]
 androidx-navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 androidx-lifecycle = ["androidx-lifecycle-livedata", "androidx-lifecycle-viewmodel", "androidx-lifecycle-common", "androidx-lifecycle-extensions"]
-retrofit = ["retrofit", "retrofit-converter", "okhttp3"]
+retrofit = ["retrofit", "retrofit-converter", "okhttp3", "okhttp3-logging"]
 firebase = ["firebase-config", "firebase-analytics", "firebase-crashlytics", "firebase-perf"]
 #androidx-compose = [ "androidx-compose-foundation", "androidx-compose-ui", "androidx-compose-material", "androidx-compose-uiTooling" ]

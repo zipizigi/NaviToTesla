@@ -13,7 +13,9 @@ import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.databinding.FavoriteDialogFragmentBinding
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
@@ -109,15 +111,14 @@ class FavoriteDialogFragment
             created = Date(),
         )
         viewLifecycleOwner.lifecycleScope.launch {
-            context?.let {
-                AppDatabase.getInstance().poiAddressDao().insertPoi(entity)
-                activity?.let { activity ->
-                    activity.runOnUiThread { dismiss() }
-                    onDismissListener?.run()
-                }
+            AppDatabase.getInstance().poiAddressDao().insertPoi(entity)
+            withContext(Dispatchers.Main) {
+                dismiss()
             }
+            onDismissListener?.run()
         }
     }
+
 
     private fun searchDest() {
         viewLifecycleOwner.lifecycleScope.launch {

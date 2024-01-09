@@ -52,16 +52,25 @@ class KakaoPoiFinder : PoiFinder {
 
     companion object {
         private val kakaoMapApi =
-            Retrofit.Builder().baseUrl("https://dapi.kakao.com").addConverterFactory(GsonConverterFactory.create()).client(
-                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).addInterceptor(
-                    Interceptor { chain: Interceptor.Chain ->
-                        val request = chain.request().newBuilder().addHeader(
-                            "Authorization",
-                            "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
-                        ).build()
-                        chain.proceed(request)
-                    },
-                ).addInterceptor(HttpRetryInterceptor(10)).build(),
-            ).build().create(KakaoMapApi::class.java)
+            Retrofit.Builder()
+                .baseUrl("https://dapi.kakao.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(
+                    OkHttpClient.Builder()
+                        .connectTimeout(120, TimeUnit.SECONDS)
+                        .readTimeout(120, TimeUnit.SECONDS)
+                        .addInterceptor(
+                            Interceptor { chain: Interceptor.Chain ->
+                                val request = chain.request().newBuilder().addHeader(
+                                    "Authorization",
+                                    "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
+                                ).build()
+                                chain.proceed(request)
+                            },
+                        )
+                        .addInterceptor(HttpRetryInterceptor(10))
+                        .build(),
+                ).build()
+                .create(KakaoMapApi::class.java)
     }
 }

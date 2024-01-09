@@ -5,43 +5,78 @@ import me.zipi.navitotesla.api.TeslaApi
 import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
+import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.PreferencesUtil
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
 class AppRepository private constructor(private val database: AppDatabase) {
     val teslaApi: TeslaApi =
-        Retrofit.Builder().baseUrl("https://owner-api.teslamotors.com").addConverterFactory(GsonConverterFactory.create()).client(
-            OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).addInterceptor(
-                Interceptor { chain: Interceptor.Chain ->
-                    val token = PreferencesUtil.loadTokenSync()
-                    val accessToken = token?.accessToken ?: ""
-                    val request = chain.request().newBuilder()
-                        .addHeader("User-Agent", "Navi_To_Tesla")
-                        .addHeader("Accept", "*/*")
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("Authorization", "Bearer $accessToken")
-                        .build()
-                    chain.proceed(request)
-                },
-            ).addInterceptor(HttpRetryInterceptor(20)).build(),
-        ).build().create(TeslaApi::class.java)
+        Retrofit.Builder()
+            .baseUrl("https://owner-api.teslamotors.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .addInterceptor(
+                        Interceptor { chain: Interceptor.Chain ->
+                            val token = PreferencesUtil.loadTokenSync()
+                            val accessToken = token?.accessToken ?: ""
+                            val request = chain.request().newBuilder()
+                                .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
+                                .addHeader("Accept", "*/*")
+                                .addHeader("Authorization", "Bearer $accessToken")
+                                .build()
+                            chain.proceed(request)
+                        },
+                    )
+                    .addInterceptor(
+                        HttpLoggingInterceptor {
+                            AnalysisUtil.appendLog("DEBUG", it)
+                        }.apply {
+                            level = HttpLoggingInterceptor.Level.BASIC
+                        },
+                    )
+                    .addInterceptor(HttpRetryInterceptor(20))
+                    .build(),
+            ).build()
+            .create()
 
     val teslaAuthApi: TeslaAuthApi =
-        Retrofit.Builder().baseUrl("https://auth.tesla.com").addConverterFactory(GsonConverterFactory.create()).client(
-            OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).addInterceptor(
-                Interceptor { chain: Interceptor.Chain ->
-                    val request = chain.request().newBuilder().addHeader("User-Agent", "Navi_To_Tesla").addHeader("Accept", "*/*")
-                        .addHeader("Content-Type", "application/json").build()
-                    chain.proceed(request)
-                },
-            ).addInterceptor(HttpRetryInterceptor(20)).build(),
-        ).build().create(TeslaAuthApi::class.java)
+        Retrofit.Builder()
+            .baseUrl("https://auth.tesla.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .addInterceptor(
+                        Interceptor { chain: Interceptor.Chain ->
+                            val request = chain.request().newBuilder()
+                                .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
+                                .build()
+                            chain.proceed(request)
+                        },
+                    )
+                    .addInterceptor(
+                        HttpLoggingInterceptor {
+                            AnalysisUtil.appendLog("DEBUG", it)
+                        }.apply {
+                            level = HttpLoggingInterceptor.Level.BASIC
+                        },
+                    )
+                    .addInterceptor(HttpRetryInterceptor(20))
+                    .build(),
+            ).build()
+            .create()
 
     suspend fun getPoiSync(poiName: String): PoiAddressEntity? {
         return database.poiAddressDao().findPoi(poiName)

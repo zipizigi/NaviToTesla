@@ -30,6 +30,7 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -98,7 +99,7 @@ class HomeFragment
         super.onResume()
         accessibilityGrantedCheck()
         permissionGrantedCheck()
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             launch { updateVersion() }
             launch { updateToken() }
             launch { updateLatestVersion() }
@@ -124,7 +125,7 @@ class HomeFragment
         if (activity == null) {
             return false
         }
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             if (view.id == binding.txtVersion.id && AnalysisUtil.isWritableLog) {
                 var size = (AnalysisUtil.logFileSize / 1024.0).toInt()
                 var type = "KB"
@@ -270,12 +271,12 @@ class HomeFragment
     }
 
     private fun onTxtVersionClicked() {
-        lifecycleScope.launch { AppUpdaterUtil.dialog(activity, true) }
+        CoroutineScope(Dispatchers.Default).launch { AppUpdaterUtil.dialog(activity, true) }
     }
 
     private fun onBtnPoiCacheClearClick() {
         binding.btnPoiCacheClear.isEnabled = false
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             if (context == null || activity == null) {
                 return@launch
             }
@@ -309,7 +310,7 @@ class HomeFragment
     }
 
     private fun onBtnTokenClearClick() {
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             homeViewModel.vehicleListLiveData.postValue(mutableListOf())
             homeViewModel.refreshToken.postValue("")
             if (context != null) {
@@ -344,7 +345,7 @@ class HomeFragment
             }
         }
         val context: Activity = requireActivity()
-        lifecycleScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 val token = naviToTeslaService.refreshToken(refreshToken)
                 if (homeViewModel.tokenLiveData.value != token) {
