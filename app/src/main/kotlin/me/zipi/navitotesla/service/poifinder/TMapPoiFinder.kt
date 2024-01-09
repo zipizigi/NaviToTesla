@@ -59,18 +59,27 @@ class TMapPoiFinder : PoiFinder {
 
     companion object {
         private val tMapApi =
-            Retrofit.Builder().baseUrl("https://apis.openapi.sk.com").addConverterFactory(GsonConverterFactory.create()).client(
-                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS).addInterceptor(
-                    Interceptor { chain: Interceptor.Chain ->
-                        val request = chain.request().newBuilder().url(
-                            chain.request().url.newBuilder().addQueryParameter("version", "1").addQueryParameter(
-                                "appKey",
-                                RemoteConfigUtil.getString("tmapApiKey"),
-                            ).build(),
-                        ).build()
-                        chain.proceed(request)
-                    },
-                ).addInterceptor(HttpRetryInterceptor(10)).build(),
-            ).build().create(TMapApi::class.java)
+            Retrofit.Builder()
+                .baseUrl("https://apis.openapi.sk.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(
+                    OkHttpClient.Builder()
+                        .connectTimeout(120, TimeUnit.SECONDS)
+                        .readTimeout(120, TimeUnit.SECONDS)
+                        .addInterceptor(
+                            Interceptor { chain: Interceptor.Chain ->
+                                val request = chain.request().newBuilder().url(
+                                    chain.request().url.newBuilder().addQueryParameter("version", "1").addQueryParameter(
+                                        "appKey",
+                                        RemoteConfigUtil.getString("tmapApiKey"),
+                                    ).build(),
+                                ).build()
+                                chain.proceed(request)
+                            },
+                        )
+                        .addInterceptor(HttpRetryInterceptor(10))
+                        .build(),
+                ).build()
+                .create(TMapApi::class.java)
     }
 }

@@ -216,6 +216,7 @@ class NaviToTeslaService(context: Context) {
                 AnalysisUtil.log("Success refresh access token")
             }
             ResponseCloser.closeAll(newToken)
+
         } catch (e: Exception) {
             Log.w(this.javaClass.name, "refresh token fail", e)
             makeToast(context.getString(R.string.refreshTokenError))
@@ -251,7 +252,6 @@ class NaviToTeslaService(context: Context) {
             } else {
                 Log.w(this.javaClass.name, "get vehicle error: $response")
             }
-            ResponseCloser.closeAll(response)
         } catch (e: Exception) {
             Log.w(this.javaClass.name, "get vehicle error", e)
             AnalysisUtil.recordException(e)

@@ -79,7 +79,7 @@ object AnalysisUtil {
     val logFilePath: String
         get() = File("$externalDir/NaviToTesla.log").toString()
 
-    private fun appendLog(logLevel: String, message: String) {
+    fun appendLog(logLevel: String, message: String) {
         CoroutineScope(Dispatchers.IO).launch {
             Log.i(AnalysisUtil::class.java.name, message)
             val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
