@@ -55,10 +55,17 @@ class NaverPoiFinder : PoiFinder {
 
     companion object {
         private val naverMapApi =
-            Retrofit.Builder().baseUrl("https://m.map.naver.com").addConverterFactory(GsonConverterFactory.create()).client(
-                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(HttpRetryInterceptor(10)).build(),
-            ).build().create(NaverMapApi::class.java)
+            Retrofit.Builder()
+                .baseUrl("https://m.map.naver.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(
+                    OkHttpClient.Builder()
+                        .connectTimeout(120, TimeUnit.SECONDS)
+                        .readTimeout(120, TimeUnit.SECONDS)
+                        .addInterceptor(HttpRetryInterceptor(10))
+                        .build(),
+                ).build()
+                .create(NaverMapApi::class.java)
 
         // 접근성 도구로 판단한 목적지 임시 저장
         private var destination: String? = null
