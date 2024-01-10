@@ -12,7 +12,10 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.EnablerUtil
 
 class BluetoothReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val permission =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
         if (ActivityCompat.checkSelfPermission(
@@ -22,17 +25,20 @@ class BluetoothReceiver : BroadcastReceiver() {
         ) {
             return
         }
-        val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
-        } else {
-            @Suppress("DEPRECATION") intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE)
-        }
+        val device =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE)
+            }
 
         AnalysisUtil.log("receive bluetooth broadcast: " + intent.action + " - " + device!!.name)
         when (intent.action) {
-            BluetoothDevice.ACTION_ACL_CONNECTED -> EnablerUtil.addConnectedBluetooth(
-                device.name,
-            )
+            BluetoothDevice.ACTION_ACL_CONNECTED ->
+                EnablerUtil.addConnectedBluetooth(
+                    device.name,
+                )
 
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> EnablerUtil.removeConnectedBluetooth(device.name)
         }

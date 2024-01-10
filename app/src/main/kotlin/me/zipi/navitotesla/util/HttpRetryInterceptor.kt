@@ -8,7 +8,10 @@ import java.net.UnknownHostException
 import java.util.Locale
 
 class HttpRetryInterceptor(private val maxRetryCount: Int = 0) : Interceptor {
-    private fun sleep(retry: Int, chain: Interceptor.Chain) {
+    private fun sleep(
+        retry: Int,
+        chain: Interceptor.Chain,
+    ) {
         try {
             var sleep = retry * retry * 100L / 2
             sleep = if (sleep > 3000) 3000 else sleep

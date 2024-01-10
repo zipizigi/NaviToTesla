@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class TeslaRefreshTokenRequest(
     @SerializedName("refresh_token")
-    val refreshToken: String
+    val refreshToken: String,
 ) {
     @SerializedName("grant_type")
     val grantType = "refresh_token"

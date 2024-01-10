@@ -9,5 +9,7 @@ import retrofit2.http.Query
 interface NaverMapApi {
     @POST("/search2/searchMore.naver")
     @Headers("Accept: application/json")
-    suspend fun search(@Query("query") query: String): Response<NaverMap.Response>
+    suspend fun search(
+        @Query("query") query: String,
+    ): Response<NaverMap.Response>
 }

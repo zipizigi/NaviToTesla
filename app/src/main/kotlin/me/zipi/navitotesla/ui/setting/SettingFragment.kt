@@ -35,8 +35,10 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
     private lateinit var settingViewModel: SettingViewModel
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
         settingViewModel = ViewModelProvider(this)[SettingViewModel::class.java]
@@ -54,26 +56,26 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         settingViewModel.isAppEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedAppEnabled(enabled) }
 
-        conditionRecyclerAdapter = ConditionRecyclerAdapter(
-            object : OnDeleteButtonClicked {
-                override fun onClick(position: Int) {
-                    activity?.run {
-                        AlertDialog.Builder(this)
-                            .setCancelable(true)
-                            .setTitle(getString(R.string.removeCondition))
-                            .setMessage(getString(R.string.dialogRemoveCondition))
-                            .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
-                                removeBluetoothDevice(
-                                    position,
-                                )
-                            }
-                            .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
-                            .show()
+        conditionRecyclerAdapter =
+            ConditionRecyclerAdapter(
+                object : OnDeleteButtonClicked {
+                    override fun onClick(position: Int) {
+                        activity?.run {
+                            AlertDialog.Builder(this)
+                                .setCancelable(true)
+                                .setTitle(getString(R.string.removeCondition))
+                                .setMessage(getString(R.string.dialogRemoveCondition))
+                                .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
+                                    removeBluetoothDevice(
+                                        position,
+                                    )
+                                }
+                                .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                                .show()
+                        }
                     }
-
-                }
-            },
-        )
+                },
+            )
         binding.recylerBluetooth.adapter = conditionRecyclerAdapter
         binding.recylerBluetooth.layoutManager = LinearLayoutManager(context)
         settingViewModel.bluetoothConditions
@@ -96,48 +98,51 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         updateConditions()
     }
 
-    private fun updateConditions() = lifecycleScope.launch {
-        if (context != null && activity != null) {
-            val appEnabled = context?.let { EnablerUtil.getAppEnabled() } ?: true
-            val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled() } ?: false
-            val accEnabled: Boolean =
-                context?.let {
-                    NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
-                } ?: false
+    private fun updateConditions() =
+        lifecycleScope.launch {
+            if (context != null && activity != null) {
+                val appEnabled = context?.let { EnablerUtil.getAppEnabled() } ?: true
+                val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled() } ?: false
+                val accEnabled: Boolean =
+                    context?.let {
+                        NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
+                    } ?: false
 
-            withContext(Dispatchers.Main) {
-                binding.radioGroupAppEnable.check(if (appEnabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
-                binding.radioGroupConditionEnable.check(if (conditionEnabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id)
-                if (accEnabled) {
-                    binding.radioAccEnable.isChecked = true
-                } else {
-                    binding.radioAccDisable.isChecked = true
+                withContext(Dispatchers.Main) {
+                    binding.radioGroupAppEnable.check(if (appEnabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
+                    binding.radioGroupConditionEnable.check(
+                        if (conditionEnabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id,
+                    )
+                    if (accEnabled) {
+                        binding.radioAccEnable.isChecked = true
+                    } else {
+                        binding.radioAccDisable.isChecked = true
+                    }
+                }
+            }
+
+            launch {
+                context?.run {
+                    settingViewModel.bluetoothConditions.postValue(
+                        EnablerUtil.listBluetoothCondition(),
+                    )
+                }
+            }
+            launch {
+                context?.run {
+                    settingViewModel.isAppEnabled.postValue(
+                        EnablerUtil.getAppEnabled(),
+                    )
+                }
+            }
+            launch {
+                context?.run {
+                    settingViewModel.isConditionEnabled.postValue(
+                        EnablerUtil.getConditionEnabled(),
+                    )
                 }
             }
         }
-
-        launch {
-            context?.run {
-                settingViewModel.bluetoothConditions.postValue(
-                    EnablerUtil.listBluetoothCondition(),
-                )
-            }
-        }
-        launch {
-            context?.run {
-                settingViewModel.isAppEnabled.postValue(
-                    EnablerUtil.getAppEnabled(),
-                )
-            }
-        }
-        launch {
-            context?.run {
-                settingViewModel.isConditionEnabled.postValue(
-                    EnablerUtil.getConditionEnabled(),
-                )
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -229,10 +234,11 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         }
         val permission =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
-        val granted = ActivityCompat.checkSelfPermission(
-            requireContext(),
-            permission,
-        ) == PackageManager.PERMISSION_GRANTED
+        val granted =
+            ActivityCompat.checkSelfPermission(
+                requireContext(),
+                permission,
+            ) == PackageManager.PERMISSION_GRANTED
         if (!granted) {
             AlertDialog.Builder(requireContext())
                 .setTitle(this.getString(R.string.grantPermission))
@@ -267,7 +273,10 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         }
     }
 
-    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
+    override fun onCheckedChanged(
+        group: RadioGroup,
+        checkedId: Int,
+    ) {
         if (checkedId == R.id.radioAppEnable) {
             if (settingViewModel.isAppEnabled.value == false) {
                 settingViewModel.isAppEnabled.postValue(true)
@@ -285,7 +294,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                 settingViewModel.isConditionEnabled.postValue(false)
             }
         } else if (checkedId == R.id.radioAccEnable) {
-            if (activity != null && !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
+            if (activity != null &&
+                !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
                     activity,
                 )
             ) {
@@ -302,7 +312,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     .create().show()
             }
         } else if (checkedId == R.id.radioAccDisable) {
-            if (activity != null && NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
+            if (activity != null &&
+                NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
                     activity,
                 )
             ) {

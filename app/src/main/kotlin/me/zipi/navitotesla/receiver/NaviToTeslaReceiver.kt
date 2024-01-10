@@ -11,7 +11,10 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.EnablerUtil
 
 class NaviToTeslaReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         CoroutineScope(Dispatchers.Default).launch {
             val action = intent.action
             AnalysisUtil.log("receive NaviToTesla broadcast: $action")

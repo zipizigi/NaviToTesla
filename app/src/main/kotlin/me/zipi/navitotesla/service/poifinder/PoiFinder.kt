@@ -27,5 +27,9 @@ interface PoiFinder {
 
     @Throws(IOException::class)
     suspend fun listPoiAddress(poiName: String): List<Poi>
-    fun isIgnore(notificationTitle: String, notificationText: String): Boolean
+
+    fun isIgnore(
+        notificationTitle: String,
+        notificationText: String,
+    ): Boolean
 }

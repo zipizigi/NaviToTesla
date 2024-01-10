@@ -10,7 +10,6 @@ class ConditionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int? = null,
     val name: String,
-
     // wifi bluetooth
     val type: String,
     val created: Date,

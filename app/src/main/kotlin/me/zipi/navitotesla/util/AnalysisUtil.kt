@@ -24,16 +24,21 @@ object AnalysisUtil {
     private val firebaseCrashlytics = FirebaseCrashlytics.getInstance()
     private var firebaseAnalytics: FirebaseAnalytics? = null
     private var externalDir: String? = null
+
     fun initialize(context: Context) {
         firebaseAnalytics = FirebaseAnalytics.getInstance(context)
-        externalDir = if (context.getExternalFilesDir(null) != null) {
-            context.getExternalFilesDir(null).toString()
-        } else {
-            null
-        }
+        externalDir =
+            if (context.getExternalFilesDir(null) != null) {
+                context.getExternalFilesDir(null).toString()
+            } else {
+                null
+            }
     }
 
-    fun logEvent(event: String, param: Bundle) {
+    fun logEvent(
+        event: String,
+        param: Bundle,
+    ) {
         firebaseAnalytics?.logEvent(event, param)
     }
 
@@ -68,7 +73,10 @@ object AnalysisUtil {
         }
     }
 
-    fun setCustomKey(key: String, value: String) {
+    fun setCustomKey(
+        key: String,
+        value: String,
+    ) {
         firebaseCrashlytics.setCustomKey(key, value)
     }
 
@@ -79,12 +87,16 @@ object AnalysisUtil {
     val logFilePath: String
         get() = File("$externalDir/NaviToTesla.log").toString()
 
-    fun appendLog(logLevel: String, message: String) {
+    fun appendLog(
+        logLevel: String,
+        message: String,
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             Log.i(AnalysisUtil::class.java.name, message)
-            val dateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
-                Calendar.getInstance().time,
-            )
+            val dateTime =
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
+                    Calendar.getInstance().time,
+                )
             val text = String.format("%s %s %s", dateTime, logLevel, message)
             if (externalDir != null && !File(externalDir!!).exists() && !File(externalDir!!).mkdirs()) {
                 firebaseCrashlytics.log("create document directory fail")
@@ -114,17 +126,23 @@ object AnalysisUtil {
             val file = File("$externalDir/NaviToTesla.log")
             return if (!file.exists()) {
                 0L
-            } else file.length()
+            } else {
+                file.length()
+            }
         }
 
-    fun deleteLogFile() = CoroutineScope(Dispatchers.IO).launch {
-        val file = File("$externalDir/NaviToTesla.log")
-        if (file.exists()) {
-            file.delete()
+    fun deleteLogFile() =
+        CoroutineScope(Dispatchers.IO).launch {
+            val file = File("$externalDir/NaviToTesla.log")
+            if (file.exists()) {
+                file.delete()
+            }
         }
-    }
 
-    fun makeToast(context: Context?, text: String) {
+    fun makeToast(
+        context: Context?,
+        text: String,
+    ) {
         try {
             Log.i(AnalysisUtil::class.java.name, text)
             log(text)

@@ -9,5 +9,7 @@ import retrofit2.http.Query
 interface TMapApi {
     @GET("/tmap/pois")
     @Headers("Accept: application/json")
-    suspend fun search(@Query("searchKeyword") query: String): Response<SearchPoiResponse>
+    suspend fun search(
+        @Query("searchKeyword") query: String,
+    ): Response<SearchPoiResponse>
 }

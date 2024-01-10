@@ -32,7 +32,8 @@ class TokenWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
     }
 
     companion object {
-        private const val workName = "refreshTokenWorker"
+        private const val WORKER_NAME = "refreshTokenWorker"
+
         fun startBackgroundWork(context: Context) {
             CoroutineScope(Dispatchers.Main).launch {
                 if (PreferencesUtil.loadToken() == null) {
@@ -40,14 +41,15 @@ class TokenWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
                     return@launch
                 }
                 AnalysisUtil.log("Add background refresh token")
-                val workRequest: PeriodicWorkRequest = PeriodicWorkRequestBuilder<TokenWorker>(350, TimeUnit.MINUTES)
-                    .setConstraints(
-                        Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build(),
-                    ).build()
+                val workRequest: PeriodicWorkRequest =
+                    PeriodicWorkRequestBuilder<TokenWorker>(350, TimeUnit.MINUTES)
+                        .setConstraints(
+                            Constraints.Builder()
+                                .setRequiredNetworkType(NetworkType.CONNECTED)
+                                .build(),
+                        ).build()
                 WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                    workName,
+                    WORKER_NAME,
                     ExistingPeriodicWorkPolicy.KEEP,
                     workRequest,
                 )
@@ -56,7 +58,7 @@ class TokenWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
 
         fun cancelBackgroundWork(context: Context) {
             try {
-                WorkManager.getInstance(context).cancelUniqueWork(workName)
+                WorkManager.getInstance(context).cancelUniqueWork(WORKER_NAME)
             } catch (e: Exception) {
                 AnalysisUtil.recordException(e)
             }

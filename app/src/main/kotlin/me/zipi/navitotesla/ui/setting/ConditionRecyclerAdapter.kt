@@ -13,13 +13,20 @@ import java.lang.ref.WeakReference
 class ConditionRecyclerAdapter(private val listener: OnDeleteButtonClicked) :
     RecyclerView.Adapter<ConditionRecyclerAdapter.ViewHolder>() {
     private var items: List<String> = mutableListOf()
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.condition_view, parent, false)
         return ViewHolder(view, listener)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) {
         holder.onBind(items[position])
     }
 

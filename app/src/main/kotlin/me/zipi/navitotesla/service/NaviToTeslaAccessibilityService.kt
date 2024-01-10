@@ -48,6 +48,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {}
+
     private fun parseNaverNaviDestination(goalList: List<AccessibilityNodeInfo>?): List<String> {
         val result: MutableList<String> = ArrayList()
         if (goalList != null) {
@@ -69,7 +70,10 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
          * @param context     context
          * @param packageName packageName
          */
-        fun notifyIfAvailable(context: Context, packageName: String) {
+        fun notifyIfAvailable(
+            context: Context,
+            packageName: String,
+        ) {
             CoroutineScope(Dispatchers.Main).launch {
                 // possible package
                 if (!packageName.equals("com.nhn.android.nmap", ignoreCase = true)) {
@@ -93,26 +97,32 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 val notificationManager =
                     context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val mChannel = NotificationChannel(
-                        "notification_channel", "Notification",
-                        NotificationManager.IMPORTANCE_LOW,
-                    )
+                    val mChannel =
+                        NotificationChannel(
+                            "notification_channel",
+                            "Notification",
+                            NotificationManager.IMPORTANCE_LOW,
+                        )
                     notificationManager.createNotificationChannel(mChannel)
                 }
                 val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                 intent!!.putExtra("noti_action", "requireAccessibility")
-                val contentIntent = PendingIntent.getActivity(
-                    context, 1, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-                val notification = NotificationCompat.Builder(context, "notification_channel")
-                    .setContentIntent(contentIntent)
-                    .setContentTitle(context.getString(R.string.requireAccessibility))
-                    .setContentText(context.getString(R.string.guideRequireAccessibility))
-                    .setSmallIcon(R.drawable.ic_baseline_accessibility_new_24)
-                    .setOnlyAlertOnce(true)
-                    .setAutoCancel(true)
-                    .build()
+                val contentIntent =
+                    PendingIntent.getActivity(
+                        context,
+                        1,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                    )
+                val notification =
+                    NotificationCompat.Builder(context, "notification_channel")
+                        .setContentIntent(contentIntent)
+                        .setContentTitle(context.getString(R.string.requireAccessibility))
+                        .setContentText(context.getString(R.string.guideRequireAccessibility))
+                        .setSmallIcon(R.drawable.ic_baseline_accessibility_new_24)
+                        .setOnlyAlertOnce(true)
+                        .setAutoCancel(true)
+                        .build()
                 notificationManager.notify(2, notification)
             }
         }
@@ -126,7 +136,11 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
             for (enabledService in enabledServices) {
                 val enabledServiceInfo = enabledService.resolveInfo.serviceInfo
-                if (enabledServiceInfo.packageName == context.packageName && enabledServiceInfo.name == NaviToTeslaAccessibilityService::class.java.name) return true
+                if (enabledServiceInfo.packageName == context.packageName &&
+                    enabledServiceInfo.name == NaviToTeslaAccessibilityService::class.java.name
+                ) {
+                    return true
+                }
             }
             return false
         }

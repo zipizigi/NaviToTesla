@@ -20,12 +20,12 @@ import me.zipi.navitotesla.databinding.FavoriteDialogFragmentBinding
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
-import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
+import me.zipi.navitotesla.service.poifinder.KakaoPoiFinder
 import me.zipi.navitotesla.util.AnalysisUtil
 import java.util.Date
 
-class FavoriteDialogFragment
-    : DialogFragment, AdapterView.OnItemSelectedListener, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+class FavoriteDialogFragment :
+    DialogFragment, AdapterView.OnItemSelectedListener, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
     private lateinit var poiArrayAdapter: PoiArrayAdapter
     private var dest: String? = null
 
@@ -38,9 +38,9 @@ class FavoriteDialogFragment
         this.dest = dest
     }
 
-
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
         favoriteDialogViewModel = ViewModelProvider(this)[FavoriteDialogViewModel::class.java]
@@ -87,7 +87,12 @@ class FavoriteDialogFragment
         }
     }
 
-    override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+    override fun onItemSelected(
+        parent: AdapterView<*>?,
+        view: View,
+        position: Int,
+        id: Long,
+    ) {
         if (favoriteDialogViewModel.poiList.value == null) {
             return
         }
@@ -103,13 +108,15 @@ class FavoriteDialogFragment
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {}
+
     private fun saveFavorite() {
-        val entity = PoiAddressEntity(
-            poi = binding.txtDest.text.toString(),
-            address = binding.txtAddress.text.toString(),
-            registered = true,
-            created = Date(),
-        )
+        val entity =
+            PoiAddressEntity(
+                poi = binding.txtDest.text.toString(),
+                address = binding.txtAddress.text.toString(),
+                registered = true,
+                created = Date(),
+            )
         viewLifecycleOwner.lifecycleScope.launch {
             AppDatabase.getInstance().poiAddressDao().insertPoi(entity)
             withContext(Dispatchers.Main) {
@@ -119,13 +126,13 @@ class FavoriteDialogFragment
         }
     }
 
-
     private fun searchDest() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val pois = PoiFinderFactory.kakaoPoiFinder.listPoiAddress(
-                    binding.txtDest.text.toString().trim(),
-                )
+                val pois =
+                    KakaoPoiFinder().listPoiAddress(
+                        binding.txtDest.text.toString().trim(),
+                    )
                 favoriteDialogViewModel.poiList.postValue(pois)
             } catch (e: Exception) {
                 AnalysisUtil.recordException(e)
@@ -137,10 +144,12 @@ class FavoriteDialogFragment
         poiArrayAdapter.clear()
         poiArrayAdapter.addAll(favoriteDialogViewModel.poiList.value ?: listOf())
         poiArrayAdapter.notifyDataSetChanged()
-
     }
 
-    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
+    override fun onCheckedChanged(
+        group: RadioGroup,
+        checkedId: Int,
+    ) {
         if (favoriteDialogViewModel.selectedPoi.value == null) {
             return
         }
@@ -160,10 +169,18 @@ class FavoriteDialogFragment
         }
     }
 
-    class PoiArrayAdapter(context: Context?, @LayoutRes resource: Int) : ArrayAdapter<Poi?>(
-        context!!, resource,
-    ) {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+    class PoiArrayAdapter(
+        context: Context?,
+        @LayoutRes resource: Int,
+    ) : ArrayAdapter<Poi?>(
+            context!!,
+            resource,
+        ) {
+        override fun getView(
+            position: Int,
+            convertView: View?,
+            parent: ViewGroup,
+        ): View {
             val view = super.getView(position, convertView, parent) as TextView
             view.isSingleLine = false
             val poi = getItem(position)
@@ -178,7 +195,11 @@ class FavoriteDialogFragment
             return view
         }
 
-        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+        override fun getDropDownView(
+            position: Int,
+            convertView: View?,
+            parent: ViewGroup,
+        ): View {
             val view = super.getDropDownView(position, convertView, parent) as TextView
             view.isSingleLine = false
             val poi = getItem(position)

@@ -62,12 +62,17 @@ class NaviToTeslaService(context: Context) {
     /**
      * 안내 종료
      */
-    fun notificationClear() = CoroutineScope(Dispatchers.IO).launch {
-        PreferencesUtil.put("lastAddress", "")
-    }
+    fun notificationClear() =
+        CoroutineScope(Dispatchers.IO).launch {
+            PreferencesUtil.put("lastAddress", "")
+        }
 
     @AddTrace(name = "share")
-    suspend fun share(packageName: String, notificationTitle: String?, notificationText: String?) {
+    suspend fun share(
+        packageName: String,
+        notificationTitle: String?,
+        notificationText: String?,
+    ) {
         if (!EnablerUtil.isSendingCheck()) {
             AnalysisUtil.log("skip send share because condition")
             return
@@ -151,7 +156,8 @@ class NaviToTeslaService(context: Context) {
         eventParam.putString("package", packageName)
         val poiFinder = PoiFinderFactory.getPoiFinder(packageName)
         val poiName = poiFinder.parseDestination(notificationText ?: "")
-        if (poiName.isEmpty() || poiFinder.isIgnore(
+        if (poiName.isEmpty() ||
+            poiFinder.isIgnore(
                 notificationTitle ?: "",
                 notificationText ?: "",
             )
@@ -208,15 +214,15 @@ class NaviToTeslaService(context: Context) {
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
-            val newToken: Response<Token> = appRepository.teslaAuthApi
-                .refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
+            val newToken: Response<Token> =
+                appRepository.teslaAuthApi
+                    .refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
             if (newToken.isSuccessful && newToken.body() != null) {
                 PreferencesUtil.saveToken(newToken.body()!!)
                 token = newToken.body()
                 AnalysisUtil.log("Success refresh access token")
             }
             ResponseCloser.closeAll(newToken)
-
         } catch (e: Exception) {
             Log.w(this.javaClass.name, "refresh token fail", e)
             makeToast(context.getString(R.string.refreshTokenError))
