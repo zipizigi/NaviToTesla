@@ -55,7 +55,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_PASS }}
           keyPassword: ${{ secrets.KEY_PASS }}
         env:
-          BUILD_TOOLS_VERSION: "30.0.3"
+          BUILD_TOOLS_VERSION: "34.0.0"
 
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
@@ -67,7 +67,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_PASS }}
           keyPassword: ${{ secrets.KEY_PASS }}
         env:
-          BUILD_TOOLS_VERSION: "30.0.3"
+          BUILD_TOOLS_VERSION: "34.0.0"
 
       - uses: r0adkll/sign-android-release@v1
         name: Sign app Bundle
@@ -79,7 +79,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_PASS }}
           keyPassword: ${{ secrets.KEY_PASS }}
         env:
-          BUILD_TOOLS_VERSION: "30.0.3"
+          BUILD_TOOLS_VERSION: "34.0.0"
 
       - name: copy release file
         run: |
