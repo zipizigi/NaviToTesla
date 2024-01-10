@@ -19,6 +19,7 @@ import androidx.room.TypeConverters
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun poiAddressDao(): PoiAddressDao
+
     abstract fun conditionDao(): ConditionDao
 
     companion object {
@@ -44,7 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
          */
         private fun buildDatabase(appContext: Context): AppDatabase {
             return Room.databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
-                //.addMigrations(MIGRATION_2_3)
+                // .addMigrations(MIGRATION_2_3)
                 .build()
         }
     }

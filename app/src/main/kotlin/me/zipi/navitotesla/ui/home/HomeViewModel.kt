@@ -20,6 +20,7 @@ class HomeViewModel : ViewModel() {
     val shareMode = MutableLiveData("api") // api or app
 
     val isInstalledTeslaApp = MutableLiveData(false)
+
     fun clearObserve(owner: LifecycleOwner?) {
         vehicleListLiveData.removeObservers(owner!!)
         tokenLiveData.removeObservers(owner)

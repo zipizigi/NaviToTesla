@@ -19,6 +19,7 @@ import me.zipi.navitotesla.util.RemoteConfigUtil
 
 class NotificationListener : NotificationListenerService() {
     private lateinit var naviToTeslaService: NaviToTeslaService
+
     override fun onCreate() {
         super.onCreate()
         naviToTeslaService = NaviToTeslaService(this)

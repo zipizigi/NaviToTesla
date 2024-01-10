@@ -10,6 +10,7 @@ class SettingViewModel : ViewModel() {
     val isConditionEnabled = MutableLiveData(false)
 
     val bluetoothConditions = MutableLiveData<MutableList<String>>(mutableListOf())
+
     fun clearObserve(owner: LifecycleOwner?) {
         isAppEnabled.removeObservers(owner!!)
         isConditionEnabled.removeObservers(owner)

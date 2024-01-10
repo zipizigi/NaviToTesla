@@ -13,7 +13,6 @@ class PoiAddressEntity(
     val id: Int? = null,
     val poi: String,
     val address: String,
-
     val registered: Boolean? = null,
     val created: Date? = null,
 ) {

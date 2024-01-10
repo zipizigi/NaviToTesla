@@ -38,13 +38,14 @@ class TMapPoiFinder : PoiFinder {
         if (response.isSuccessful && response.body()?.searchPoiInfo != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (item in response.body()!!.searchPoiInfo!!.pois.poi) {
-                val poi = Poi(
-                    poiName = item.name,
-                    roadAddress = item.getRoadAddress(withLocalName),
-                    address = item.address,
-                    longitude = item.latitude,
-                    latitude = item.longitude,
-                )
+                val poi =
+                    Poi(
+                        poiName = item.name,
+                        roadAddress = item.getRoadAddress(withLocalName),
+                        address = item.address,
+                        longitude = item.latitude,
+                        latitude = item.longitude,
+                    )
 
                 listPoi.add(poi)
             }
@@ -53,7 +54,10 @@ class TMapPoiFinder : PoiFinder {
         return listPoi
     }
 
-    override fun isIgnore(notificationTitle: String, notificationText: String): Boolean {
+    override fun isIgnore(
+        notificationTitle: String,
+        notificationText: String,
+    ): Boolean {
         return notificationText == "안심주행" || notificationTitle != "경로주행"
     }
 
@@ -68,12 +72,13 @@ class TMapPoiFinder : PoiFinder {
                         .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(
                             Interceptor { chain: Interceptor.Chain ->
-                                val request = chain.request().newBuilder().url(
-                                    chain.request().url.newBuilder().addQueryParameter("version", "1").addQueryParameter(
-                                        "appKey",
-                                        RemoteConfigUtil.getString("tmapApiKey"),
-                                    ).build(),
-                                ).build()
+                                val request =
+                                    chain.request().newBuilder().url(
+                                        chain.request().url.newBuilder().addQueryParameter("version", "1").addQueryParameter(
+                                            "appKey",
+                                            RemoteConfigUtil.getString("tmapApiKey"),
+                                        ).build(),
+                                    ).build()
                                 chain.proceed(request)
                             },
                         )

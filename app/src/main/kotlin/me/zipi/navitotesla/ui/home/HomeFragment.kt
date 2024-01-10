@@ -49,13 +49,16 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent.set
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 import java.io.File
 
-class HomeFragment
-    : Fragment(), AdapterView.OnItemSelectedListener, View.OnClickListener, OnLongClickListener, RadioGroup.OnCheckedChangeListener {
+class HomeFragment :
+    Fragment(), AdapterView.OnItemSelectedListener, View.OnClickListener, OnLongClickListener, RadioGroup.OnCheckedChangeListener {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var naviToTeslaService: NaviToTeslaService
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         if (this.activity != null) {
             this.requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
@@ -172,6 +175,7 @@ class HomeFragment
     }
 
     private var permissionAlertDialog: AlertDialog? = null
+
     private fun accessibilityGrantedCheck() {
         if (nextAction == null) {
             return
@@ -186,9 +190,10 @@ class HomeFragment
 
             // accessibility check
             if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)) {
-                permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(getString(R.string.requireAccessibility))
-                    .setMessage(getString(R.string.guideRequireAccessibility))
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }.setCancelable(true).show()
+                permissionAlertDialog =
+                    AlertDialog.Builder(requireContext()).setTitle(getString(R.string.requireAccessibility))
+                        .setMessage(getString(R.string.guideRequireAccessibility))
+                        .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }.setCancelable(true).show()
                 nextAction = null
             }
         }
@@ -203,20 +208,22 @@ class HomeFragment
         }
 
         // notification listener
-        val sets = NotificationManagerCompat.getEnabledListenerPackages(
-            requireContext(),
-        )
+        val sets =
+            NotificationManagerCompat.getEnabledListenerPackages(
+                requireContext(),
+            )
         if (!sets.contains(requireContext().packageName)) {
-            permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
-                .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
-                .setPositiveButton(
-                    getString(R.string.confirm),
-                ) { _: DialogInterface?, _: Int ->
-                    if (permissionAlertDialog != null) {
-                        permissionAlertDialog = null
-                    }
-                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                }.setCancelable(false).show()
+            permissionAlertDialog =
+                AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
+                    .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
+                    .setPositiveButton(
+                        getString(R.string.confirm),
+                    ) { _: DialogInterface?, _: Int ->
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    }.setCancelable(false).show()
             return
         }
         if (context == null || activity == null) {
@@ -226,26 +233,30 @@ class HomeFragment
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
             return
         }
+
         val granted =
-            (requireContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && requireContext().checkSelfPermission(
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-            ) == PackageManager.PERMISSION_GRANTED)
+            context?.let {
+                it.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    it.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+            } ?: false
+
         if (!granted) {
-            permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(this.getString(R.string.grantPermission))
-                .setMessage(this.getString(R.string.guideGrantStoragePermission)).setPositiveButton(
-                    this.getString(R.string.confirm),
-                ) { _: DialogInterface?, _: Int ->
-                    requireActivity().requestPermissions(
-                        arrayOf(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                        ),
-                        2,
-                    )
-                    if (permissionAlertDialog != null) {
-                        permissionAlertDialog = null
-                    }
-                }.setCancelable(false).show()
+            permissionAlertDialog =
+                AlertDialog.Builder(requireContext()).setTitle(this.getString(R.string.grantPermission))
+                    .setMessage(this.getString(R.string.guideGrantStoragePermission)).setPositiveButton(
+                        this.getString(R.string.confirm),
+                    ) { _: DialogInterface?, _: Int ->
+                        requireActivity().requestPermissions(
+                            arrayOf(
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                            ),
+                            2,
+                        )
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                    }.setCancelable(false).show()
         }
     }
 
@@ -370,29 +381,35 @@ class HomeFragment
         }
     }
 
-    private fun updateSpinner() = lifecycleScope.launch {
-        val id = naviToTeslaService.loadVehicleId()
-        val spinnerArray: MutableList<String> = ArrayList()
-        if (homeViewModel.vehicleListLiveData.value == null) {
-            return@launch
-        }
-        var spinnerIndex = 0
-        for (i in 0 until homeViewModel.vehicleListLiveData.value!!.size) {
-            val v: Vehicle = homeViewModel.vehicleListLiveData.value!![i]
-            spinnerArray.add(v.displayName)
-            if (v.id == id) {
-                spinnerIndex = i
+    private fun updateSpinner() =
+        lifecycleScope.launch {
+            val id = naviToTeslaService.loadVehicleId()
+            val spinnerArray: MutableList<String> = ArrayList()
+            if (homeViewModel.vehicleListLiveData.value == null) {
+                return@launch
             }
+            var spinnerIndex = 0
+            for (i in 0 until homeViewModel.vehicleListLiveData.value!!.size) {
+                val v: Vehicle = homeViewModel.vehicleListLiveData.value!![i]
+                spinnerArray.add(v.displayName)
+                if (v.id == id) {
+                    spinnerIndex = i
+                }
+            }
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerArray)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            val spinner = binding.vehicleSelector
+            spinner.adapter = adapter
+            spinner.setSelection(spinnerIndex)
+            spinner.onItemSelectedListener = this@HomeFragment
         }
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerArray)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val spinner = binding.vehicleSelector
-        spinner.adapter = adapter
-        spinner.setSelection(spinnerIndex)
-        spinner.onItemSelectedListener = this@HomeFragment
-    }
 
-    override fun onItemSelected(adapterView: AdapterView<*>?, view: View?, i: Int, l: Long) {
+    override fun onItemSelected(
+        adapterView: AdapterView<*>?,
+        view: View?,
+        i: Int,
+        l: Long,
+    ) {
         if (homeViewModel.vehicleListLiveData.value != null) {
             val vid: Long = homeViewModel.vehicleListLiveData.value!![i].id
             naviToTeslaService.saveVehicleId(vid)
@@ -400,6 +417,7 @@ class HomeFragment
     }
 
     override fun onNothingSelected(adapterView: AdapterView<*>?) {}
+
     private fun updateVersion() {
         homeViewModel.appVersion.postValue(AppUpdaterUtil.getCurrentVersion(this.context))
     }
@@ -423,11 +441,12 @@ class HomeFragment
             return
         }
         try {
-            val uri = FileProvider.getUriForFile(
-                requireActivity(),
-                BuildConfig.APPLICATION_ID + ".provider",
-                File(AnalysisUtil.logFilePath),
-            )
+            val uri =
+                FileProvider.getUriForFile(
+                    requireActivity(),
+                    BuildConfig.APPLICATION_ID + ".provider",
+                    File(AnalysisUtil.logFilePath),
+                )
             val intent = Intent(Intent.ACTION_VIEW)
             intent.setDataAndType(uri, "plain/text")
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -439,7 +458,8 @@ class HomeFragment
                     try {
                         startActivity(
                             Intent(
-                                Intent.ACTION_VIEW, Uri.parse("market://search?q=log viewer"),
+                                Intent.ACTION_VIEW,
+                                Uri.parse("market://search?q=log viewer"),
                             ),
                         )
                     } catch (anfe: ActivityNotFoundException) {
@@ -461,23 +481,29 @@ class HomeFragment
             }
             return if (BuildConfig.DEBUG) {
                 true
-            } else try {
-                requireContext().packageManager.getPackageInfo("com.teslamotors.tesla", 0)
-                true
-            } catch (e: PackageManager.NameNotFoundException) {
-                AnalysisUtil.log("package not found $e")
-                false
+            } else {
+                try {
+                    requireContext().packageManager.getPackageInfo("com.teslamotors.tesla", 0)
+                    true
+                } catch (e: PackageManager.NameNotFoundException) {
+                    AnalysisUtil.log("package not found $e")
+                    false
+                }
             }
         }
 
     // share mode
-    override fun onCheckedChanged(group: RadioGroup, checkedId: Int) {
+    override fun onCheckedChanged(
+        group: RadioGroup,
+        checkedId: Int,
+    ) {
         lifecycleScope.launch {
-            val shareMode = if (binding.radioUsingTeslaApp.id == group.checkedRadioButtonId) {
-                "app"
-            } else {
-                "api"
-            }
+            val shareMode =
+                if (binding.radioUsingTeslaApp.id == group.checkedRadioButtonId) {
+                    "app"
+                } else {
+                    "api"
+                }
             if (homeViewModel.shareMode.value == shareMode) {
                 return@launch
             }
@@ -538,29 +564,31 @@ class HomeFragment
     private fun overlayPermissionGrantedCheck() {
         if (activity != null) {
             requireActivity().runOnUiThread {
-                if (context != null && !Settings.canDrawOverlays(
+                if (context != null &&
+                    !Settings.canDrawOverlays(
                         context,
                     ) && (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
                 ) {
-                    permissionAlertDialog = AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
-                        .setMessage(getString(R.string.guideGrantOverlayPermission)).setPositiveButton(
-                            getString(R.string.confirm),
-                        ) { _: DialogInterface?, _: Int ->
-                            if (permissionAlertDialog != null) {
-                                permissionAlertDialog = null
-                            }
-                            startActivity(
-                                Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    Uri.parse("package:" + requireContext().packageName),
-                                ),
-                            )
-                        }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
-                            if (permissionAlertDialog != null) {
-                                permissionAlertDialog = null
-                            }
-                            binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-                        }.setCancelable(false).show()
+                    permissionAlertDialog =
+                        AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
+                            .setMessage(getString(R.string.guideGrantOverlayPermission)).setPositiveButton(
+                                getString(R.string.confirm),
+                            ) { _: DialogInterface?, _: Int ->
+                                if (permissionAlertDialog != null) {
+                                    permissionAlertDialog = null
+                                }
+                                startActivity(
+                                    Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:" + requireContext().packageName),
+                                    ),
+                                )
+                            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
+                                if (permissionAlertDialog != null) {
+                                    permissionAlertDialog = null
+                                }
+                                binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
+                            }.setCancelable(false).show()
                 }
             }
         }

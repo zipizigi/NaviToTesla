@@ -26,34 +26,39 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
     private lateinit var poiRegisteredRecyclerAdapter: PoiAddressRecyclerAdapter
     private lateinit var naviToTeslaService: NaviToTeslaService
     private lateinit var appDatabase: AppDatabase
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
     ): View {
         favoriteViewModel = ViewModelProvider(this)[FavoriteViewModel::class.java]
         binding = FragmentFavoriteBinding.inflate(inflater, container, false)
         val root = binding.root
-        poiHistoryRecyclerAdapter = PoiAddressRecyclerAdapter(
-            object : OnFavoriteButtonClicked {
-                override fun onClick(position: Int) {
-                    addFavoriteLocation(position)
-                }
+        poiHistoryRecyclerAdapter =
+            PoiAddressRecyclerAdapter(
+                object : OnFavoriteButtonClicked {
+                    override fun onClick(position: Int) {
+                        addFavoriteLocation(position)
+                    }
 
-                override fun onShareClick(position: Int) {}
-            },
-        )
+                    override fun onShareClick(position: Int) {}
+                },
+            )
         binding.recylerHistory.adapter = poiHistoryRecyclerAdapter
         binding.recylerHistory.layoutManager = LinearLayoutManager(context)
-        poiRegisteredRecyclerAdapter = PoiAddressRecyclerAdapter(
-            object : OnFavoriteButtonClicked {
-                override fun onClick(position: Int) {
-                    removeFavoriteLocation(position)
-                }
+        poiRegisteredRecyclerAdapter =
+            PoiAddressRecyclerAdapter(
+                object : OnFavoriteButtonClicked {
+                    override fun onClick(position: Int) {
+                        removeFavoriteLocation(position)
+                    }
 
-                override fun onShareClick(position: Int) {
-                    shareLocation(position)
-                }
-            },
-        )
+                    override fun onShareClick(position: Int) {
+                        shareLocation(position)
+                    }
+                },
+            )
         binding.recylerRegistered.adapter = poiRegisteredRecyclerAdapter
         binding.recylerRegistered.layoutManager = LinearLayoutManager(context)
         binding.btnFavoriteAdd.setOnClickListener(this)
@@ -68,7 +73,6 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
         naviToTeslaService = NaviToTeslaService(requireActivity())
         return root
     }
-
 
     override fun onResume() {
         super.onResume()

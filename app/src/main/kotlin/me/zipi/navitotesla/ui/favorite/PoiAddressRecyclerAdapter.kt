@@ -14,12 +14,19 @@ import java.lang.ref.WeakReference
 class PoiAddressRecyclerAdapter(private val listener: OnFavoriteButtonClicked) :
     RecyclerView.Adapter<PoiAddressRecyclerAdapter.ViewHolder>() {
     private var items: List<PoiAddressEntity> = listOf()
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.poi_address_view, parent, false)
         return ViewHolder(view, listener)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) {
         holder.onBind(items[position])
     }
 
@@ -35,6 +42,7 @@ class PoiAddressRecyclerAdapter(private val listener: OnFavoriteButtonClicked) :
 
     interface OnFavoriteButtonClicked {
         fun onClick(position: Int)
+
         fun onShareClick(position: Int)
     }
 

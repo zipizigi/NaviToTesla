@@ -2,18 +2,15 @@ package me.zipi.navitotesla.model
 
 import java.util.Locale
 
-
 data class Poi(
     var poiName: String? = null,
-
     private var roadAddress: String? = null,
     private var address: String? = null,
     var longitude: String? = null,
     var latitude: String? = null,
 ) {
     @Suppress("unused")
-    fun isAddressEmpty(): Boolean =
-        (roadAddress == null || roadAddress == "") && (address == null || address == "")
+    fun isAddressEmpty(): Boolean = (roadAddress == null || roadAddress == "") && (address == null || address == "")
 
     fun getRoadAddress(): String {
         // roadAddress, address, gps
