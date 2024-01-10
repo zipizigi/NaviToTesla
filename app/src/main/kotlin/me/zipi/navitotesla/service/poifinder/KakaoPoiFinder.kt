@@ -15,7 +15,8 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class KakaoPoiFinder : PoiFinder {
-    override fun parseDestination(notificationText: String): String {/*
+    override fun parseDestination(notificationText: String): String {
+        /*
          * 목적지 : ~~~~
          */
         return notificationText.replace("목적지 : ", "").trim { it <= ' ' }
@@ -32,13 +33,14 @@ class KakaoPoiFinder : PoiFinder {
         if (response.isSuccessful && response.body() != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (place in response.body()!!.documents) {
-                val poi = Poi(
-                    poiName = place.placeName,
-                    roadAddress = place.getRoadAddressName(withLocalName),
-                    address = place.addressName,
-                    longitude = place.longitude,
-                    latitude = place.latitude,
-                )
+                val poi =
+                    Poi(
+                        poiName = place.placeName,
+                        roadAddress = place.getRoadAddressName(withLocalName),
+                        address = place.addressName,
+                        longitude = place.longitude,
+                        latitude = place.latitude,
+                    )
                 poiList.add(poi)
             }
         }
@@ -46,7 +48,10 @@ class KakaoPoiFinder : PoiFinder {
         return poiList
     }
 
-    override fun isIgnore(notificationTitle: String, notificationText: String): Boolean {
+    override fun isIgnore(
+        notificationTitle: String,
+        notificationText: String,
+    ): Boolean {
         return notificationTitle != "길안내 주행 중"
     }
 
@@ -61,10 +66,11 @@ class KakaoPoiFinder : PoiFinder {
                         .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(
                             Interceptor { chain: Interceptor.Chain ->
-                                val request = chain.request().newBuilder().addHeader(
-                                    "Authorization",
-                                    "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
-                                ).build()
+                                val request =
+                                    chain.request().newBuilder().addHeader(
+                                        "Authorization",
+                                        "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
+                                    ).build()
                                 chain.proceed(request)
                             },
                         )

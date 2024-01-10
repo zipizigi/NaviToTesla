@@ -7,17 +7,14 @@ class TeslaApiResponse {
         var response: List<T> = listOf(),
         var count: Int = 0,
         var error: String? = null,
-
         @SerializedName("error_description")
         var errorDescription: String? = null,
     )
-
 
     class ObjectType<T>(
         var response: T?,
         var count: Int = 0,
         var error: String? = null,
-
         @SerializedName("error_description")
         var errorDescription: String? = null,
     )

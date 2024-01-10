@@ -30,11 +30,12 @@ class AppRepository private constructor(private val database: AppDatabase) {
                         Interceptor { chain: Interceptor.Chain ->
                             val token = PreferencesUtil.loadTokenSync()
                             val accessToken = token?.accessToken ?: ""
-                            val request = chain.request().newBuilder()
-                                .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
-                                .addHeader("Accept", "*/*")
-                                .addHeader("Authorization", "Bearer $accessToken")
-                                .build()
+                            val request =
+                                chain.request().newBuilder()
+                                    .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
+                                    .addHeader("Accept", "*/*")
+                                    .addHeader("Authorization", "Bearer $accessToken")
+                                    .build()
                             chain.proceed(request)
                         },
                     )
@@ -60,9 +61,10 @@ class AppRepository private constructor(private val database: AppDatabase) {
                     .readTimeout(30, TimeUnit.SECONDS)
                     .addInterceptor(
                         Interceptor { chain: Interceptor.Chain ->
-                            val request = chain.request().newBuilder()
-                                .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
-                                .build()
+                            val request =
+                                chain.request().newBuilder()
+                                    .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
+                                    .build()
                             chain.proceed(request)
                         },
                     )
@@ -82,7 +84,11 @@ class AppRepository private constructor(private val database: AppDatabase) {
         return database.poiAddressDao().findPoi(poiName)
     }
 
-    suspend fun savePoi(poiName: String, address: String, registered: Boolean) {
+    suspend fun savePoi(
+        poiName: String,
+        address: String,
+        registered: Boolean,
+    ) {
         database.withTransaction {
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
@@ -113,6 +119,7 @@ class AppRepository private constructor(private val database: AppDatabase) {
 
     companion object {
         private lateinit var instance: AppRepository
+
         fun initialize(database: AppDatabase) {
             if (!this::instance.isInitialized) {
                 synchronized(AppDatabase::class) {

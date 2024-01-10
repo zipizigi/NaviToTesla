@@ -9,5 +9,7 @@ import retrofit2.http.Query
 interface KakaoMapApi {
     @POST("/v2/local/search/keyword.json")
     @Headers("Accept: application/json")
-    suspend fun search(@Query("query") query: String): Response<KakaoMap.Response<KakaoMap.Place>>
+    suspend fun search(
+        @Query("query") query: String,
+    ): Response<KakaoMap.Response<KakaoMap.Place>>
 }

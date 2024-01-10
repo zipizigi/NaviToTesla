@@ -4,9 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 class TMap {
     data class SearchPoiResponse(
-        val searchPoiInfo: SearchPoiInfo? = null
+        val searchPoiInfo: SearchPoiInfo? = null,
     )
-
 
     data class SearchPoiInfo(
         val count: Int = 0,
@@ -15,9 +14,8 @@ class TMap {
         val pois: PoiItems,
     )
 
-
     data class PoiItems(
-        val poi: List<PoiItem> = listOf()
+        val poi: List<PoiItem> = listOf(),
     )
 
     data class PoiItem(
@@ -32,10 +30,8 @@ class TMap {
         var roadName: String? = null,
         var firstBuildNo: String? = null,
         var secondBuildNo: String? = null,
-
         @SerializedName("noorLat")
         var latitude: String? = null,
-
         @SerializedName("noorLon")
         var longitude: String? = null,
     ) {

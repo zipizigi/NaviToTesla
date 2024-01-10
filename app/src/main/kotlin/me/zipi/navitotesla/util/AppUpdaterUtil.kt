@@ -34,19 +34,21 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 object AppUpdaterUtil {
-    private val githubApi = Retrofit.Builder()
-        .baseUrl("https://api.github.com")
-        .addConverterFactory(GsonConverterFactory.create())
-        .client(
-            OkHttpClient.Builder()
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .addInterceptor(HttpRetryInterceptor(10))
-                .build(),
-        )
-        .build().create(GithubApi::class.java)
+    private val githubApi =
+        Retrofit.Builder()
+            .baseUrl("https://api.github.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .addInterceptor(HttpRetryInterceptor(10))
+                    .build(),
+            )
+            .build().create(GithubApi::class.java)
     private var dialogLastCheck = 0L
     private var notificationLastCheck = 0L
+
     fun clearDoNotShow() {
         CoroutineScope(Dispatchers.IO).launch {
             PreferencesUtil.remove("updateDoNotShow")
@@ -65,7 +67,10 @@ object AppUpdaterUtil {
         return System.currentTimeMillis() - until < 0
     }
 
-    suspend fun dialog(activity: Activity?, isForce: Boolean) = withContext(Dispatchers.Main) {
+    suspend fun dialog(
+        activity: Activity?,
+        isForce: Boolean,
+    ) = withContext(Dispatchers.Main) {
         try {
             if (activity == null) {
                 return@withContext
@@ -80,10 +85,11 @@ object AppUpdaterUtil {
                 }
                 try {
                     var release: Release? = null
-                    val response = githubApi.getReleases(
-                        RemoteConfigUtil.getString("repoOwner"),
-                        RemoteConfigUtil.getString("repoName"),
-                    )
+                    val response =
+                        githubApi.getReleases(
+                            RemoteConfigUtil.getString("repoOwner"),
+                            RemoteConfigUtil.getString("repoName"),
+                        )
 
                     if (response.code() == 403) {
                         AnalysisUtil.log("github api rate limit exceed")
@@ -146,15 +152,22 @@ object AppUpdaterUtil {
         }
     }
 
-
     @Suppress("KotlinConstantConditions")
-    private fun startUpdate(context: Context, apkUrl: String) {
+    private fun startUpdate(
+        context: Context,
+        apkUrl: String,
+    ) {
         try {
             AnalysisUtil.log("Start update app")
-            val appPackageName = if (BuildConfig.DEBUG) context.packageName.replace(
-                ".debug",
-                "",
-            ) else context.packageName
+            val appPackageName =
+                if (BuildConfig.DEBUG) {
+                    context.packageName.replace(
+                        ".debug",
+                        "",
+                    )
+                } else {
+                    context.packageName
+                }
             if (isPlayStoreInstalled(context) && BuildConfig.BUILD_MODE == "playstore") {
                 try {
                     AnalysisUtil.log("Start update app - open play store")
@@ -186,10 +199,11 @@ object AppUpdaterUtil {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)))
                 }
             } else {
-                val intent = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName"),
-                )
+                val intent =
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName"),
+                    )
                 context.startActivity(intent)
             }
             clearDoNotShow()
@@ -200,35 +214,40 @@ object AppUpdaterUtil {
         }
     }
 
-    private suspend fun getLatestVersion(): String = withContext(Dispatchers.IO) {
-        try {
-            val latestUrl = String.format(
-                "https://github.com/%s/%s/releases/latest",
-                RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"),
-            )
-            val con = URL(latestUrl).openConnection() as HttpURLConnection
-            con.instanceFollowRedirects = false
-            con.connect()
-            if (con.responseCode == 302 || con.responseCode == 304) {
-                val location = con.getHeaderField("Location")
-                return@withContext location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()[
-                    location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                        .toTypedArray().size - 1,
-                ]
+    private suspend fun getLatestVersion(): String =
+        withContext(Dispatchers.IO) {
+            try {
+                val latestUrl =
+                    String.format(
+                        "https://github.com/%s/%s/releases/latest",
+                        RemoteConfigUtil.getString("repoOwner"),
+                        RemoteConfigUtil.getString("repoName"),
+                    )
+                val con = URL(latestUrl).openConnection() as HttpURLConnection
+                con.instanceFollowRedirects = false
+                con.connect()
+                if (con.responseCode == 302 || con.responseCode == 304) {
+                    val location = con.getHeaderField("Location")
+                    return@withContext location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+                        .toTypedArray()[
+                        location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+                            .toTypedArray().size - 1,
+                    ]
+                }
+            } catch (e: Exception) {
+                Log.w(AppUpdaterUtil::class.java.name, "getLatestVersion fail", e)
+                AnalysisUtil.recordException(e)
             }
-        } catch (e: Exception) {
-            Log.w(AppUpdaterUtil::class.java.name, "getLatestVersion fail", e)
-            AnalysisUtil.recordException(e)
+            return@withContext "1.0"
         }
-        return@withContext "1.0"
-    }
 
     fun getLatestApkUrl(release: Release?): String {
-        var defaultApkUrl = String.format(
-            "https://github.com/%s/%s/releases/latest",
-            RemoteConfigUtil.getString("repoOwner"), RemoteConfigUtil.getString("repoName"),
-        )
+        var defaultApkUrl =
+            String.format(
+                "https://github.com/%s/%s/releases/latest",
+                RemoteConfigUtil.getString("repoOwner"),
+                RemoteConfigUtil.getString("repoName"),
+            )
         if (release?.assets == null || release.assets!!.isEmpty()) {
             return defaultApkUrl
         }
@@ -275,8 +294,10 @@ object AppUpdaterUtil {
             return true
         }
         val granted =
-            (activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            (
+                activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    activity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+            )
         if (!granted) {
             activity.runOnUiThread {
                 AlertDialog.Builder(activity)
@@ -310,26 +331,30 @@ object AppUpdaterUtil {
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val mChannel = NotificationChannel(
-                    "update_notification_channel", "Update notification",
-                    NotificationManager.IMPORTANCE_LOW,
-                )
+                val mChannel =
+                    NotificationChannel(
+                        "update_notification_channel",
+                        "Update notification",
+                        NotificationManager.IMPORTANCE_LOW,
+                    )
                 notificationManager.createNotificationChannel(mChannel)
             }
-            val contentIntent = PendingIntent.getActivity(
-                context,
-                0,
-                context.packageManager.getLaunchIntentForPackage(context.packageName),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-            val notification = NotificationCompat.Builder(context, "update_notification_channel")
-                .setContentIntent(contentIntent)
-                .setContentTitle(context.getString(R.string.updateAvailable))
-                .setContentText(context.getString(R.string.guideUpdateAvailable))
-                .setSmallIcon(R.drawable.ic_baseline_system_update_24)
-                .setOnlyAlertOnce(true)
-                .setAutoCancel(true)
-                .build()
+            val contentIntent =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    context.packageManager.getLaunchIntentForPackage(context.packageName),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+            val notification =
+                NotificationCompat.Builder(context, "update_notification_channel")
+                    .setContentIntent(contentIntent)
+                    .setContentTitle(context.getString(R.string.updateAvailable))
+                    .setContentText(context.getString(R.string.guideUpdateAvailable))
+                    .setSmallIcon(R.drawable.ic_baseline_system_update_24)
+                    .setOnlyAlertOnce(true)
+                    .setAutoCancel(true)
+                    .build()
             notificationManager.notify(0, notification)
         }
         notificationLastCheck = System.currentTimeMillis()

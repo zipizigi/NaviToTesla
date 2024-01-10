@@ -32,9 +32,10 @@ class VersionCheckWorker(context: Context, workerParams: WorkerParameters) : Wor
                 return
             }
             AnalysisUtil.log("Register version check worker")
-            val workRequest: WorkRequest = OneTimeWorkRequestBuilder<VersionCheckWorker>().setConstraints(
-                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-            ).setInitialDelay(1, TimeUnit.MINUTES).build()
+            val workRequest: WorkRequest =
+                OneTimeWorkRequestBuilder<VersionCheckWorker>().setConstraints(
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+                ).setInitialDelay(1, TimeUnit.MINUTES).build()
             WorkManager.getInstance(context).enqueue(workRequest)
         }
     }
