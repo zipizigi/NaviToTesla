@@ -51,7 +51,11 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventList
 import java.io.File
 
 class HomeFragment :
-    Fragment(), AdapterView.OnItemSelectedListener, View.OnClickListener, OnLongClickListener, RadioGroup.OnCheckedChangeListener {
+    Fragment(),
+    AdapterView.OnItemSelectedListener,
+    View.OnClickListener,
+    OnLongClickListener,
+    RadioGroup.OnCheckedChangeListener {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var naviToTeslaService: NaviToTeslaService
@@ -96,6 +100,10 @@ class HomeFragment :
         binding.btnTokenClear.setOnClickListener(this)
         binding.txtVersion.setOnClickListener(this)
         binding.txtVersion.setOnLongClickListener(this)
+
+        CoroutineScope(Dispatchers.Default).launch {
+            permissionGrantedCheck()
+        }
         return root
     }
 
@@ -104,7 +112,6 @@ class HomeFragment :
         accessibilityGrantedCheck()
         permissionNotificationListenerGrantedCheck()
         CoroutineScope(Dispatchers.Default).launch {
-            launch { permissionGrantedCheck() }
             launch { updateVersion() }
             launch { updateToken() }
             launch { updateLatestVersion() }
@@ -208,37 +215,31 @@ class HomeFragment :
         if (permissionAlertDialog != null && permissionAlertDialog!!.isShowing) {
             return
         }
-        //         file write permission
-        if ((Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyFilePermission", false))) {
-            TedPermission.create()
-                .setRationaleTitle(R.string.grantPermission)
-                .setRationaleMessage(R.string.guideGrantStoragePermission)
-                .setDeniedMessage(R.string.guidePermissionDeny)
-                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                .check()
-                .run {
-                    if (!isGranted) {
-                        PreferencesUtil.put("denyFilePermission", true)
-                    }
-                }
 
+        //         file write permission
+        if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyFilePermission", false))) {
+            withContext(Dispatchers.Main) {
+                TedPermission.create().setRationaleTitle(R.string.grantPermission).setRationaleMessage(R.string.guideGrantStoragePermission)
+                    .setDeniedMessage(R.string.guidePermissionDeny)
+                    .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE).check()
+                    .run {
+                        if (!isGranted) {
+                            PreferencesUtil.put("denyFilePermission", true)
+                        }
+                    }
+            }
         }
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyNotificationPermission", false))) {
-            TedPermission.create()
-                .setRationaleTitle(R.string.grantPermission)
-                .setRationaleMessage(R.string.guideGrantNotificationPermission)
-                .setDeniedMessage(R.string.guidePermissionDeny)
-                .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
-                .check()
-                .run {
-                    if (!isGranted) {
-                        PreferencesUtil.put("denyNotificationPermission", true)
+            withContext(Dispatchers.Main) {
+                TedPermission.create().setRationaleTitle(R.string.grantPermission)
+                    .setRationaleMessage(R.string.guideGrantNotificationPermission).setDeniedMessage(R.string.guidePermissionDeny)
+                    .setPermissions(Manifest.permission.POST_NOTIFICATIONS).check().run {
+                        if (!isGranted) {
+                            PreferencesUtil.put("denyNotificationPermission", true)
+                        }
                     }
-                }
-
+            }
         }
-
-
     }
 
     private fun permissionNotificationListenerGrantedCheck() {
@@ -358,6 +359,9 @@ class HomeFragment :
         if (refreshToken.isNullOrEmpty()) {
             return
         }
+        if (!binding.btnSave.isEnabled) {
+            return
+        }
         binding.btnSave.isEnabled = false
         binding.btnSave.text = getString(R.string.checking)
         if (activity != null) {
@@ -387,6 +391,9 @@ class HomeFragment :
                     binding.btnSave.text = context.getString(R.string.save)
                 }
             } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    binding.btnSave.isEnabled = true
+                }
                 Log.e(this.javaClass.name, "thread inside error", e)
                 AnalysisUtil.recordException(e)
             }
