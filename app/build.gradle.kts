@@ -96,7 +96,8 @@ dependencies {
     implementation(libs.androidx.concurrent.futures.ktx)
 
     implementation(libs.commons.lang3)
-
+    implementation(libs.ted.permission)
+    
     implementation(libs.bundles.room)
     annotationProcessor(libs.room.compiler)
     ksp(libs.room.compiler)

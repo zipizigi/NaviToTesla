@@ -30,6 +30,7 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.gun0912.tedpermission.coroutine.TedPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,8 +102,9 @@ class HomeFragment :
     override fun onResume() {
         super.onResume()
         accessibilityGrantedCheck()
-        permissionGrantedCheck()
+        permissionNotificationListenerGrantedCheck()
         CoroutineScope(Dispatchers.Default).launch {
+            launch { permissionGrantedCheck() }
             launch { updateVersion() }
             launch { updateToken() }
             launch { updateLatestVersion() }
@@ -199,7 +201,47 @@ class HomeFragment :
         }
     }
 
-    private fun permissionGrantedCheck() {
+    private suspend fun permissionGrantedCheck() {
+        if (context == null || activity == null) {
+            return
+        }
+        if (permissionAlertDialog != null && permissionAlertDialog!!.isShowing) {
+            return
+        }
+        //         file write permission
+        if ((Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyFilePermission", false))) {
+            TedPermission.create()
+                .setRationaleTitle(R.string.grantPermission)
+                .setRationaleMessage(R.string.guideGrantStoragePermission)
+                .setDeniedMessage(R.string.guidePermissionDeny)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .check()
+                .run {
+                    if (!isGranted) {
+                        PreferencesUtil.put("denyFilePermission", true)
+                    }
+                }
+
+        }
+        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyNotificationPermission", false))) {
+            TedPermission.create()
+                .setRationaleTitle(R.string.grantPermission)
+                .setRationaleMessage(R.string.guideGrantNotificationPermission)
+                .setDeniedMessage(R.string.guidePermissionDeny)
+                .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
+                .check()
+                .run {
+                    if (!isGranted) {
+                        PreferencesUtil.put("denyNotificationPermission", true)
+                    }
+                }
+
+        }
+
+
+    }
+
+    private fun permissionNotificationListenerGrantedCheck() {
         if (context == null) {
             return
         }
@@ -225,38 +267,6 @@ class HomeFragment :
                         startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                     }.setCancelable(false).show()
             return
-        }
-        if (context == null || activity == null) {
-            return
-        }
-//         file write permission
-        if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
-            return
-        }
-
-        val granted =
-            context?.let {
-                it.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    it.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-            } ?: false
-
-        if (!granted) {
-            permissionAlertDialog =
-                AlertDialog.Builder(requireContext()).setTitle(this.getString(R.string.grantPermission))
-                    .setMessage(this.getString(R.string.guideGrantStoragePermission)).setPositiveButton(
-                        this.getString(R.string.confirm),
-                    ) { _: DialogInterface?, _: Int ->
-                        requireActivity().requestPermissions(
-                            arrayOf(
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE,
-                            ),
-                            2,
-                        )
-                        if (permissionAlertDialog != null) {
-                            permissionAlertDialog = null
-                        }
-                    }.setCancelable(false).show()
         }
     }
 
@@ -295,6 +305,8 @@ class HomeFragment :
                 naviToTeslaService.clearPoiCache()
                 AppUpdaterUtil.clearDoNotShow()
                 PreferencesUtil.put("lastNotifyAppVersionForAccessibility", "")
+                PreferencesUtil.put("denyNotificationPermission", false)
+                PreferencesUtil.put("denyFilePermission", false)
             } catch (e: Exception) {
                 Log.w(this.javaClass.name, "clear poi cache error", e)
                 AnalysisUtil.recordException(e)

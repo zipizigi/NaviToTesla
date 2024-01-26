@@ -87,5 +87,6 @@
     <string name="guideRequireAccessibility">For some navigation apps, you can use Navi to Tesla using accessibility services.\nDetails can be found in the Settings tab.</string>
     <string name="accessibilityService">Accessibility Service</string>
     <string name="disableAccessibility">Disable accessibility services. Navi to Tesla is not available on certain navigations.\nYou can disable the Navi to Tesla accessibility service in your Android settings.</string>
-
+    <string name="guidePermissionDeny">You can grant permission again in Android\'s settings.</string>
+    <string name="guideGrantNotificationPermission">By adding notification permissions, you can receive related notifications when Navi to Tesla operates.</string>
 </resources>
