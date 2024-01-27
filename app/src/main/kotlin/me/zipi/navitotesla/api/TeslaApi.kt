@@ -11,7 +11,11 @@ import retrofit2.http.Path
 
 interface TeslaApi {
     @GET("/api/1/vehicles")
+    @Deprecated("endpoint is only available on fleetapi")
     suspend fun vehicles(): Response<TeslaApiResponse.ListType<Vehicle>>
+
+    @GET("/api/1/products")
+    suspend fun products(): Response<TeslaApiResponse.ListType<Map<String, Any>>>
 
     @POST("/api/1/vehicles/{id}/command/share")
     suspend fun share(
