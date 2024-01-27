@@ -33,8 +33,7 @@ import java.util.regex.Pattern
 
 class NaviToTeslaService(context: Context) {
     private val context: Context
-    private val pattern =
-        Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
+    private val pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
     private val appRepository: AppRepository
 
     init {
@@ -214,9 +213,7 @@ class NaviToTeslaService(context: Context) {
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
-            val newToken: Response<Token> =
-                appRepository.teslaAuthApi
-                    .refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
+            val newToken: Response<Token> = appRepository.teslaAuthApi.refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
             if (newToken.isSuccessful && newToken.body() != null) {
                 PreferencesUtil.saveToken(newToken.body()!!)
                 token = newToken.body()
@@ -244,17 +241,25 @@ class NaviToTeslaService(context: Context) {
             makeToast(context.getString(R.string.requireToken))
             return ArrayList()
         }
-        var vehicles: List<Vehicle> = ArrayList()
+        val vehicles = mutableListOf<Vehicle>()
         try {
             if (refreshToken() == null) {
                 return vehicles
             }
-            val response: Response<TeslaApiResponse.ListType<Vehicle>> =
-                appRepository.teslaApi.vehicles()
+            val response: Response<TeslaApiResponse.ListType<Map<String, Any>>> = appRepository.teslaApi.products()
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
             } else if (response.isSuccessful && response.body() != null) {
-                vehicles = response.body()!!.response
+                response.body()!!.response
+                    .filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
+                    .map {
+                        Vehicle(
+                            id = (it["id"] as Number).toLong(),
+                            vehicleId = (it["vehicle_id"] as Number).toLong(),
+                            displayName = it["display_name"].toString(),
+                            state = it["state"].toString(),
+                        )
+                    }.apply { vehicles.addAll(this) }
             } else {
                 Log.w(this.javaClass.name, "get vehicle error: $response")
             }
