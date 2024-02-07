@@ -17,11 +17,12 @@ class TeslaShareByApp(context: Context) : TeslaShareBase(context), TeslaShare {
         intent.action = "android.intent.action.SEND"
         intent.component = ComponentName("com.teslamotors.tesla", "com.tesla.share.ShareActivity")
         intent.type = "text/plain"
-        val address = if (Locale.getDefault().language.equals("ko", ignoreCase = true) || poi.isGpsEmpty()) {
-            poi.getRoadAddress()
-        } else {
-            poi.getGpsAddress()
-        }
+        val address =
+            if (Locale.getDefault().language.equals("ko", ignoreCase = true) || poi.isGpsEmpty()) {
+                poi.getRoadAddress()
+            } else {
+                poi.getGpsAddress()
+            }
         intent.putExtra("android.intent.extra.TEXT", address)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 

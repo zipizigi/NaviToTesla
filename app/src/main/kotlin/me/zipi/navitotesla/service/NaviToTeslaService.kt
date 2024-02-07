@@ -127,11 +127,11 @@ class NaviToTeslaService(context: Context) {
         PreferencesUtil.put(
             key = "lastAddress",
             value =
-            if (poi.isAddressEmpty()) {
-                ""
-            } else {
-                poi.getRoadAddress()
-            },
+                if (poi.isAddressEmpty()) {
+                    ""
+                } else {
+                    poi.getRoadAddress()
+                },
         )
         if (!poi.isAddressEmpty()) {
             makeToast(context.getString(R.string.requestSend) + "\n" + poi.getRoadAddress())
