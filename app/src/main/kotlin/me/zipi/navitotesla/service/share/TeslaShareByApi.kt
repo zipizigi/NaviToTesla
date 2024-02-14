@@ -7,6 +7,7 @@ import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.exception.ForbiddenException
+import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.ShareRequest
 import me.zipi.navitotesla.model.TeslaApiResponse
 import me.zipi.navitotesla.service.NaviToTeslaService
@@ -17,9 +18,10 @@ import java.io.IOException
 
 class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShareBase(context), TeslaShare {
     @Throws(IOException::class)
-    override suspend fun share(address: String) {
+    override suspend fun share(poi: Poi) {
+        val address = poi.getRoadAddress()
         if (BuildConfig.DEBUG) {
-            AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 Skip\n$address")
+            AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 By api Skip\n$address")
             try {
                 Thread.sleep(500)
             } catch (_: InterruptedException) {

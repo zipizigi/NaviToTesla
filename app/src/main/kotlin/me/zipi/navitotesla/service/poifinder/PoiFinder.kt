@@ -6,21 +6,16 @@ import java.io.IOException
 
 interface PoiFinder {
     @Throws(DuplicatePoiException::class, IOException::class)
-    suspend fun findPoiAddress(poiName: String): String {
-        val listPoi = listPoiAddress(poiName)
-        var address = ""
-        var sameCount = 0
-        for (poi in listPoi) {
-            if (poi.poiName.equals(poiName, ignoreCase = true)) {
-                sameCount++
-                address = poi.getRoadAddress()
-            }
-        }
-        if (sameCount > 1) {
-            // 중복지명 전송 안함
+    suspend fun findPoi(poiName: String): Poi {
+        val poiList = listPoiAddress(poiName).filter { it.poiName.equals(poiName, ignoreCase = true) }
+
+        return if (poiList.size > 1) {
             throw DuplicatePoiException(poiName)
+        } else if (poiList.size == 1) {
+            poiList[0]
+        } else {
+            Poi()
         }
-        return address
     }
 
     fun parseDestination(notificationText: String): String

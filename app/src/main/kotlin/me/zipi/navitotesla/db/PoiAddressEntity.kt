@@ -3,6 +3,7 @@ package me.zipi.navitotesla.db
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import me.zipi.navitotesla.model.Poi
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
@@ -13,6 +14,8 @@ class PoiAddressEntity(
     val id: Int? = null,
     val poi: String,
     val address: String,
+    val longitude: String? = null,
+    val latitude: String? = null,
     val registered: Boolean? = null,
     val created: Date? = null,
 ) {
@@ -25,6 +28,8 @@ class PoiAddressEntity(
     fun isRegistered(): Boolean {
         return registered != null && registered
     }
+
+    fun toPoi(): Poi = Poi(poiName = poi, roadAddress = address, address = address, longitude = longitude, latitude = latitude)
 
     companion object {
         var expireDay = 10
