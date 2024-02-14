@@ -16,6 +16,7 @@ import me.zipi.navitotesla.exception.DuplicatePoiException
 import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.exception.IgnorePoiException
 import me.zipi.navitotesla.exception.NotSupportedNaviException
+import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.TeslaApiResponse
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
@@ -82,15 +83,15 @@ class NaviToTeslaService(context: Context) {
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
         try {
-            val address = getAddress(packageName, notificationTitle, notificationText)
+            val poi = getPoi(packageName, notificationTitle, notificationText)
             val lastAddress = PreferencesUtil.getString("lastAddress", "")
-            if (lastAddress != address) {
+            if (lastAddress != poi.getRoadAddress()) {
                 try {
-                    share(address)
+                    share(poi)
                 } catch (e: ForbiddenException) {
                     AnalysisUtil.log("force expire token and retry...")
                     expireToken()
-                    share(address)
+                    share(poi)
                 }
             } else {
                 // 마지막 전송 주소와 동일
@@ -122,19 +123,27 @@ class NaviToTeslaService(context: Context) {
     }
 
     @Throws(IOException::class, ForbiddenException::class)
-    suspend fun share(address: String) {
-        PreferencesUtil.put("lastAddress", address)
-        if (address.isNotEmpty()) {
-            makeToast(context.getString(R.string.requestSend) + "\n" + address)
+    suspend fun share(poi: Poi) {
+        PreferencesUtil.put(
+            key = "lastAddress",
+            value =
+                if (poi.isAddressEmpty()) {
+                    ""
+                } else {
+                    poi.getRoadAddress()
+                },
+        )
+        if (!poi.isAddressEmpty()) {
+            makeToast(context.getString(R.string.requestSend) + "\n" + poi.getRoadAddress())
             val shareMode = PreferencesUtil.getString("shareMode", "app")
             if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
                 if (refreshToken() == null) {
                     return
                 }
                 val id = loadVehicleId()
-                TeslaShareByApi(context, id).share(address)
+                TeslaShareByApi(context, id).share(poi)
             } else {
-                TeslaShareByApp(context).share(address)
+                TeslaShareByApp(context).share(poi)
             }
         }
     }
@@ -146,11 +155,11 @@ class NaviToTeslaService(context: Context) {
         IgnorePoiException::class,
         IOException::class,
     )
-    private suspend fun getAddress(
+    private suspend fun getPoi(
         packageName: String,
         notificationTitle: String?,
         notificationText: String?,
-    ): String {
+    ): Poi {
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
         val poiFinder = PoiFinderFactory.getPoiFinder(packageName)
@@ -166,19 +175,33 @@ class NaviToTeslaService(context: Context) {
         }
         val poiAddressEntity = appRepository.getPoiSync(poiName)
         // 10 days cache
-        val address: String?
+        val poi: Poi
         if (poiAddressEntity != null && !poiAddressEntity.isExpire) {
-            address = poiAddressEntity.address
+            poi =
+                Poi(
+                    poiName = poiAddressEntity.poi,
+                    roadAddress = poiAddressEntity.address,
+                    address = poiAddressEntity.address,
+                    longitude = poiAddressEntity.longitude,
+                    latitude = poiAddressEntity.latitude,
+                )
             AnalysisUtil.logEvent("address_parse_cache", eventParam)
         } else if (isAddress(poiName)) {
-            address = poiName
+            poi =
+                Poi(
+                    poiName = poiName,
+                    roadAddress = poiName,
+                    address = poiName,
+                    longitude = null,
+                    latitude = null,
+                )
             AnalysisUtil.logEvent("address_direct", eventParam)
         } else {
-            address = poiFinder.findPoiAddress(poiName)
+            poi = poiFinder.findPoi(poiName)
             AnalysisUtil.logEvent("address_parse_api", eventParam)
-            appRepository.savePoi(poiName, address, false)
+            appRepository.savePoi(poi, false)
         }
-        return address
+        return poi
     }
 
 //    val token: Token?
@@ -250,16 +273,14 @@ class NaviToTeslaService(context: Context) {
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
             } else if (response.isSuccessful && response.body() != null) {
-                response.body()!!.response
-                    .filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
-                    .map {
-                        Vehicle(
-                            id = (it["id"] as Number).toLong(),
-                            vehicleId = (it["vehicle_id"] as Number).toLong(),
-                            displayName = it["display_name"].toString(),
-                            state = it["state"].toString(),
-                        )
-                    }.apply { vehicles.addAll(this) }
+                response.body()!!.response.filter { it.containsKey("vin") && it.containsKey("vehicle_id") }.map {
+                    Vehicle(
+                        id = (it["id"] as Number).toLong(),
+                        vehicleId = (it["vehicle_id"] as Number).toLong(),
+                        displayName = it["display_name"].toString(),
+                        state = it["state"].toString(),
+                    )
+                }.apply { vehicles.addAll(this) }
             } else {
                 Log.w(this.javaClass.name, "get vehicle error: $response")
             }

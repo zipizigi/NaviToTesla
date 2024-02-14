@@ -5,6 +5,7 @@ import me.zipi.navitotesla.api.TeslaApi
 import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
+import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -85,16 +86,20 @@ class AppRepository private constructor(private val database: AppDatabase) {
     }
 
     suspend fun savePoi(
-        poiName: String,
-        address: String,
+        poi: Poi,
         registered: Boolean,
     ) {
+        if (poi.poiName == null) {
+            return
+        }
         database.withTransaction {
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
-                    poi = poiName,
-                    address = address,
+                    poi = poi.poiName,
+                    address = poi.getRoadAddress(),
                     registered = registered,
+                    latitude = poi.latitude,
+                    longitude = poi.longitude,
                     created = Date(),
                 ),
             )

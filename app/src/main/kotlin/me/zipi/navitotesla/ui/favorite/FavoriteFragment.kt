@@ -115,16 +115,16 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
         if (activity == null || favoriteViewModel.registeredPoiAddress.value == null) {
             return
         }
-        val poi: PoiAddressEntity = favoriteViewModel.registeredPoiAddress.value!![position]
+        val poiEntity: PoiAddressEntity = favoriteViewModel.registeredPoiAddress.value!![position]
         AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.sendDestination))
-            .setMessage(getString(R.string.confirmSendDestination) + " \n - " + poi.address)
+            .setMessage(getString(R.string.confirmSendDestination) + " \n - " + poiEntity.address)
             .setPositiveButton(getString(R.string.send)) { _: DialogInterface?, _: Int ->
                 viewLifecycleOwner.lifecycleScope.launch {
                     if (activity == null) {
                         return@launch
                     }
                     try {
-                        naviToTeslaService.share(poi.address)
+                        naviToTeslaService.share(poiEntity.toPoi())
                     } catch (e: Exception) {
                         AnalysisUtil.recordException(e)
                     }
