@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.9.22"
 room = "2.6.1"
-androidx-navigation = "2.7.6"
+androidx-navigation = "2.7.7"
 androidx-lifecycle = "2.7.0"
 retrofit = "2.9.0"
 
@@ -9,7 +9,7 @@ retrofit = "2.9.0"
 android-application = "com.android.application:8.2.2"
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = "com.google.devtools.ksp:1.9.22-1.0.17"
-google-gms-service = "com.google.gms.google-services:4.4.0"
+google-gms-service = "com.google.gms.google-services:4.4.1"
 firebase-crashlytics = "com.google.firebase.crashlytics:2.9.9"
 firebase-perf = "com.google.firebase.firebase-perf:1.4.2"
 ktlint = "org.jlleitschuh.gradle.ktlint:12.1.0"
@@ -45,7 +45,7 @@ androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmode
 androidx-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-extensions = "android.arch.lifecycle:extensions:1.1.1"
 
-firebase-bom = "com.google.firebase:firebase-bom:32.7.1"
+firebase-bom = "com.google.firebase:firebase-bom:32.7.2"
 firebase-config = { module = "com.google.firebase:firebase-config" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
