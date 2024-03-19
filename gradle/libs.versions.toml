@@ -3,7 +3,7 @@ kotlin = "1.9.23"
 room = "2.6.1"
 androidx-navigation = "2.7.7"
 androidx-lifecycle = "2.7.0"
-retrofit = "2.9.0"
+retrofit = "2.10.0"
 
 [plugins]
 android-application = "com.android.application:8.3.1"
