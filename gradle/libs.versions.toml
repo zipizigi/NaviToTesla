@@ -30,7 +30,7 @@ commons-lang3 = "org.apache.commons:commons-lang3:3.14.0"
 
 gson = "com.google.code.gson:gson:2.10.1"
 keyboardvisibilityevent = "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3"
-material = "com.google.android.material:material:1.11.0"
+material = "com.google.android.material:material:1.12.0"
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
