@@ -19,7 +19,7 @@ kotlin-coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 androidAppUpdateLibrary = "com.github.Piashsarker:AndroidAppUpdateLibrary:1.0.4"
 androidx-appcompat = "androidx.appcompat:appcompat:1.7.0"
 
-androidx-concurrent-futures-ktx = "androidx.concurrent:concurrent-futures-ktx:1.1.0"
+androidx-concurrent-futures-ktx = "androidx.concurrent:concurrent-futures-ktx:1.2.0"
 androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.1.4"
 androidx-legacy-support-v4 = "androidx.legacy:legacy-support-v4:1.0.0"
 androidx-security-crypto = "androidx.security:security-crypto:1.1.0-alpha06"
