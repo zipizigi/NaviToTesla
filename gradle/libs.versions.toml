@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.0.20"
+kotlin = "2.0.21"
 room = "2.6.1"
 androidx-navigation = "2.8.2"
 androidx-lifecycle = "2.8.6"
