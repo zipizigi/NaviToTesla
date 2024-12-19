@@ -15,7 +15,7 @@ firebase-perf = "com.google.firebase.firebase-perf:1.4.2"
 ktlint = "org.jlleitschuh.gradle.ktlint:12.1.2"
 
 [libraries]
-kotlin-coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
+kotlin-coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.0"
 androidAppUpdateLibrary = "com.github.Piashsarker:AndroidAppUpdateLibrary:1.0.4"
 androidx-appcompat = "androidx.appcompat:appcompat:1.7.0"
 
