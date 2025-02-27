@@ -8,7 +8,7 @@ retrofit = "2.11.0"
 [plugins]
 android-application = "com.android.application:8.8.2"
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-ksp = "com.google.devtools.ksp:2.1.10-1.0.30"
+ksp = "com.google.devtools.ksp:2.1.10-1.0.31"
 google-gms-service = "com.google.gms.google-services:4.4.2"
 firebase-crashlytics = "com.google.firebase.crashlytics:3.0.3"
 firebase-perf = "com.google.firebase.firebase-perf:1.4.2"
