@@ -266,7 +266,7 @@ object AppUpdaterUtil {
             return version
         }
         try {
-            version = context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            version = context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
         } catch (e: Exception) {
             AnalysisUtil.recordException(e)
         }
