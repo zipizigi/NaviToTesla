@@ -11,13 +11,13 @@ ksp {
     arg { listOf("room.schemaLocation=$projectDir/schemas") }
 }
 android {
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         buildConfigField("String", "BUILD_MODE", "\"playstore\"")
         applicationId = "me.zipi.navitotesla"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35
 
         versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1")
         versionName = System.getenv("RELEASE") ?: "1.0"
