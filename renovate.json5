@@ -1,19 +1,19 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "prConcurrentLimit": 3,
-  // https://docs.renovatebot.com/presets-config/#configrecommended
-  "extends": [
-    "config:recommended"
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  prConcurrentLimit: 3,
+  extends: [
+    'config:recommended',
   ],
-  // PR label
-  "labels": [
-    "renovate",
-    "type: build"
+  labels: [
+    'renovate',
+    'type: build',
   ],
-  "packageRules": [
+  packageRules: [
     {
-      "matchPackagePatterns": ["*"],
-      "automerge": true
-    }
-  ]
+      automerge: true,
+      matchPackageNames: [
+        '*',
+      ],
+    },
+  ],
 }
