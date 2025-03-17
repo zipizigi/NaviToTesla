@@ -1,4 +1,4 @@
-name: Android CI
+name: Release APK
 
 on:
   #  push:
