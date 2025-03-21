@@ -20,8 +20,10 @@ object PreferencesUtil {
         if (!this::instance.isInitialized) {
             synchronized(PreferencesUtil::class) {
                 val masterKey =
-                    MasterKey.Builder(applicationContext)
-                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
+                    MasterKey
+                        .Builder(applicationContext)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build()
                 instance =
                     EncryptedSharedPreferences.create(
                         applicationContext,
@@ -36,8 +38,8 @@ object PreferencesUtil {
 
     private const val PREFERENCES_FILE_NAME = "settings"
 
-    suspend fun remove(key: String): Boolean {
-        return withContext(Dispatchers.IO) {
+    suspend fun remove(key: String): Boolean =
+        withContext(Dispatchers.IO) {
             try {
                 instance.edit().remove(key).apply()
                 true
@@ -47,7 +49,6 @@ object PreferencesUtil {
                 false
             }
         }
-    }
 
     suspend fun clear() {
         withContext(Dispatchers.IO) {
@@ -63,8 +64,8 @@ object PreferencesUtil {
     suspend fun put(
         key: String,
         value: Boolean,
-    ): Boolean {
-        return withContext(Dispatchers.IO) {
+    ): Boolean =
+        withContext(Dispatchers.IO) {
             try {
                 instance.edit().putBoolean(key, value).apply()
                 true
@@ -74,13 +75,12 @@ object PreferencesUtil {
                 false
             }
         }
-    }
 
     suspend fun put(
         key: String,
         value: Long,
-    ): Boolean {
-        return withContext(Dispatchers.IO) {
+    ): Boolean =
+        withContext(Dispatchers.IO) {
             try {
                 instance.edit().putLong(key, value).apply()
                 true
@@ -90,13 +90,12 @@ object PreferencesUtil {
                 false
             }
         }
-    }
 
     suspend fun put(
         key: String,
         value: String,
-    ): Boolean {
-        return withContext(Dispatchers.IO) {
+    ): Boolean =
+        withContext(Dispatchers.IO) {
             try {
                 instance.edit().putString(key, value).apply()
                 true
@@ -106,13 +105,12 @@ object PreferencesUtil {
                 false
             }
         }
-    }
 
     suspend fun getString(
         key: String,
         defaultValue: String?,
-    ): String? {
-        return withContext(Dispatchers.IO) {
+    ): String? =
+        withContext(Dispatchers.IO) {
             try {
                 instance.getString(key, defaultValue)
             } catch (e: Exception) {
@@ -121,24 +119,20 @@ object PreferencesUtil {
                 defaultValue
             }
         }
-    }
 
     fun getStringSync(
         key: String,
         defaultValue: String?,
-    ): String? {
-        return try {
+    ): String? =
+        try {
             instance.getString(key, defaultValue)
         } catch (e: Exception) {
             Log.w(PreferencesUtil::class.java.name, "get string error", e)
             AnalysisUtil.recordException(e)
             defaultValue
         }
-    }
 
-    suspend fun getString(key: String): String? {
-        return getString(key, null)
-    }
+    suspend fun getString(key: String): String? = getString(key, null)
 
 //    fun getBoolean(context: Context?, key: String?): Boolean? {
 //        return getBoolean(context, key, null)
@@ -147,8 +141,8 @@ object PreferencesUtil {
     suspend fun getBoolean(
         key: String,
         defaultValue: Boolean,
-    ): Boolean {
-        return withContext(Dispatchers.IO) {
+    ): Boolean =
+        withContext(Dispatchers.IO) {
             try {
                 instance.getBoolean(key, defaultValue)
             } catch (e: Exception) {
@@ -157,10 +151,9 @@ object PreferencesUtil {
                 defaultValue
             }
         }
-    }
 
-    suspend fun getLong(key: String): Long? {
-        return withContext(Dispatchers.IO) {
+    suspend fun getLong(key: String): Long? =
+        withContext(Dispatchers.IO) {
             try {
                 val result = instance.getLong(key, -1)
                 if (result == -1L) null else result
@@ -170,10 +163,9 @@ object PreferencesUtil {
                 null
             }
         }
-    }
 
-    fun getLongSync(key: String): Long? {
-        return try {
+    fun getLongSync(key: String): Long? =
+        try {
             val result = instance.getLong(key, -1)
             if (result == -1L) null else result
         } catch (e: Exception) {
@@ -181,13 +173,12 @@ object PreferencesUtil {
             AnalysisUtil.recordException(e)
             null
         }
-    }
 
     suspend fun getLong(
         key: String,
         defaultValue: Long,
-    ): Long {
-        return withContext(Dispatchers.IO) {
+    ): Long =
+        withContext(Dispatchers.IO) {
             try {
                 instance.getLong(key, defaultValue)
             } catch (e: Exception) {
@@ -196,7 +187,6 @@ object PreferencesUtil {
                 defaultValue
             }
         }
-    }
 
     suspend fun saveToken(token: Token) {
         put("refreshToken", token.refreshToken)
@@ -210,8 +200,8 @@ object PreferencesUtil {
         }
     }
 
-    suspend fun loadToken(): Token? {
-        return if (getString("refreshToken") != null) {
+    suspend fun loadToken(): Token? =
+        if (getString("refreshToken") != null) {
             Token(
                 refreshToken = getString("refreshToken")!!,
                 accessToken = getString("accessToken")!!,
@@ -220,10 +210,9 @@ object PreferencesUtil {
         } else {
             null
         }
-    }
 
-    fun loadTokenSync(): Token? {
-        return if (getStringSync("refreshToken", null) != null) {
+    fun loadTokenSync(): Token? =
+        if (getStringSync("refreshToken", null) != null) {
             Token(
                 refreshToken = getStringSync("refreshToken", null)!!,
                 accessToken = getStringSync("accessToken", null)!!,
@@ -232,5 +221,4 @@ object PreferencesUtil {
         } else {
             null
         }
-    }
 }

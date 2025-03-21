@@ -51,30 +51,32 @@ class KakaoPoiFinder : PoiFinder {
     override fun isIgnore(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean {
-        return notificationTitle != "길안내 주행 중"
-    }
+    ): Boolean = notificationTitle != "길안내 주행 중"
 
     companion object {
         private val kakaoMapApi =
-            Retrofit.Builder()
+            Retrofit
+                .Builder()
                 .baseUrl("https://dapi.kakao.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(
-                    OkHttpClient.Builder()
+                    OkHttpClient
+                        .Builder()
                         .connectTimeout(120, TimeUnit.SECONDS)
                         .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(
                             Interceptor { chain: Interceptor.Chain ->
                                 val request =
-                                    chain.request().newBuilder().addHeader(
-                                        "Authorization",
-                                        "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
-                                    ).build()
+                                    chain
+                                        .request()
+                                        .newBuilder()
+                                        .addHeader(
+                                            "Authorization",
+                                            "KakaoAK " + RemoteConfigUtil.getString("kakaoApiKey"),
+                                        ).build()
                                 chain.proceed(request)
                             },
-                        )
-                        .addInterceptor(HttpRetryInterceptor(10))
+                        ).addInterceptor(HttpRetryInterceptor(10))
                         .build(),
                 ).build()
                 .create(KakaoMapApi::class.java)

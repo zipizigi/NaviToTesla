@@ -25,7 +25,10 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import java.util.Date
 
 class FavoriteDialogFragment :
-    DialogFragment, AdapterView.OnItemSelectedListener, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+    DialogFragment,
+    AdapterView.OnItemSelectedListener,
+    View.OnClickListener,
+    RadioGroup.OnCheckedChangeListener {
     private lateinit var poiArrayAdapter: PoiArrayAdapter
     private var dest: String? = null
 

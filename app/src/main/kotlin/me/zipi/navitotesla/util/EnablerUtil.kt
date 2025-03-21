@@ -89,13 +89,9 @@ object EnablerUtil {
         }
     }
 
-    suspend fun getAppEnabled(): Boolean {
-        return PreferencesUtil.getBoolean("appEnabled", true)
-    }
+    suspend fun getAppEnabled(): Boolean = PreferencesUtil.getBoolean("appEnabled", true)
 
-    suspend fun getConditionEnabled(): Boolean {
-        return PreferencesUtil.getBoolean("appCondition", false)
-    }
+    suspend fun getConditionEnabled(): Boolean = PreferencesUtil.getBoolean("appCondition", false)
 
     suspend fun isSendingCheck(): Boolean {
         if (!PreferencesUtil.getBoolean("appEnabled", true)) {
@@ -147,7 +143,8 @@ object EnablerUtil {
         val permission =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) Manifest.permission.BLUETOOTH_CONNECT else Manifest.permission.BLUETOOTH
         if (ActivityCompat.checkSelfPermission(
-                context!!, permission,
+                context!!,
+                permission,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return ArrayList()

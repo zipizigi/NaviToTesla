@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import me.zipi.navitotesla.R
 import java.lang.ref.WeakReference
 
-class ConditionRecyclerAdapter(private val listener: OnDeleteButtonClicked) :
-    RecyclerView.Adapter<ConditionRecyclerAdapter.ViewHolder>() {
+class ConditionRecyclerAdapter(
+    private val listener: OnDeleteButtonClicked,
+) : RecyclerView.Adapter<ConditionRecyclerAdapter.ViewHolder>() {
     private var items: List<String> = mutableListOf()
 
     override fun onCreateViewHolder(
@@ -30,9 +31,7 @@ class ConditionRecyclerAdapter(private val listener: OnDeleteButtonClicked) :
         holder.onBind(items[position])
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount(): Int = items.size
 
     @SuppressLint("NotifyDataSetChanged")
     fun setItems(items: List<String>) {
@@ -44,8 +43,11 @@ class ConditionRecyclerAdapter(private val listener: OnDeleteButtonClicked) :
         fun onClick(position: Int)
     }
 
-    class ViewHolder(itemView: View, listener: OnDeleteButtonClicked) :
-        RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    class ViewHolder(
+        itemView: View,
+        listener: OnDeleteButtonClicked,
+    ) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
         private val nameView: TextView
         private val deleteButton: Button
         private val listenerRef: WeakReference<OnDeleteButtonClicked>

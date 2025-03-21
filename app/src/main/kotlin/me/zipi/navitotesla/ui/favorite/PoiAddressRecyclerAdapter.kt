@@ -11,8 +11,9 @@ import me.zipi.navitotesla.R
 import me.zipi.navitotesla.db.PoiAddressEntity
 import java.lang.ref.WeakReference
 
-class PoiAddressRecyclerAdapter(private val listener: OnFavoriteButtonClicked) :
-    RecyclerView.Adapter<PoiAddressRecyclerAdapter.ViewHolder>() {
+class PoiAddressRecyclerAdapter(
+    private val listener: OnFavoriteButtonClicked,
+) : RecyclerView.Adapter<PoiAddressRecyclerAdapter.ViewHolder>() {
     private var items: List<PoiAddressEntity> = listOf()
 
     override fun onCreateViewHolder(
@@ -30,9 +31,7 @@ class PoiAddressRecyclerAdapter(private val listener: OnFavoriteButtonClicked) :
         holder.onBind(items[position])
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount(): Int = items.size
 
     @SuppressLint("NotifyDataSetChanged")
     fun setItems(items: List<PoiAddressEntity>) {
@@ -46,7 +45,11 @@ class PoiAddressRecyclerAdapter(private val listener: OnFavoriteButtonClicked) :
         fun onShareClick(position: Int)
     }
 
-    class ViewHolder(itemView: View, listener: OnFavoriteButtonClicked) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    class ViewHolder(
+        itemView: View,
+        listener: OnFavoriteButtonClicked,
+    ) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
         private val poiView: TextView
         private val addressView: TextView
         private val button: Button

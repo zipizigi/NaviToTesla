@@ -18,7 +18,10 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.PreferencesUtil
 import java.util.concurrent.TimeUnit
 
-class TokenWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+class TokenWorker(
+    context: Context,
+    workerParams: WorkerParameters,
+) : CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
         Log.i(TokenWorker::class.java.name, "Start background refresh token")
         AnalysisUtil.log("Start background refresh token")
@@ -44,7 +47,8 @@ class TokenWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
                 val workRequest: PeriodicWorkRequest =
                     PeriodicWorkRequestBuilder<TokenWorker>(350, TimeUnit.MINUTES)
                         .setConstraints(
-                            Constraints.Builder()
+                            Constraints
+                                .Builder()
                                 .setRequiredNetworkType(NetworkType.CONNECTED)
                                 .build(),
                         ).build()

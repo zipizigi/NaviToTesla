@@ -19,7 +19,9 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.ui.favorite.PoiAddressRecyclerAdapter.OnFavoriteButtonClicked
 import me.zipi.navitotesla.util.AnalysisUtil
 
-class FavoriteFragment : Fragment(), View.OnClickListener {
+class FavoriteFragment :
+    Fragment(),
+    View.OnClickListener {
     private lateinit var favoriteViewModel: FavoriteViewModel
     private lateinit var binding: FragmentFavoriteBinding
     private lateinit var poiHistoryRecyclerAdapter: PoiAddressRecyclerAdapter
@@ -102,13 +104,17 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
         if (activity == null || context == null) {
             return
         }
-        AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.removeFavorite))
+        AlertDialog
+            .Builder(requireActivity())
+            .setCancelable(true)
+            .setTitle(getString(R.string.removeFavorite))
             .setMessage(getString(R.string.confirmRemoveFavorite))
             .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
                 removeFavorite(
                     position,
                 )
-            }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }.show()
+            }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+            .show()
     }
 
     private fun shareLocation(position: Int) {
@@ -116,7 +122,10 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
             return
         }
         val poiEntity: PoiAddressEntity = favoriteViewModel.registeredPoiAddress.value!![position]
-        AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.sendDestination))
+        AlertDialog
+            .Builder(requireActivity())
+            .setCancelable(true)
+            .setTitle(getString(R.string.sendDestination))
             .setMessage(getString(R.string.confirmSendDestination) + " \n - " + poiEntity.address)
             .setPositiveButton(getString(R.string.send)) { _: DialogInterface?, _: Int ->
                 viewLifecycleOwner.lifecycleScope.launch {
@@ -129,7 +138,8 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
                         AnalysisUtil.recordException(e)
                     }
                 }
-            }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }.show()
+            }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+            .show()
     }
 
     private fun removeFavorite(position: Int) {
@@ -157,8 +167,14 @@ class FavoriteFragment : Fragment(), View.OnClickListener {
             return
         }
         if (v.id == binding.btnFavoriteHelp.id) {
-            AlertDialog.Builder(requireActivity()).setTitle(getString(R.string.guide)).setMessage(getString(R.string.guideFavorite))
-                .setCancelable(true).setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }.create().show()
+            AlertDialog
+                .Builder(requireActivity())
+                .setTitle(getString(R.string.guide))
+                .setMessage(getString(R.string.guideFavorite))
+                .setCancelable(true)
+                .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                .create()
+                .show()
         } else if (v.id == binding.btnFavoriteAdd.id) {
             addFavorite()
         }

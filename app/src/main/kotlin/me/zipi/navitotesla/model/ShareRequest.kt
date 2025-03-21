@@ -2,7 +2,9 @@ package me.zipi.navitotesla.model
 
 import com.google.gson.annotations.SerializedName
 
-data class ShareRequest(val address: String) {
+data class ShareRequest(
+    val address: String,
+) {
     val type = "share_ext_content_raw"
     val locale = "ko-KR"
 

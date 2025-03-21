@@ -22,7 +22,10 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 
-class ShareWorker(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
+class ShareWorker(
+    context: Context,
+    workerParams: WorkerParameters,
+) : CoroutineWorker(context, workerParams) {
     private val naviToTeslaService: NaviToTeslaService
     private val channelId = "location_share_channel"
 
@@ -30,9 +33,7 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
         naviToTeslaService = NaviToTeslaService(context)
     }
 
-    override suspend fun getForegroundInfo(): ForegroundInfo {
-        return ForegroundInfo(1, createNotification())
-    }
+    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(1, createNotification())
 
     override suspend fun doWork(): Result {
         AnalysisUtil.log("Start share worker")
@@ -82,10 +83,16 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
                 context.packageManager.getLaunchIntentForPackage(context.packageName),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
-        return NotificationCompat.Builder(context, channelId).setContentIntent(contentIntent)
+        return NotificationCompat
+            .Builder(context, channelId)
+            .setContentIntent(contentIntent)
             .setContentText(context.getString(R.string.sendingDestination) + "\n" + address)
-            .setTicker(context.getString(R.string.sendingDestination) + "\n" + poiName).setSmallIcon(R.drawable.ic_baseline_share_24)
-            .setAutoCancel(true).setVibrate(longArrayOf(0L)).setSound(null).build()
+            .setTicker(context.getString(R.string.sendingDestination) + "\n" + poiName)
+            .setSmallIcon(R.drawable.ic_baseline_share_24)
+            .setAutoCancel(true)
+            .setVibrate(longArrayOf(0L))
+            .setSound(null)
+            .build()
     }
 
     companion object {
@@ -99,9 +106,14 @@ class ShareWorker(context: Context, workerParams: WorkerParameters) : CoroutineW
             val workRequest: WorkRequest =
                 OneTimeWorkRequestBuilder<ShareWorker>() // (ShareWorker::class.java)
                     .setInputData(
-                        Data.Builder().putString("packageName", packageName).putString("notificationTitle", notificationTitle)
-                            .putString("notificationText", notificationText).build(),
-                    ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST).setConstraints(
+                        Data
+                            .Builder()
+                            .putString("packageName", packageName)
+                            .putString("notificationTitle", notificationTitle)
+                            .putString("notificationText", notificationText)
+                            .build(),
+                    ).setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                    .setConstraints(
                         Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
                     ).build()
             WorkManager.getInstance(context).enqueue(workRequest)

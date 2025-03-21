@@ -24,13 +24,12 @@ data class Poi(
         }
     }
 
-    fun getAddress(): String {
-        return if (!address.isNullOrEmpty()) {
+    fun getAddress(): String =
+        if (!address.isNullOrEmpty()) {
             address
         } else {
             getGpsAddress()
         }
-    }
 
     fun getGpsAddress(): String = String.format(Locale.getDefault(), "%s,%s", latitude, longitude)
 }

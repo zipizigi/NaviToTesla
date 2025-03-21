@@ -16,7 +16,11 @@ import me.zipi.navitotesla.util.ResponseCloser
 import retrofit2.Response
 import java.io.IOException
 
-class TeslaShareByApi(context: Context, private val vehicleId: Long) : TeslaShareBase(context), TeslaShare {
+class TeslaShareByApi(
+    context: Context,
+    private val vehicleId: Long,
+) : TeslaShareBase(context),
+    TeslaShare {
     @Throws(IOException::class)
     override suspend fun share(poi: Poi) {
         val address = poi.getRoadAddress()

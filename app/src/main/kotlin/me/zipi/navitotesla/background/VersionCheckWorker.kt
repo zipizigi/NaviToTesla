@@ -16,7 +16,10 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppUpdaterUtil
 import java.util.concurrent.TimeUnit
 
-class VersionCheckWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+class VersionCheckWorker(
+    context: Context,
+    workerParams: WorkerParameters,
+) : Worker(context, workerParams) {
     override fun doWork(): Result {
         CoroutineScope(Dispatchers.Default).launch {
             AnalysisUtil.log("Start version check worker")
@@ -33,9 +36,11 @@ class VersionCheckWorker(context: Context, workerParams: WorkerParameters) : Wor
             }
             AnalysisUtil.log("Register version check worker")
             val workRequest: WorkRequest =
-                OneTimeWorkRequestBuilder<VersionCheckWorker>().setConstraints(
-                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-                ).setInitialDelay(1, TimeUnit.MINUTES).build()
+                OneTimeWorkRequestBuilder<VersionCheckWorker>()
+                    .setConstraints(
+                        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+                    ).setInitialDelay(1, TimeUnit.MINUTES)
+                    .build()
             WorkManager.getInstance(context).enqueue(workRequest)
         }
     }

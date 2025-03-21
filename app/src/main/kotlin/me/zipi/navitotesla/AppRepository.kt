@@ -18,13 +18,17 @@ import retrofit2.create
 import java.util.Date
 import java.util.concurrent.TimeUnit
 
-class AppRepository private constructor(private val database: AppDatabase) {
+class AppRepository private constructor(
+    private val database: AppDatabase,
+) {
     val teslaApi: TeslaApi =
-        Retrofit.Builder()
+        Retrofit
+            .Builder()
             .baseUrl("https://owner-api.teslamotors.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(
-                OkHttpClient.Builder()
+                OkHttpClient
+                    .Builder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .addInterceptor(
@@ -32,58 +36,58 @@ class AppRepository private constructor(private val database: AppDatabase) {
                             val token = PreferencesUtil.loadTokenSync()
                             val accessToken = token?.accessToken ?: ""
                             val request =
-                                chain.request().newBuilder()
+                                chain
+                                    .request()
+                                    .newBuilder()
                                     .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
                                     .addHeader("Accept", "*/*")
                                     .addHeader("Authorization", "Bearer $accessToken")
                                     .build()
                             chain.proceed(request)
                         },
-                    )
-                    .addInterceptor(
+                    ).addInterceptor(
                         HttpLoggingInterceptor {
                             AnalysisUtil.appendLog("DEBUG", it)
                         }.apply {
                             level = HttpLoggingInterceptor.Level.BASIC
                         },
-                    )
-                    .addInterceptor(HttpRetryInterceptor(20))
+                    ).addInterceptor(HttpRetryInterceptor(20))
                     .build(),
             ).build()
             .create()
 
     val teslaAuthApi: TeslaAuthApi =
-        Retrofit.Builder()
+        Retrofit
+            .Builder()
             .baseUrl("https://auth.tesla.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(
-                OkHttpClient.Builder()
+                OkHttpClient
+                    .Builder()
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .addInterceptor(
                         Interceptor { chain: Interceptor.Chain ->
                             val request =
-                                chain.request().newBuilder()
+                                chain
+                                    .request()
+                                    .newBuilder()
                                     .addHeader("User-Agent", "NaviToTesla/${BuildConfig.VERSION_CODE}")
                                     .build()
                             chain.proceed(request)
                         },
-                    )
-                    .addInterceptor(
+                    ).addInterceptor(
                         HttpLoggingInterceptor {
                             AnalysisUtil.appendLog("DEBUG", it)
                         }.apply {
                             level = HttpLoggingInterceptor.Level.BASIC
                         },
-                    )
-                    .addInterceptor(HttpRetryInterceptor(20))
+                    ).addInterceptor(HttpRetryInterceptor(20))
                     .build(),
             ).build()
             .create()
 
-    suspend fun getPoiSync(poiName: String): PoiAddressEntity? {
-        return database.poiAddressDao().findPoi(poiName)
-    }
+    suspend fun getPoiSync(poiName: String): PoiAddressEntity? = database.poiAddressDao().findPoi(poiName)
 
     suspend fun savePoi(
         poi: Poi,
@@ -133,8 +137,6 @@ class AppRepository private constructor(private val database: AppDatabase) {
             }
         }
 
-        fun getInstance(): AppRepository {
-            return instance
-        }
+        fun getInstance(): AppRepository = instance
     }
 }

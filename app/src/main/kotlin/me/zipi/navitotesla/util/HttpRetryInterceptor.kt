@@ -7,7 +7,9 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.Locale
 
-class HttpRetryInterceptor(private val maxRetryCount: Int = 0) : Interceptor {
+class HttpRetryInterceptor(
+    private val maxRetryCount: Int = 0,
+) : Interceptor {
     private fun sleep(
         retry: Int,
         chain: Interceptor.Chain,

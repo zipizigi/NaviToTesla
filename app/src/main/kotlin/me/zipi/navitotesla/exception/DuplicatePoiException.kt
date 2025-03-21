@@ -1,3 +1,5 @@
 package me.zipi.navitotesla.exception
 
-class DuplicatePoiException(val poiName: String) : RuntimeException()
+class DuplicatePoiException(
+    val poiName: String,
+) : RuntimeException()

@@ -146,7 +146,10 @@ class HomeFragment :
                     size /= 1024
                 }
                 launch(Dispatchers.Main) {
-                    AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.viewLogFile))
+                    AlertDialog
+                        .Builder(requireActivity())
+                        .setCancelable(true)
+                        .setTitle(getString(R.string.viewLogFile))
                         .setMessage(getString(R.string.guideViewLogFile, size, type))
                         .setPositiveButton(getString(R.string.open)) { _: DialogInterface?, _: Int -> openLogFile() }
                         .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
@@ -200,9 +203,13 @@ class HomeFragment :
             // accessibility check
             if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)) {
                 permissionAlertDialog =
-                    AlertDialog.Builder(requireContext()).setTitle(getString(R.string.requireAccessibility))
+                    AlertDialog
+                        .Builder(requireContext())
+                        .setTitle(getString(R.string.requireAccessibility))
                         .setMessage(getString(R.string.guideRequireAccessibility))
-                        .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }.setCancelable(true).show()
+                        .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                        .setCancelable(true)
+                        .show()
                 nextAction = null
             }
         }
@@ -219,9 +226,13 @@ class HomeFragment :
         //         file write permission
         if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyFilePermission", false))) {
             withContext(Dispatchers.Main) {
-                TedPermission.create().setRationaleTitle(R.string.grantPermission).setRationaleMessage(R.string.guideGrantStoragePermission)
+                TedPermission
+                    .create()
+                    .setRationaleTitle(R.string.grantPermission)
+                    .setRationaleMessage(R.string.guideGrantStoragePermission)
                     .setDeniedMessage(R.string.guidePermissionDeny)
-                    .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE).check()
+                    .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .check()
                     .run {
                         if (!isGranted) {
                             PreferencesUtil.put("denyFilePermission", true)
@@ -231,9 +242,14 @@ class HomeFragment :
         }
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyNotificationPermission", false))) {
             withContext(Dispatchers.Main) {
-                TedPermission.create().setRationaleTitle(R.string.grantPermission)
-                    .setRationaleMessage(R.string.guideGrantNotificationPermission).setDeniedMessage(R.string.guidePermissionDeny)
-                    .setPermissions(Manifest.permission.POST_NOTIFICATIONS).check().run {
+                TedPermission
+                    .create()
+                    .setRationaleTitle(R.string.grantPermission)
+                    .setRationaleMessage(R.string.guideGrantNotificationPermission)
+                    .setDeniedMessage(R.string.guidePermissionDeny)
+                    .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
+                    .check()
+                    .run {
                         if (!isGranted) {
                             PreferencesUtil.put("denyNotificationPermission", true)
                         }
@@ -257,7 +273,9 @@ class HomeFragment :
             )
         if (!sets.contains(requireContext().packageName)) {
             permissionAlertDialog =
-                AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
+                AlertDialog
+                    .Builder(requireContext())
+                    .setTitle(getString(R.string.grantPermission))
                     .setMessage(getString(R.string.guideGrantPermission)) // .setIcon(R.drawable.ic_launcher_background)
                     .setPositiveButton(
                         getString(R.string.confirm),
@@ -266,7 +284,8 @@ class HomeFragment :
                             permissionAlertDialog = null
                         }
                         startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                    }.setCancelable(false).show()
+                    }.setCancelable(false)
+                    .show()
             return
         }
     }
@@ -471,7 +490,10 @@ class HomeFragment :
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            AlertDialog.Builder(requireActivity()).setCancelable(true).setTitle(getString(R.string.requireLogViewApp))
+            AlertDialog
+                .Builder(requireActivity())
+                .setCancelable(true)
+                .setTitle(getString(R.string.requireLogViewApp))
                 .setMessage(getString(R.string.guideRequireLogViewApp))
                 .setPositiveButton(getString(R.string.install)) { _: DialogInterface?, _: Int ->
                     try {
@@ -489,7 +511,8 @@ class HomeFragment :
                             ),
                         )
                     }
-                }.setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }.show()
+                }.setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+                .show()
         }
     }
 
@@ -586,11 +609,15 @@ class HomeFragment :
                 if (context != null &&
                     !Settings.canDrawOverlays(
                         context,
-                    ) && (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
+                    ) &&
+                    (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
                 ) {
                     permissionAlertDialog =
-                        AlertDialog.Builder(requireContext()).setTitle(getString(R.string.grantPermission))
-                            .setMessage(getString(R.string.guideGrantOverlayPermission)).setPositiveButton(
+                        AlertDialog
+                            .Builder(requireContext())
+                            .setTitle(getString(R.string.grantPermission))
+                            .setMessage(getString(R.string.guideGrantOverlayPermission))
+                            .setPositiveButton(
                                 getString(R.string.confirm),
                             ) { _: DialogInterface?, _: Int ->
                                 if (permissionAlertDialog != null) {
@@ -607,7 +634,8 @@ class HomeFragment :
                                     permissionAlertDialog = null
                                 }
                                 binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-                            }.setCancelable(false).show()
+                            }.setCancelable(false)
+                            .show()
                 }
             }
         }
