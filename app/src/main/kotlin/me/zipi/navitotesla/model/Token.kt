@@ -25,7 +25,5 @@ class Token(
         return true
     }
 
-    override fun hashCode(): Int {
-        return refreshToken.hashCode()
-    }
+    override fun hashCode(): Int = refreshToken.hashCode()
 }

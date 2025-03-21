@@ -31,10 +31,10 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 val goalList: MutableList<String> = ArrayList()
                 // portrait
                 val portrait =
-                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal")
+                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
                 // landscape
                 val landscape =
-                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal")
+                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
                 goalList.addAll(parseNaverNaviDestination(portrait))
                 goalList.addAll(parseNaverNaviDestination(landscape))
                 if (goalList.size > 0) {
@@ -49,17 +49,11 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    private fun parseNaverNaviDestination(goalList: List<AccessibilityNodeInfo>?): List<String> {
-        val result: MutableList<String> = ArrayList()
-        if (goalList != null) {
-            for (node in goalList) {
-                if (node.text != null && (node.text?.toString()?.length ?: 0) > 0) {
-                    result.add(node.text.toString())
-                }
-            }
-        }
-        return result
-    }
+    private fun parseNaverNaviDestination(goalList: List<AccessibilityNodeInfo>): List<String> =
+        goalList
+            .mapNotNull {
+                it.text?.toString()
+            }.filter { it.isNotBlank() }
 
     companion object {
         private var lastNotifyAppVersion: String? = null
@@ -115,7 +109,8 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                     )
                 val notification =
-                    NotificationCompat.Builder(context, "notification_channel")
+                    NotificationCompat
+                        .Builder(context, "notification_channel")
                         .setContentIntent(contentIntent)
                         .setContentTitle(context.getString(R.string.requireAccessibility))
                         .setContentText(context.getString(R.string.guideRequireAccessibility))

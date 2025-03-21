@@ -35,19 +35,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        fun getInstance(): AppDatabase {
-            return instance
-        }
+        fun getInstance(): AppDatabase = instance
 
         /**
          * Build the database. [Builder.build] only sets up the database configuration and
          * creates a new instance of the database.
          * The SQLite database is only created when it's accessed for the first time.
          */
-        private fun buildDatabase(appContext: Context): AppDatabase {
-            return Room.databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
+        private fun buildDatabase(appContext: Context): AppDatabase =
+            Room
+                .databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
                 // .addMigrations(MIGRATION_2_3)
                 .build()
-        }
     }
 }

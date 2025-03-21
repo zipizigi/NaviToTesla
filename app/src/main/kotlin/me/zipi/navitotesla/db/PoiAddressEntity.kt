@@ -25,9 +25,7 @@ class PoiAddressEntity(
             return registered != null && !registered && abs(diff) / 1000L / 60L / 60L / 24L >= expireDay
         }
 
-    fun isRegistered(): Boolean {
-        return registered != null && registered
-    }
+    fun isRegistered(): Boolean = registered != null && registered
 
     fun toPoi(): Poi = Poi(poiName = poi, roadAddress = address, address = address, longitude = longitude, latitude = latitude)
 

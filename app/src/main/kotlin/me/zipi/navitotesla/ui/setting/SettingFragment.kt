@@ -31,7 +31,10 @@ import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.ui.setting.ConditionRecyclerAdapter.OnDeleteButtonClicked
 import me.zipi.navitotesla.util.EnablerUtil
 
-class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+class SettingFragment :
+    Fragment(),
+    View.OnClickListener,
+    RadioGroup.OnCheckedChangeListener {
     private lateinit var settingViewModel: SettingViewModel
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
@@ -61,7 +64,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                 object : OnDeleteButtonClicked {
                     override fun onClick(position: Int) {
                         activity?.run {
-                            AlertDialog.Builder(this)
+                            AlertDialog
+                                .Builder(this)
                                 .setCancelable(true)
                                 .setTitle(getString(R.string.removeCondition))
                                 .setMessage(getString(R.string.dialogRemoveCondition))
@@ -69,8 +73,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                                     removeBluetoothDevice(
                                         position,
                                     )
-                                }
-                                .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                                }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
                                 .show()
                         }
                     }
@@ -155,30 +158,36 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
         }
         when (v.id) {
             binding.btnAppEnableHelp.id -> {
-                AlertDialog.Builder(requireActivity())
+                AlertDialog
+                    .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.guideAppEnable))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create().show()
+                    .create()
+                    .show()
             }
 
             binding.btnConditionHelp.id -> {
-                AlertDialog.Builder(requireActivity())
+                AlertDialog
+                    .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.guideCondition))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create().show()
+                    .create()
+                    .show()
             }
 
             binding.btnAccEnableHelp.id -> {
-                AlertDialog.Builder(requireActivity())
+                AlertDialog
+                    .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.accessibility_description))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create().show()
+                    .create()
+                    .show()
             }
 
             binding.btnBluetoothAdd.id -> {
@@ -205,7 +214,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                 android.R.layout.simple_spinner_dropdown_item,
                 pairedDevices,
             )
-        AlertDialog.Builder(activity)
+        AlertDialog
+            .Builder(activity)
             .setCancelable(true)
             .setTitle(activity.getString(R.string.titleAddCondition))
             .setMessage(activity.getString(R.string.guideAddCondition))
@@ -222,8 +232,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                         )
                     }
                 }
-            }
-            .setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+            }.setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
             .setView(dialogView)
             .show()
     }
@@ -240,7 +249,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                 permission,
             ) == PackageManager.PERMISSION_GRANTED
         if (!granted) {
-            AlertDialog.Builder(requireContext())
+            AlertDialog
+                .Builder(requireContext())
                 .setTitle(this.getString(R.string.grantPermission))
                 .setMessage(this.getString(R.string.guideGrantBluetoothPermission))
                 .setPositiveButton(
@@ -250,8 +260,7 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                         arrayOf(permission),
                         2,
                     )
-                }
-                .setCancelable(false)
+                }.setCancelable(false)
                 .show()
         }
         return granted
@@ -299,7 +308,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     activity,
                 )
             ) {
-                AlertDialog.Builder(requireActivity())
+                AlertDialog
+                    .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.accessibility_description))
                     .setCancelable(true)
@@ -308,8 +318,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                         setAccRadio(
                             false,
                         )
-                    }
-                    .create().show()
+                    }.create()
+                    .show()
             }
         } else if (checkedId == R.id.radioAccDisable) {
             if (activity != null &&
@@ -317,7 +327,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                     activity,
                 )
             ) {
-                AlertDialog.Builder(requireActivity())
+                AlertDialog
+                    .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.disableAccessibility))
                     .setCancelable(true)
@@ -326,8 +337,8 @@ class SettingFragment : Fragment(), View.OnClickListener, RadioGroup.OnCheckedCh
                         setAccRadio(
                             true,
                         )
-                    }
-                    .create().show()
+                    }.create()
+                    .show()
             }
         }
     }

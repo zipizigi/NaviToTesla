@@ -10,7 +10,10 @@ import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
 import java.util.Locale
 
-class TeslaShareByApp(context: Context) : TeslaShareBase(context), TeslaShare {
+class TeslaShareByApp(
+    context: Context,
+) : TeslaShareBase(context),
+    TeslaShare {
     override suspend fun share(poi: Poi) {
         AnalysisUtil.log("share using tesla app share")
         val intent = Intent()
