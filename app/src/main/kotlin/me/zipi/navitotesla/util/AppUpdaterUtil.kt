@@ -35,17 +35,19 @@ import kotlin.math.abs
 
 object AppUpdaterUtil {
     private val githubApi =
-        Retrofit.Builder()
+        Retrofit
+            .Builder()
             .baseUrl("https://api.github.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(
-                OkHttpClient.Builder()
+                OkHttpClient
+                    .Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
                     .readTimeout(60, TimeUnit.SECONDS)
                     .addInterceptor(HttpRetryInterceptor(10))
                     .build(),
-            )
-            .build().create(GithubApi::class.java)
+            ).build()
+            .create(GithubApi::class.java)
     private var dialogLastCheck = 0L
     private var notificationLastCheck = 0L
 
@@ -111,10 +113,10 @@ object AppUpdaterUtil {
                     val releaseDescription =
                         if (release == null) "" else release.tagName + "\n" + release.body
 
-                    AlertDialog.Builder(
-                        activity,
-                    )
-                        .setCancelable(true)
+                    AlertDialog
+                        .Builder(
+                            activity,
+                        ).setCancelable(true)
                         .setTitle(activity.getString(R.string.existsUpdate))
                         .setMessage(releaseDescription)
                         .setPositiveButton(activity.getString(R.string.update)) { _: DialogInterface?, _: Int ->
@@ -122,20 +124,17 @@ object AppUpdaterUtil {
                                 activity,
                                 apkUrl,
                             )
-                        }
-                        .setNeutralButton(activity.getString(R.string.ignoreUpdate)) { _: DialogInterface?, _: Int ->
-                            AlertDialog.Builder(
-                                activity,
-                            )
-                                .setTitle(activity.getString(R.string.guide))
+                        }.setNeutralButton(activity.getString(R.string.ignoreUpdate)) { _: DialogInterface?, _: Int ->
+                            AlertDialog
+                                .Builder(
+                                    activity,
+                                ).setTitle(activity.getString(R.string.guide))
                                 .setMessage(activity.getString(R.string.guideIgnoreUpdate))
                                 .setCancelable(false)
                                 .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
                                     doNotShow()
-                                }
-                                .show()
-                        }
-                        .setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
+                                }.show()
+                        }.setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
                         .show()
 
                     permissionCheck(activity)
@@ -188,11 +187,15 @@ object AppUpdaterUtil {
                 if (apkUrl.contains(".apk")) {
                     DownloadApk(context).startDownloadingApk(
                         apkUrl,
-                        apkUrl.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+                        apkUrl
+                            .split("/".toRegex())
+                            .dropLastWhile { it.isEmpty() }
                             .toTypedArray()[
-                            apkUrl.split("/".toRegex())
+                            apkUrl
+                                .split("/".toRegex())
                                 .dropLastWhile { it.isEmpty() }
-                                .toTypedArray().size - 1,
+                                .toTypedArray()
+                                .size - 1,
                         ].replace(".apk", ""),
                     )
                 } else {
@@ -228,10 +231,15 @@ object AppUpdaterUtil {
                 con.connect()
                 if (con.responseCode == 302 || con.responseCode == 304) {
                     val location = con.getHeaderField("Location")
-                    return@withContext location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
+                    return@withContext location
+                        .split("/".toRegex())
+                        .dropLastWhile { it.isEmpty() }
                         .toTypedArray()[
-                        location.split("/".toRegex()).dropLastWhile { it.isEmpty() }
-                            .toTypedArray().size - 1,
+                        location
+                            .split("/".toRegex())
+                            .dropLastWhile { it.isEmpty() }
+                            .toTypedArray()
+                            .size - 1,
                     ]
                 }
             } catch (e: Exception) {
@@ -300,7 +308,8 @@ object AppUpdaterUtil {
             )
         if (!granted) {
             activity.runOnUiThread {
-                AlertDialog.Builder(activity)
+                AlertDialog
+                    .Builder(activity)
                     .setTitle(activity.getString(R.string.grantPermission))
                     .setMessage(activity.getString(R.string.guideGrantStoragePermission))
                     .setPositiveButton(activity.getString(R.string.confirm)) { _: DialogInterface?, _: Int ->
@@ -311,8 +320,7 @@ object AppUpdaterUtil {
                             ),
                             2,
                         )
-                    }
-                    .setCancelable(false)
+                    }.setCancelable(false)
                     .show()
             }
         }
@@ -347,7 +355,8 @@ object AppUpdaterUtil {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
             val notification =
-                NotificationCompat.Builder(context, "update_notification_channel")
+                NotificationCompat
+                    .Builder(context, "update_notification_channel")
                     .setContentIntent(contentIntent)
                     .setContentTitle(context.getString(R.string.updateAvailable))
                     .setContentText(context.getString(R.string.guideUpdateAvailable))
@@ -360,12 +369,11 @@ object AppUpdaterUtil {
         notificationLastCheck = System.currentTimeMillis()
     }
 
-    private fun isPlayStoreInstalled(context: Context): Boolean {
-        return try {
+    private fun isPlayStoreInstalled(context: Context): Boolean =
+        try {
             context.packageManager.getPackageInfo("com.android.vending", 0)
             true
         } catch (e: PackageManager.NameNotFoundException) {
             false
         }
-    }
 }

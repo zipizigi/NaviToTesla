@@ -8,10 +8,10 @@ object PoiFinderFactory {
     private const val KAKAO_PACKAGE = "com.locnall.KimGiSa"
     private const val NAVER_PACKAGE = "com.nhn.android.nmap"
 
-    fun isNaviSupport(packageName: String): Boolean {
-        return listOf(TMAP_PACKAGE, TMAP_SK_PACKAGE, KAKAO_PACKAGE, NAVER_PACKAGE)
-            .map { packageName.equals(it, ignoreCase = true) }.any { it }
-    }
+    fun isNaviSupport(packageName: String): Boolean =
+        listOf(TMAP_PACKAGE, TMAP_SK_PACKAGE, KAKAO_PACKAGE, NAVER_PACKAGE)
+            .map { packageName.equals(it, ignoreCase = true) }
+            .any { it }
 
     @Throws(NotSupportedNaviException::class)
     fun getPoiFinder(packageName: String): PoiFinder =

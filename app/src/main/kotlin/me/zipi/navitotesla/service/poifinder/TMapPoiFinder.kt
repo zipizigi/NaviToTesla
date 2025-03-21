@@ -57,32 +57,39 @@ class TMapPoiFinder : PoiFinder {
     override fun isIgnore(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean {
-        return notificationText == "안심주행" || notificationTitle != "경로주행"
-    }
+    ): Boolean = notificationText == "안심주행" || notificationTitle != "경로주행"
 
     companion object {
         private val tMapApi =
-            Retrofit.Builder()
+            Retrofit
+                .Builder()
                 .baseUrl("https://apis.openapi.sk.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(
-                    OkHttpClient.Builder()
+                    OkHttpClient
+                        .Builder()
                         .connectTimeout(120, TimeUnit.SECONDS)
                         .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(
                             Interceptor { chain: Interceptor.Chain ->
                                 val request =
-                                    chain.request().newBuilder().url(
-                                        chain.request().url.newBuilder().addQueryParameter("version", "1").addQueryParameter(
-                                            "appKey",
-                                            RemoteConfigUtil.getString("tmapApiKey"),
-                                        ).build(),
-                                    ).build()
+                                    chain
+                                        .request()
+                                        .newBuilder()
+                                        .url(
+                                            chain
+                                                .request()
+                                                .url
+                                                .newBuilder()
+                                                .addQueryParameter("version", "1")
+                                                .addQueryParameter(
+                                                    "appKey",
+                                                    RemoteConfigUtil.getString("tmapApiKey"),
+                                                ).build(),
+                                        ).build()
                                 chain.proceed(request)
                             },
-                        )
-                        .addInterceptor(HttpRetryInterceptor(10))
+                        ).addInterceptor(HttpRetryInterceptor(10))
                         .build(),
                 ).build()
                 .create(TMapApi::class.java)

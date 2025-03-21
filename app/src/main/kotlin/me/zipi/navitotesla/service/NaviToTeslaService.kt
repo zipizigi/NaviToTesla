@@ -32,7 +32,9 @@ import retrofit2.Response
 import java.io.IOException
 import java.util.regex.Pattern
 
-class NaviToTeslaService(context: Context) {
+class NaviToTeslaService(
+    context: Context,
+) {
     private val context: Context
     private val pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
     private val appRepository: AppRepository
@@ -42,9 +44,7 @@ class NaviToTeslaService(context: Context) {
         appRepository = AppRepository.getInstance()
     }
 
-    fun isAddress(text: String): Boolean {
-        return pattern.matcher(text).find()
-    }
+    fun isAddress(text: String): Boolean = pattern.matcher(text).find()
 
     private fun makeToast(text: String) {
         try {
@@ -207,18 +207,14 @@ class NaviToTeslaService(context: Context) {
 //    val token: Token?
 //        get() = PreferencesUtil.loadToken()
 
-    suspend fun getToken(): Token? {
-        return PreferencesUtil.loadToken()
-    }
+    suspend fun getToken(): Token? = PreferencesUtil.loadToken()
 
     private suspend fun expireToken() {
         PreferencesUtil.expireToken()
     }
 
     @AddTrace(name = "refreshToken")
-    suspend fun refreshToken(): Token? {
-        return this.refreshToken(null)
-    }
+    suspend fun refreshToken(): Token? = this.refreshToken(null)
 
     suspend fun refreshToken(refreshToken: String?): Token? {
         var actualRefreshToken = refreshToken
@@ -273,14 +269,18 @@ class NaviToTeslaService(context: Context) {
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
             } else if (response.isSuccessful && response.body() != null) {
-                response.body()!!.response.filter { it.containsKey("vin") && it.containsKey("vehicle_id") }.map {
-                    Vehicle(
-                        id = (it["id"] as Number).toLong(),
-                        vehicleId = (it["vehicle_id"] as Number).toLong(),
-                        displayName = it["display_name"].toString(),
-                        state = it["state"].toString(),
-                    )
-                }.apply { vehicles.addAll(this) }
+                response
+                    .body()!!
+                    .response
+                    .filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
+                    .map {
+                        Vehicle(
+                            id = (it["id"] as Number).toLong(),
+                            vehicleId = (it["vehicle_id"] as Number).toLong(),
+                            displayName = it["display_name"].toString(),
+                            state = it["state"].toString(),
+                        )
+                    }.apply { vehicles.addAll(this) }
             } else {
                 Log.w(this.javaClass.name, "get vehicle error: $response")
             }
@@ -300,9 +300,7 @@ class NaviToTeslaService(context: Context) {
         }
     }
 
-    suspend fun loadVehicleId(): Long {
-        return PreferencesUtil.getLong("vehicleId", 0L)
-    }
+    suspend fun loadVehicleId(): Long = PreferencesUtil.getLong("vehicleId", 0L)
 
     suspend fun clearPoiCache() {
         appRepository.clearAllPoi()

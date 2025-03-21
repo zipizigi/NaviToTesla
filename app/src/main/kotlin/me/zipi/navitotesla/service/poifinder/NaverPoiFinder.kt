@@ -54,17 +54,27 @@ class NaverPoiFinder : PoiFinder {
         notificationText: String,
     ): Boolean {
         // 안내가 시작될 경우 도착지를 이용하여 전송한다. 목적지가 입력된지 특정 시간 내에만 동작한다.
-        return notificationText != "내비게이션 - 안내 중" || destination == null ||
+        return notificationText != "내비게이션 - 안내 중" ||
+            destination == null ||
             destination!!.isEmpty() ||
             System.currentTimeMillis() - savedTime > 3 * 60 * 1000
     }
 
     companion object {
         private val naverMapApi =
-            Retrofit.Builder().baseUrl("https://m.map.naver.com").addConverterFactory(GsonConverterFactory.create()).client(
-                OkHttpClient.Builder().connectTimeout(120, TimeUnit.SECONDS).readTimeout(120, TimeUnit.SECONDS)
-                    .addInterceptor(HttpRetryInterceptor(10)).build(),
-            ).build().create(NaverMapApi::class.java)
+            Retrofit
+                .Builder()
+                .baseUrl("https://m.map.naver.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(
+                    OkHttpClient
+                        .Builder()
+                        .connectTimeout(120, TimeUnit.SECONDS)
+                        .readTimeout(120, TimeUnit.SECONDS)
+                        .addInterceptor(HttpRetryInterceptor(10))
+                        .build(),
+                ).build()
+                .create(NaverMapApi::class.java)
 
         // 접근성 도구로 판단한 목적지 임시 저장
         private var destination: String? = null

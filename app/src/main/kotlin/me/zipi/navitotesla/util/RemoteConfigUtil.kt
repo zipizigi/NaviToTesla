@@ -9,7 +9,8 @@ object RemoteConfigUtil {
     fun initialize() {
         val remoteConfig = FirebaseRemoteConfig.getInstance()
         val configSettings =
-            FirebaseRemoteConfigSettings.Builder()
+            FirebaseRemoteConfigSettings
+                .Builder()
                 .setMinimumFetchIntervalInSeconds((20 * 3600).toLong())
                 .build()
         remoteConfig.setConfigSettingsAsync(configSettings)

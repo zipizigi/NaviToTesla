@@ -28,14 +28,15 @@ class NaverMap {
         @SerializedName("y")
         var latitude: String? = null,
     ) {
-        fun getRoadAddressName(withLocalName: Boolean): String {
-            return if (withLocalName && roadAddress != null && abbrAddress != null) {
+        fun getRoadAddressName(withLocalName: Boolean): String =
+            if (withLocalName && roadAddress != null && abbrAddress != null) {
                 "$roadAddress (" +
-                    abbrAddress!!.split(" ".toRegex())
-                        .dropLastWhile { it.isEmpty() }.toTypedArray()[0] + ")"
+                    abbrAddress!!
+                        .split(" ".toRegex())
+                        .dropLastWhile { it.isEmpty() }
+                        .toTypedArray()[0] + ")"
             } else {
                 roadAddress ?: ""
             }
-        }
     }
 }
