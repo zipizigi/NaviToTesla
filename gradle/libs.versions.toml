@@ -28,7 +28,7 @@ androidx-work-runtime-ktx = "androidx.work:work-runtime-ktx:2.10.0"
 
 commons-lang3 = "org.apache.commons:commons-lang3:3.17.0"
 
-gson = "com.google.code.gson:gson:2.12.1"
+gson = "com.google.code.gson:gson:2.13.0"
 keyboardvisibilityevent = "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3"
 material = "com.google.android.material:material:1.12.0"
 
