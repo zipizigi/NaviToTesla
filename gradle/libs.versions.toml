@@ -23,7 +23,7 @@ androidx-concurrent-futures-ktx = "androidx.concurrent:concurrent-futures-ktx:1.
 androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.1"
 androidx-legacy-support-v4 = "androidx.legacy:legacy-support-v4:1.0.0"
 androidx-security-crypto = "androidx.security:security-crypto:1.1.0-alpha07"
-androidx-work-runtime-ktx = "androidx.work:work-runtime-ktx:2.10.0"
+androidx-work-runtime-ktx = "androidx.work:work-runtime-ktx:2.10.1"
 
 
 commons-lang3 = "org.apache.commons:commons-lang3:3.17.0"
