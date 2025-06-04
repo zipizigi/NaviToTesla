@@ -17,7 +17,7 @@ ktlint = "org.jlleitschuh.gradle.ktlint:12.3.0"
 [libraries]
 kotlin-coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 androidAppUpdateLibrary = "com.github.Piashsarker:AndroidAppUpdateLibrary:1.0.4"
-androidx-appcompat = "androidx.appcompat:appcompat:1.7.0"
+androidx-appcompat = "androidx.appcompat:appcompat:1.7.1"
 
 androidx-concurrent-futures-ktx = "androidx.concurrent:concurrent-futures-ktx:1.2.0"
 androidx-constraintlayout = "androidx.constraintlayout:constraintlayout:2.2.1"
