@@ -35,7 +35,7 @@ material = "com.google.android.material:material:1.12.0"
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-androidx-sqlite = "androidx.sqlite:sqlite-ktx:2.5.1"
+androidx-sqlite = "androidx.sqlite:sqlite-ktx:2.5.2"
 
 androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidx-navigation" }
