@@ -26,7 +26,7 @@ androidx-security-crypto = "androidx.security:security-crypto:1.1.0-beta01"
 androidx-work-runtime-ktx = "androidx.work:work-runtime-ktx:2.10.2"
 
 
-commons-lang3 = "org.apache.commons:commons-lang3:3.17.0"
+commons-lang3 = "org.apache.commons:commons-lang3:3.18.0"
 
 gson = "com.google.code.gson:gson:2.13.1"
 keyboardvisibilityevent = "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3"
