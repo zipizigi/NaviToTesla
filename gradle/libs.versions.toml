@@ -10,7 +10,7 @@ android-application = "com.android.application:8.12.0"
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = "com.google.devtools.ksp:2.2.0-2.0.2"
 google-gms-service = "com.google.gms.google-services:4.4.3"
-firebase-crashlytics = "com.google.firebase.crashlytics:3.0.5"
+firebase-crashlytics = "com.google.firebase.crashlytics:3.0.6"
 firebase-perf = "com.google.firebase.firebase-perf:2.0.0"
 ktlint = "org.jlleitschuh.gradle.ktlint:13.0.0"
 
