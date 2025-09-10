@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.2.20"
 room = "2.7.2"
-androidx-navigation = "2.9.3"
+androidx-navigation = "2.9.4"
 androidx-lifecycle = "2.9.3"
 retrofit = "3.0.0"
 
