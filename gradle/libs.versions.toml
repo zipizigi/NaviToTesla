@@ -57,8 +57,8 @@ androidx-test-espresso = "androidx.test.espresso:espresso-core:3.7.0"
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
-okhttp3 = "com.squareup.okhttp3:okhttp:5.1.0"
-okhttp3-logging = "com.squareup.okhttp3:logging-interceptor:5.1.0"
+okhttp3 = "com.squareup.okhttp3:okhttp:5.2.0"
+okhttp3-logging = "com.squareup.okhttp3:logging-interceptor:5.2.0"
 
 ted-permission = "io.github.ParkSangGwon:tedpermission-coroutine:3.4.2"
 
