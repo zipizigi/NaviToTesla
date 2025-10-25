@@ -19,7 +19,7 @@ class KakaoPoiFinder : PoiFinder {
         /*
          * 목적지 : ~~~~
          */
-        return notificationText.replace("목적지 : ", "").trim { it <= ' ' }
+        return notificationText.replace("목적지 : ", "").trim()
     }
 
     @Throws(IOException::class)

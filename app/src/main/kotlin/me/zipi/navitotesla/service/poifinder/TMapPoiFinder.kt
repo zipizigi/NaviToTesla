@@ -22,9 +22,10 @@ class TMapPoiFinder : PoiFinder {
             출발지 > 경유지 > 목적지
             출발지 > 경유지1 > 경유지2 > 목적지
          */
-        return notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[
-            notificationText.split(">".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray().size - 1,
-        ].trim { it <= ' ' }
+        return notificationText
+            .split(">")
+            .last { it.isNotBlank() }
+            .trim()
     }
 
     @Throws(IOException::class)
