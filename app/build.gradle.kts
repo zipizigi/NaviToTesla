@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     kotlin("android")
     alias(libs.plugins.android.application)
@@ -11,13 +13,13 @@ ksp {
     arg { listOf("room.schemaLocation=$projectDir/schemas") }
 }
 android {
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         buildConfigField("String", "BUILD_MODE", "\"playstore\"")
         applicationId = "me.zipi.navitotesla"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 36
 
         versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1")
         versionName = System.getenv("RELEASE") ?: "1.0"
@@ -64,8 +66,10 @@ android {
 //            ext.enableCrashlytics = false
         }
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -112,7 +116,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso)
 }
 ktlint {
-    version.set("1.5.0")
+    version.set("1.7.1")
     android.set(true)
     outputColorName.set("RED")
 }
