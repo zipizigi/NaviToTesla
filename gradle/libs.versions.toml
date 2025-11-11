@@ -12,7 +12,7 @@ ksp = "com.google.devtools.ksp:2.3.2"
 google-gms-service = "com.google.gms.google-services:4.4.4"
 firebase-crashlytics = "com.google.firebase.crashlytics:3.0.6"
 firebase-perf = "com.google.firebase.firebase-perf:2.0.2"
-ktlint = "org.jlleitschuh.gradle.ktlint:13.1.0"
+ktlint = "org.jlleitschuh.gradle.ktlint:14.0.1"
 
 [libraries]
 kotlin-coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
