@@ -110,7 +110,7 @@ jobs:
           asset_path: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
           asset_name: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
           asset_content_type: application/vnd.android.package-archive
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: navi-to-tesla_nostore
           path: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
@@ -125,7 +125,7 @@ jobs:
           asset_path: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
           asset_name: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
           asset_content_type: application/vnd.android.package-archive
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: navi-to-tesla_playstore
           path: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
@@ -141,7 +141,7 @@ jobs:
           asset_name: navi-to-tesla.1.${{ github.run_number }}.aab
           asset_content_type: application/vnd.android.package-archive
       # Example use of `signedReleaseFile` output -- not needed
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: navi-to-tesla_playstore-bundle
           path: navi-to-tesla.1.${{ github.run_number }}.aab
