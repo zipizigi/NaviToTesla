@@ -14,7 +14,7 @@ import me.zipi.navitotesla.db.ConditionEntity
 import java.util.Date
 
 object EnablerUtil {
-    private val connectedBluetoothDevice: MutableSet<String> = HashSet()
+    private val connectedBluetoothDevice = mutableSetOf<String>()
 
     fun addConnectedBluetooth(name: String?) {
         if (name == null) {
@@ -61,21 +61,11 @@ object EnablerUtil {
         }
     }
 
-    suspend fun listWifiCondition(): List<String> {
-        val result = mutableListOf<String>()
-        for (entity in AppDatabase.getInstance().conditionDao().findCondition("wifi")) {
-            result.add(entity.name)
-        }
-        return result
-    }
+    suspend fun listWifiCondition(): List<String> =
+        AppDatabase.getInstance().conditionDao().findCondition("wifi").map { it.name }
 
-    suspend fun listBluetoothCondition(): MutableList<String> {
-        val result: MutableList<String> = mutableListOf()
-        for (entity in AppDatabase.getInstance().conditionDao().findCondition("bluetooth")) {
-            result.add(entity.name)
-        }
-        return result
-    }
+    suspend fun listBluetoothCondition(): List<String> =
+        AppDatabase.getInstance().conditionDao().findCondition("bluetooth").map { it.name }
 
     suspend fun setAppEnabled(enabled: Boolean) {
         if (PreferencesUtil.getBoolean("appEnabled", true) != enabled) {
@@ -106,10 +96,8 @@ object EnablerUtil {
             return true
         }
         if (bluetoothCondition.isNotEmpty()) {
-            for (condition in bluetoothCondition) {
-                if (connectedBluetoothDevice.contains(condition.lowercase())) {
-                    return true
-                }
+            if (bluetoothCondition.any { connectedBluetoothDevice.contains(it.lowercase()) }) {
+                return true
             }
             AnalysisUtil.log("Bluetooth not connected")
         }
@@ -147,17 +135,13 @@ object EnablerUtil {
                 permission,
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            return ArrayList()
+            return emptyList()
         }
         val bluetoothManager =
             context.applicationContext.getSystemService(
                 BluetoothManager::class.java,
             )
-        val adapter = bluetoothManager.adapter ?: return ArrayList()
-        val result: MutableList<String> = ArrayList()
-        for (device in adapter.bondedDevices) {
-            result.add(device.name)
-        }
-        return result
+        val adapter = bluetoothManager.adapter ?: return emptyList()
+        return adapter.bondedDevices.map { it.name }
     }
 }

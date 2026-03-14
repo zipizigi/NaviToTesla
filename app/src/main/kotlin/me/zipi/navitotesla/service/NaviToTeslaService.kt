@@ -232,11 +232,13 @@ class NaviToTeslaService(
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
-            val newToken: Response<Token> = appRepository.teslaAuthApi.refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
-            if (newToken.isSuccessful && newToken.body() != null) {
-                PreferencesUtil.saveToken(newToken.body()!!)
-                token = newToken.body()
-                AnalysisUtil.log("Success refresh access token")
+            val newToken: Response<Token> = appRepository.teslaAuthApi.refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken ?: return null))
+            if (newToken.isSuccessful) {
+                newToken.body()?.let {
+                    PreferencesUtil.saveToken(it)
+                    token = it
+                    AnalysisUtil.log("Success refresh access token")
+                }
             }
             ResponseCloser.closeAll(newToken)
         } catch (e: Exception) {
@@ -258,7 +260,7 @@ class NaviToTeslaService(
         }
         if (actualToken?.refreshToken == null) {
             makeToast(context.getString(R.string.requireToken))
-            return ArrayList()
+            return emptyList()
         }
         val vehicles = mutableListOf<Vehicle>()
         try {
@@ -268,19 +270,17 @@ class NaviToTeslaService(
             val response: Response<TeslaApiResponse.ListType<Map<String, Any>>> = appRepository.teslaApi.products()
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
-            } else if (response.isSuccessful && response.body() != null) {
-                response
-                    .body()!!
-                    .response
-                    .filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
-                    .map {
+            } else if (response.isSuccessful) {
+                response.body()?.response
+                    ?.filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
+                    ?.map {
                         Vehicle(
                             id = (it["id"] as Number).toLong(),
                             vehicleId = (it["vehicle_id"] as Number).toLong(),
                             displayName = it["display_name"].toString(),
                             state = it["state"].toString(),
                         )
-                    }.apply { vehicles.addAll(this) }
+                    }?.let { vehicles.addAll(it) }
             } else {
                 Log.w(this.javaClass.name, "get vehicle error: $response")
             }

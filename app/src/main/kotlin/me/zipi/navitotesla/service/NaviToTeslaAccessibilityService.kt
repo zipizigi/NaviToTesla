@@ -31,10 +31,10 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 val goalList: MutableList<String> = ArrayList()
                 // portrait
                 val portrait =
-                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
+                    rootInActiveWindow?.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
                 // landscape
                 val landscape =
-                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
+                    rootInActiveWindow?.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
                 goalList.addAll(parseNaverNaviDestination(portrait))
                 goalList.addAll(parseNaverNaviDestination(landscape))
                 if (goalList.size > 0) {

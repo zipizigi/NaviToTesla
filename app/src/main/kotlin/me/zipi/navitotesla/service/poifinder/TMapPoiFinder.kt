@@ -24,13 +24,13 @@ class TMapPoiFinder : PoiFinder {
          */
         return notificationText
             .split(">")
-            .last { it.isNotBlank() }
-            .trim()
+            .lastOrNull { it.isNotBlank() }
+            ?.trim() ?: notificationText.trim()
     }
 
     @Throws(IOException::class)
     override suspend fun listPoiAddress(poiName: String): List<Poi> {
-        val listPoi: MutableList<Poi> = ArrayList()
+        val listPoi = mutableListOf<Poi>()
         val response = tMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "Tmap api error: " + response.errorBody())

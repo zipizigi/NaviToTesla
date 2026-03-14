@@ -97,21 +97,15 @@ object AppUpdaterUtil {
                         AnalysisUtil.log("github api rate limit exceed")
                     } else if (!response.isSuccessful || response.body() == null) {
                         AnalysisUtil.log("github api call fail. Http code: " + response.code())
-                        if (response.errorBody() != null) {
-                            AnalysisUtil.log(response.errorBody()!!.string())
+                        response.errorBody()?.string()?.let {
+                            AnalysisUtil.log(it)
                             AnalysisUtil.recordException(RuntimeException())
                         }
                     } else {
-                        for (r in response.body()!!) {
-                            if (r.isPreRelease == false) {
-                                release = r
-                                break
-                            }
-                        }
+                        release = response.body()?.firstOrNull { it.isPreRelease != true }
                     }
                     val apkUrl = getLatestApkUrl(release)
-                    val releaseDescription =
-                        if (release == null) "" else release.tagName + "\n" + release.body
+                    val releaseDescription = release?.let { "${it.tagName}\n${it.body}" }.orEmpty()
 
                     AlertDialog
                         .Builder(
@@ -256,16 +250,10 @@ object AppUpdaterUtil {
                 RemoteConfigUtil.getString("repoOwner"),
                 RemoteConfigUtil.getString("repoName"),
             )
-        if (release?.assets == null || release.assets!!.isEmpty()) {
-            return defaultApkUrl
-        }
-        release.assets!!.forEach {
-            if (it.contentType.equals("application/vnd.android.package-archive")) {
-                defaultApkUrl = it.downloadUrl ?: ""
-            }
-        }
-
-        return defaultApkUrl
+        return release?.assets
+            ?.firstOrNull { it.contentType == "application/vnd.android.package-archive" }
+            ?.downloadUrl
+            ?: defaultApkUrl
     }
 
     fun getCurrentVersion(context: Context?): String {
