@@ -31,9 +31,9 @@ class NaverPoiFinder : PoiFinder {
             Log.w(this.javaClass.name, "naver api error: " + response.errorBody())
             AnalysisUtil.log("naver api error: " + response.errorBody()?.string().orEmpty())
         }
-        response.body()?.result?.site?.list?.let { list ->
+        response.body()?.items?.let { items ->
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
-            list.forEach { place ->
+            items.forEach { place ->
                 poiList.add(
                     Poi(
                         poiName = place.name,
@@ -63,14 +63,25 @@ class NaverPoiFinder : PoiFinder {
         private val naverMapApi =
             Retrofit
                 .Builder()
-                .baseUrl("https://m.map.naver.com")
+                .baseUrl("https://openapi.naver.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(
                     OkHttpClient
                         .Builder()
                         .connectTimeout(120, TimeUnit.SECONDS)
                         .readTimeout(120, TimeUnit.SECONDS)
-                        .addInterceptor(HttpRetryInterceptor(10))
+                        .addInterceptor(
+                            okhttp3.Interceptor { chain ->
+                                chain.proceed(
+                                    chain
+                                        .request()
+                                        .newBuilder()
+                                        .addHeader("X-Naver-Client-Id", RemoteConfigUtil.getString("naverClientId"))
+                                        .addHeader("X-Naver-Client-Secret", RemoteConfigUtil.getString("naverClientSecret"))
+                                        .build(),
+                                )
+                            },
+                        ).addInterceptor(HttpRetryInterceptor(10))
                         .build(),
                 ).build()
                 .create(NaverMapApi::class.java)
