@@ -43,7 +43,6 @@ androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", ver
 androidx-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "androidx-lifecycle" }
-androidx-lifecycle-extensions = "android.arch.lifecycle:extensions:1.1.1"
 
 firebase-bom = "com.google.firebase:firebase-bom:34.10.0"
 firebase-config = { module = "com.google.firebase:firebase-config" }
@@ -65,7 +64,7 @@ ted-permission = "io.github.ParkSangGwon:tedpermission-coroutine:3.4.2"
 [bundles]
 room = ["room-runtime", "room-ktx", "androidx-sqlite"]
 androidx-navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
-androidx-lifecycle = ["androidx-lifecycle-livedata", "androidx-lifecycle-viewmodel", "androidx-lifecycle-common", "androidx-lifecycle-extensions"]
+androidx-lifecycle = ["androidx-lifecycle-livedata", "androidx-lifecycle-viewmodel", "androidx-lifecycle-common"]
 retrofit = ["retrofit", "retrofit-converter", "okhttp3", "okhttp3-logging"]
 firebase = ["firebase-config", "firebase-analytics", "firebase-crashlytics", "firebase-perf"]
 #androidx-compose = [ "androidx-compose-foundation", "androidx-compose-ui", "androidx-compose-material", "androidx-compose-uiTooling" ]
