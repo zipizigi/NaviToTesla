@@ -51,7 +51,7 @@ class KakaoPoiFinder : PoiFinder {
     override fun isIgnore(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean = notificationTitle != "길안내 주행 중"
+    ): Boolean = notificationTitle != "길안내 주행 중" || !notificationText.contains("목적지 : ")
 
     companion object {
         private val kakaoMapApi =
