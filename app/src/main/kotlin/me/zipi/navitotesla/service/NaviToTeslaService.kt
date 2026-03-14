@@ -35,14 +35,9 @@ import java.util.regex.Pattern
 class NaviToTeslaService(
     context: Context,
 ) {
-    private val context: Context
+    private val context = context.applicationContext
     private val pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
-    private val appRepository: AppRepository
-
-    init {
-        this.context = context.applicationContext
-        appRepository = AppRepository.getInstance()
-    }
+    private val appRepository = AppRepository.getInstance()
 
     fun isAddress(text: String): Boolean = pattern.matcher(text).find()
 
@@ -88,7 +83,7 @@ class NaviToTeslaService(
             if (lastAddress != poi.getRoadAddress()) {
                 try {
                     share(poi)
-                } catch (e: ForbiddenException) {
+                } catch (_: ForbiddenException) {
                     AnalysisUtil.log("force expire token and retry...")
                     expireToken()
                     share(poi)
@@ -107,7 +102,7 @@ class NaviToTeslaService(
             AnalysisUtil.logEvent("unsupported_navi", eventParam)
             AnalysisUtil.recordException(e)
             makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.unsupportedNavi))
-        } catch (e: IgnorePoiException) {
+        } catch (_: IgnorePoiException) {
             AnalysisUtil.logEvent("ignore_address", eventParam)
         } catch (e: ForbiddenException) {
             makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.authFail))
@@ -232,11 +227,16 @@ class NaviToTeslaService(
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
-            val newToken: Response<Token> = appRepository.teslaAuthApi.refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken!!))
-            if (newToken.isSuccessful && newToken.body() != null) {
-                PreferencesUtil.saveToken(newToken.body()!!)
-                token = newToken.body()
-                AnalysisUtil.log("Success refresh access token")
+            val newToken: Response<Token> =
+                appRepository.teslaAuthApi.refreshAccessToken(
+                    TeslaRefreshTokenRequest(actualRefreshToken),
+                )
+            if (newToken.isSuccessful) {
+                newToken.body()?.let {
+                    PreferencesUtil.saveToken(it)
+                    token = it
+                    AnalysisUtil.log("Success refresh access token")
+                }
             }
             ResponseCloser.closeAll(newToken)
         } catch (e: Exception) {
@@ -258,7 +258,7 @@ class NaviToTeslaService(
         }
         if (actualToken?.refreshToken == null) {
             makeToast(context.getString(R.string.requireToken))
-            return ArrayList()
+            return emptyList()
         }
         val vehicles = mutableListOf<Vehicle>()
         try {
@@ -268,19 +268,19 @@ class NaviToTeslaService(
             val response: Response<TeslaApiResponse.ListType<Map<String, Any>>> = appRepository.teslaApi.products()
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
-            } else if (response.isSuccessful && response.body() != null) {
+            } else if (response.isSuccessful) {
                 response
-                    .body()!!
-                    .response
-                    .filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
-                    .map {
+                    .body()
+                    ?.response
+                    ?.filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
+                    ?.map {
                         Vehicle(
                             id = (it["id"] as Number).toLong(),
                             vehicleId = (it["vehicle_id"] as Number).toLong(),
                             displayName = it["display_name"].toString(),
                             state = it["state"].toString(),
                         )
-                    }.apply { vehicles.addAll(this) }
+                    }?.let { vehicles.addAll(it) }
             } else {
                 Log.w(this.javaClass.name, "get vehicle error: $response")
             }

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import me.zipi.navitotesla.db.PoiAddressEntity
 
 class FavoriteViewModel : ViewModel() {
-    val recentPoiAddress = MutableLiveData<MutableList<PoiAddressEntity>>()
+    val recentPoiAddress = MutableLiveData<List<PoiAddressEntity>>()
 
-    val registeredPoiAddress = MutableLiveData<MutableList<PoiAddressEntity>>()
+    val registeredPoiAddress = MutableLiveData<List<PoiAddressEntity>>()
 }

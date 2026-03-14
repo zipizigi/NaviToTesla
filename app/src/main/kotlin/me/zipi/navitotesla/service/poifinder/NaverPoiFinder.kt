@@ -20,29 +20,29 @@ import java.util.concurrent.TimeUnit
 class NaverPoiFinder : PoiFinder {
     override fun parseDestination(notificationText: String): String {
         // 접근성 도구로 도착지가 미리 입력되어 있기 때문에, 안내 시작시 내부에 저장된 도착지를 전달한다.
-        return if (destination == null) "" else destination!!
+        return destination ?: ""
     }
 
     @Throws(IOException::class)
     override suspend fun listPoiAddress(poiName: String): List<Poi> {
-        val poiList: MutableList<Poi> = ArrayList()
-        val response = naverMapApi.search(String.format("\"%s\"", poiName))
+        val poiList = mutableListOf<Poi>()
+        val response = naverMapApi.search("\"$poiName\"")
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "naver api error: " + response.errorBody())
-            AnalysisUtil.log("naver api error: " + if (response.errorBody() == null) "" else response.errorBody()!!.string())
+            AnalysisUtil.log("naver api error: " + response.errorBody()?.string().orEmpty())
         }
-        if (response.isSuccessful && response.body()?.result?.site?.list != null) {
+        response.body()?.result?.site?.list?.let { list ->
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
-            for (place in response.body()!!.result!!.site!!.list!!) {
-                val poi =
+            list.forEach { place ->
+                poiList.add(
                     Poi(
                         poiName = place.name,
                         roadAddress = place.getRoadAddressName(withLocalName),
                         address = place.address,
                         longitude = place.longitude,
                         latitude = place.latitude,
-                    )
-                poiList.add(poi)
+                    ),
+                )
             }
         }
         ResponseCloser.closeAll(response)
@@ -55,8 +55,7 @@ class NaverPoiFinder : PoiFinder {
     ): Boolean {
         // 안내가 시작될 경우 도착지를 이용하여 전송한다. 목적지가 입력된지 특정 시간 내에만 동작한다.
         return notificationText != "내비게이션 - 안내 중" ||
-            destination == null ||
-            destination!!.isEmpty() ||
+            destination.isNullOrEmpty() ||
             System.currentTimeMillis() - savedTime > 3 * 60 * 1000
     }
 
@@ -82,12 +81,12 @@ class NaverPoiFinder : PoiFinder {
 
         fun addDestination(dest: String) {
             // 접근성 도구로 도착지가 비어있을 경우 임시 변수 초기화
-            if (dest.trim { it <= ' ' }.equals("도착지 입력", ignoreCase = true)) {
+            if (dest.trim().equals("도착지 입력", ignoreCase = true)) {
                 destination = ""
                 return
             }
             // 도착지가 입력
-            destination = dest.trim { it <= ' ' }
+            destination = dest.trim()
             savedTime = System.currentTimeMillis()
         }
     }

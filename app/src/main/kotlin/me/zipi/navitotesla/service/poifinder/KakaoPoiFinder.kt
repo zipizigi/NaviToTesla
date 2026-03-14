@@ -24,24 +24,24 @@ class KakaoPoiFinder : PoiFinder {
 
     @Throws(IOException::class)
     override suspend fun listPoiAddress(poiName: String): List<Poi> {
-        val poiList: MutableList<Poi> = ArrayList()
+        val poiList = mutableListOf<Poi>()
         val response = kakaoMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "Kakao api error: " + response.errorBody())
-            AnalysisUtil.log("Kakao api error: " + if (response.errorBody() == null) "" else response.errorBody()!!.string())
+            AnalysisUtil.log("Kakao api error: " + response.errorBody()?.string().orEmpty())
         }
-        if (response.isSuccessful && response.body() != null) {
+        response.body()?.let { body ->
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
-            for (place in response.body()!!.documents) {
-                val poi =
+            body.documents.forEach { place ->
+                poiList.add(
                     Poi(
                         poiName = place.placeName,
                         roadAddress = place.getRoadAddressName(withLocalName),
                         address = place.addressName,
                         longitude = place.longitude,
                         latitude = place.latitude,
-                    )
-                poiList.add(poi)
+                    ),
+                )
             }
         }
         ResponseCloser.closeAll(response)

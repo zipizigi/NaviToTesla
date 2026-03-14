@@ -84,19 +84,16 @@ class FavoriteFragment :
     private fun updatePoiAddress() {
         viewLifecycleOwner.lifecycleScope.launch {
             favoriteViewModel.registeredPoiAddress.postValue(
-                appDatabase.poiAddressDao().findRegisteredPoi().toMutableList(),
+                appDatabase.poiAddressDao().findRegisteredPoi(),
             )
             favoriteViewModel.recentPoiAddress.postValue(
-                appDatabase.poiAddressDao().findRecentPoi(25).toMutableList(),
+                appDatabase.poiAddressDao().findRecentPoi(25),
             )
         }
     }
 
     private fun addFavoriteLocation(position: Int) {
-        if (favoriteViewModel.recentPoiAddress.value == null) {
-            return
-        }
-        val poi: String = favoriteViewModel.recentPoiAddress.value!![position].poi
+        val poi = favoriteViewModel.recentPoiAddress.value?.get(position)?.poi ?: return
         addFavorite(poi)
     }
 
@@ -118,10 +115,8 @@ class FavoriteFragment :
     }
 
     private fun shareLocation(position: Int) {
-        if (activity == null || favoriteViewModel.registeredPoiAddress.value == null) {
-            return
-        }
-        val poiEntity: PoiAddressEntity = favoriteViewModel.registeredPoiAddress.value!![position]
+        if (activity == null) return
+        val poiEntity = favoriteViewModel.registeredPoiAddress.value?.get(position) ?: return
         AlertDialog
             .Builder(requireActivity())
             .setCancelable(true)
@@ -144,10 +139,7 @@ class FavoriteFragment :
 
     private fun removeFavorite(position: Int) {
         viewLifecycleOwner.lifecycleScope.launch {
-            if (favoriteViewModel.registeredPoiAddress.value == null) {
-                return@launch
-            }
-            val poi: PoiAddressEntity = favoriteViewModel.registeredPoiAddress.value!![position]
+            val poi = favoriteViewModel.registeredPoiAddress.value?.get(position) ?: return@launch
             appDatabase.poiAddressDao().delete(poi)
             updatePoiAddress()
         }
@@ -158,7 +150,7 @@ class FavoriteFragment :
             return
         }
         val dialog = FavoriteDialogFragment(dest)
-        dialog.onDismissListener = Runnable { updatePoiAddress() }
+        dialog.onDismissListener = Runnable(::updatePoiAddress)
         dialog.show(childFragmentManager, FavoriteDialogFragment::class.java.name)
     }
 

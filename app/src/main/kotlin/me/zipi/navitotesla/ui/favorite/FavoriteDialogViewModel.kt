@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import me.zipi.navitotesla.model.Poi
 
 class FavoriteDialogViewModel : ViewModel() {
-    val poiList = MutableLiveData<List<Poi>>(ArrayList())
+    val poiList = MutableLiveData<List<Poi>>(emptyList())
 
     val selectedPoi = MutableLiveData<Poi>()
 }
