@@ -250,7 +250,8 @@ object AppUpdaterUtil {
                 RemoteConfigUtil.getString("repoOwner"),
                 RemoteConfigUtil.getString("repoName"),
             )
-        return release?.assets
+        return release
+            ?.assets
             ?.firstOrNull { it.contentType == "application/vnd.android.package-archive" }
             ?.downloadUrl
             ?: defaultApkUrl

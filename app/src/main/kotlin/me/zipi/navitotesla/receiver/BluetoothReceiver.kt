@@ -27,13 +27,13 @@ class BluetoothReceiver : BroadcastReceiver() {
         }
         val device =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                intent.extras?.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
             } else {
                 @Suppress("DEPRECATION")
-                intent.extras!!.getParcelable(BluetoothDevice.EXTRA_DEVICE)
-            }
+                intent.extras?.getParcelable<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+            } ?: return
 
-        AnalysisUtil.log("receive bluetooth broadcast: " + intent.action + " - " + device!!.name)
+        AnalysisUtil.log("receive bluetooth broadcast: ${intent.action} - ${device.name}")
         when (intent.action) {
             BluetoothDevice.ACTION_ACL_CONNECTED ->
                 EnablerUtil.addConnectedBluetooth(

@@ -35,14 +35,9 @@ import java.util.regex.Pattern
 class NaviToTeslaService(
     context: Context,
 ) {
-    private val context: Context
+    private val context = context.applicationContext
     private val pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
-    private val appRepository: AppRepository
-
-    init {
-        this.context = context.applicationContext
-        appRepository = AppRepository.getInstance()
-    }
+    private val appRepository = AppRepository.getInstance()
 
     fun isAddress(text: String): Boolean = pattern.matcher(text).find()
 
@@ -88,7 +83,7 @@ class NaviToTeslaService(
             if (lastAddress != poi.getRoadAddress()) {
                 try {
                     share(poi)
-                } catch (e: ForbiddenException) {
+                } catch (_: ForbiddenException) {
                     AnalysisUtil.log("force expire token and retry...")
                     expireToken()
                     share(poi)
@@ -107,7 +102,7 @@ class NaviToTeslaService(
             AnalysisUtil.logEvent("unsupported_navi", eventParam)
             AnalysisUtil.recordException(e)
             makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.unsupportedNavi))
-        } catch (e: IgnorePoiException) {
+        } catch (_: IgnorePoiException) {
             AnalysisUtil.logEvent("ignore_address", eventParam)
         } catch (e: ForbiddenException) {
             makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.authFail))
@@ -232,7 +227,10 @@ class NaviToTeslaService(
         AnalysisUtil.log("Start refresh access token")
         var token: Token? = null
         try {
-            val newToken: Response<Token> = appRepository.teslaAuthApi.refreshAccessToken(TeslaRefreshTokenRequest(actualRefreshToken ?: return null))
+            val newToken: Response<Token> =
+                appRepository.teslaAuthApi.refreshAccessToken(
+                    TeslaRefreshTokenRequest(actualRefreshToken),
+                )
             if (newToken.isSuccessful) {
                 newToken.body()?.let {
                     PreferencesUtil.saveToken(it)
@@ -271,7 +269,9 @@ class NaviToTeslaService(
             if (response.code() == 401) {
                 makeToast(context.getString(R.string.invalidToken))
             } else if (response.isSuccessful) {
-                response.body()?.response
+                response
+                    .body()
+                    ?.response
                     ?.filter { it.containsKey("vin") && it.containsKey("vehicle_id") }
                     ?.map {
                         Vehicle(

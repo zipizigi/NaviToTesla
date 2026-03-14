@@ -1,7 +1,6 @@
 package me.zipi.navitotesla.model
 
 import com.google.gson.annotations.SerializedName
-import java.util.Calendar
 import kotlin.math.abs
 
 class Token(
@@ -13,9 +12,7 @@ class Token(
     var expires: Int = 0,
     var updated: Long = 0,
 ) {
-    fun isExpire(): Boolean {
-        return abs(updated - Calendar.getInstance().time.time) / 1000L / 60L / 60L > 7 // expire in 8 hours
-    }
+    fun isExpire(): Boolean = abs(updated - System.currentTimeMillis()) / 1000L / 60L / 60L > 7 // expire in 8 hours
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

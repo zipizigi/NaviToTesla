@@ -61,11 +61,9 @@ object EnablerUtil {
         }
     }
 
-    suspend fun listWifiCondition(): List<String> =
-        AppDatabase.getInstance().conditionDao().findCondition("wifi").map { it.name }
+    suspend fun listWifiCondition(): List<String> = AppDatabase.getInstance().conditionDao().findCondition("wifi").map { it.name }
 
-    suspend fun listBluetoothCondition(): List<String> =
-        AppDatabase.getInstance().conditionDao().findCondition("bluetooth").map { it.name }
+    suspend fun listBluetoothCondition(): List<String> = AppDatabase.getInstance().conditionDao().findCondition("bluetooth").map { it.name }
 
     suspend fun setAppEnabled(enabled: Boolean) {
         if (PreferencesUtil.getBoolean("appEnabled", true) != enabled) {

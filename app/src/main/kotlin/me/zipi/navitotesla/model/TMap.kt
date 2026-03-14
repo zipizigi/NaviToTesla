@@ -36,58 +36,33 @@ class TMap {
         var longitude: String? = null,
     ) {
         fun getRoadAddress(withLocalName: Boolean): String {
-            if (roadName!!.isNotEmpty() && firstBuildNo!!.isNotEmpty()) {
-                val sb = StringBuilder()
-                sb.append(upperAddrName)
-                if (middleAddrName!!.isNotEmpty()) {
-                    sb.append(" ").append(middleAddrName)
+            if (roadName.isNullOrEmpty() || firstBuildNo.isNullOrEmpty()) return ""
+            val sb = StringBuilder()
+            sb.append(upperAddrName)
+            if (!middleAddrName.isNullOrEmpty()) sb.append(" ").append(middleAddrName)
+            sb.append(" ").append(roadName)
+            sb.append(" ").append(firstBuildNo)
+            if (!secondBuildNo.isNullOrEmpty() && secondBuildNo != "0") sb.append("-").append(secondBuildNo)
+            if (!lowerAddrName.isNullOrEmpty() && withLocalName) {
+                val lastChar = lowerAddrName!!.last().toString()
+                if (lastChar == "동" || lastChar == "로" || lastChar == "가") {
+                    sb.append(" (").append(lowerAddrName).append(")")
                 }
-                if (roadName!!.isNotEmpty()) {
-                    sb.append(" ").append(roadName)
-                }
-                if (firstBuildNo!!.isNotEmpty()) {
-                    sb.append(" ").append(firstBuildNo)
-                }
-                if (secondBuildNo!!.isNotEmpty() && secondBuildNo != "0") {
-                    sb.append("-").append(secondBuildNo)
-                }
-
-                // 법정동(동/로/가)가 있을 경우 추가항목으로 (법정동)을 붙여준다.
-                // 건물명이 있을 경우 (법정동, 건물명) 표시도 가능하다.
-                if (lowerAddrName!!.isNotEmpty() && withLocalName) {
-                    val lastChar = lowerAddrName!!.substring(lowerAddrName!!.length - 1)
-                    if (lastChar == "동" || lastChar == "로" || lastChar == "가") {
-                        sb.append(" (").append(lowerAddrName).append(")")
-                    }
-                }
-                return sb.toString()
             }
-            return ""
+            return sb.toString()
         }
 
         val address: String
             get() {
-                if (firstNo == null || firstNo!!.isEmpty()) {
-                    return ""
-                }
+                if (firstNo.isNullOrEmpty()) return ""
                 val sb = StringBuilder()
                 sb.append(upperAddrName)
-                if (middleAddrName!!.isNotEmpty()) {
-                    sb.append(" ").append(middleAddrName)
-                }
-                if (lowerAddrName!!.isNotEmpty()) {
-                    sb.append(" ").append(lowerAddrName)
-                }
-                if (detailAddrName!!.isNotEmpty()) {
-                    sb.append(" ").append(detailAddrName)
-                }
-                if (mlClass == "2") {
-                    sb.append(" 산")
-                }
+                if (!middleAddrName.isNullOrEmpty()) sb.append(" ").append(middleAddrName)
+                if (!lowerAddrName.isNullOrEmpty()) sb.append(" ").append(lowerAddrName)
+                if (!detailAddrName.isNullOrEmpty()) sb.append(" ").append(detailAddrName)
+                if (mlClass == "2") sb.append(" 산")
                 sb.append(" ").append(firstNo)
-                if (secondNo!!.isNotEmpty() && secondNo != "0") {
-                    sb.append("-").append(secondNo)
-                }
+                if (!secondNo.isNullOrEmpty() && secondNo != "0") sb.append("-").append(secondNo)
                 return sb.toString()
             }
     }
