@@ -27,19 +27,13 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 return
             }
             if (event.packageName == "com.nhn.android.nmap") {
-                // naver navi, 목적지 저장
-                val goalList = mutableListOf<String>()
-                // portrait
-                val portrait =
-                    rootInActiveWindow?.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
-                // landscape
-                val landscape =
-                    rootInActiveWindow?.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
-                goalList.addAll(parseNaverNaviDestination(portrait))
-                goalList.addAll(parseNaverNaviDestination(landscape))
-                if (goalList.isNotEmpty()) {
-                    NaverPoiFinder.addDestination(goalList[0])
-                }
+                val window = rootInActiveWindow ?: return
+                // route_search_bar: Compose 기반 경로 검색 바 (출발지, 목적지 순서로 TextView 포함)
+                val searchBarNodes = window.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/route_search_bar")
+                val texts = mutableListOf<String>()
+                searchBarNodes?.forEach { node -> collectTexts(node, texts) }
+                // 마지막 텍스트가 목적지
+                texts.lastOrNull()?.let { NaverPoiFinder.addDestination(it) }
             }
         } catch (e: Exception) {
             AnalysisUtil.warn("accessibility error: " + e.message)
@@ -49,11 +43,16 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    private fun parseNaverNaviDestination(goalList: List<AccessibilityNodeInfo>): List<String> =
-        goalList
-            .mapNotNull {
-                it.text?.toString()
-            }.filter { it.isNotBlank() }
+    private fun collectTexts(
+        node: AccessibilityNodeInfo,
+        result: MutableList<String>,
+    ) {
+        val text = node.text?.toString()
+        if (!text.isNullOrBlank()) result.add(text)
+        for (i in 0 until node.childCount) {
+            node.getChild(i)?.let { collectTexts(it, result) }
+        }
+    }
 
     companion object {
         private var lastNotifyAppVersion: String? = null
