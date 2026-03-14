@@ -43,17 +43,12 @@ class NotificationListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         CoroutineScope(Dispatchers.Main).launch {
             super.onNotificationPosted(sbn)
-            if (PoiFinderFactory.isNaviSupport(sbn.packageName) && sbn.postTime - lastNotificationPosted > 2500) {
-                val bundle = Bundle()
-                bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "NotificationListener")
-                bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "NotificationListener")
-                AnalysisUtil.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
-                AnalysisUtil.setCustomKey("packageName", sbn.packageName)
-                lastNotificationPosted = sbn.postTime
+            if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
                 val extras = sbn.notification.extras
                 val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
                 val text = extras.getString(Notification.EXTRA_TEXT) ?: ""
                 val subText = extras.getString(Notification.EXTRA_SUB_TEXT) ?: ""
+                val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
 
                 Log.i(
                     this.javaClass.name,
@@ -63,8 +58,15 @@ class NotificationListener : NotificationListenerService() {
                         " postTime: " + sbn.postTime +
                         " title: " + title +
                         " text : " + text +
-                        " subText: " + subText,
+                        " subText: " + subText +
+                        " bigText: " + bigText,
                 )
+
+                val bundle = Bundle()
+                bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "NotificationListener")
+                bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "NotificationListener")
+                AnalysisUtil.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
+                AnalysisUtil.setCustomKey("packageName", sbn.packageName)
                 ShareWorker.startShare(applicationContext, sbn.packageName, title, text)
                 NaviToTeslaAccessibilityService.notifyIfAvailable(
                     applicationContext,
@@ -77,9 +79,5 @@ class NotificationListener : NotificationListenerService() {
                 AnalysisUtil.logEvent("notification_received", param)
             }
         }
-    }
-
-    companion object {
-        private var lastNotificationPosted = System.currentTimeMillis()
     }
 }
