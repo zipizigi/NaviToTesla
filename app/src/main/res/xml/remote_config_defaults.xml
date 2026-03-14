@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- START xml_defaults -->
+<?xml version="1.0" encoding="utf-8"?><!-- START xml_defaults -->
 <defaultsMap>
     <entry>
         <key>kakaoApiKey</key>
@@ -9,5 +8,12 @@
         <key>tmapApiKey</key>
         <value>paste here default tmap api key</value>
     </entry>
-</defaultsMap>
-    <!-- END xml_defaults -->
+    <entry>
+        <key>naverClientId</key>
+        <value>paste here default</value>
+    </entry>
+    <entry>
+        <key>naverClientSecret</key>
+        <value>paste here default</value>
+    </entry>
+</defaultsMap><!-- END xml_defaults -->
