@@ -22,7 +22,7 @@ class PoiAddressEntity(
         get() {
             val createdTime = created?.time ?: return false
             val diff = createdTime - System.currentTimeMillis()
-            return registered != null && !registered && abs(diff) / 1000L / 60L / 60L / 24L >= expireDay
+            return registered != null && !registered && abs(diff) / 1000L / 60L / 60L / 24L >= EXPIRE_DAY
         }
 
     fun isRegistered(): Boolean = registered != null && registered
@@ -30,6 +30,6 @@ class PoiAddressEntity(
     fun toPoi(): Poi = Poi(poiName = poi, roadAddress = address, address = address, longitude = longitude, latitude = latitude)
 
     companion object {
-        const val expireDay = 10
+        const val EXPIRE_DAY = 10
     }
 }

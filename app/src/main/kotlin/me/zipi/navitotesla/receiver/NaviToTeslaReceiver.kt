@@ -24,6 +24,7 @@ class NaviToTeslaReceiver : BroadcastReceiver() {
                     EnablerUtil.setAppEnabled(true)
                     AnalysisUtil.makeToast(applicationContext, applicationContext.getString(R.string.enabledApp))
                 }
+
                 action.equals("navitotesla.DISABLE", ignoreCase = true) -> {
                     EnablerUtil.setAppEnabled(false)
                     AnalysisUtil.makeToast(applicationContext, applicationContext.getString(R.string.disabledApp))
