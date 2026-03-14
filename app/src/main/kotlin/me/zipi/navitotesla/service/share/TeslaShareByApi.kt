@@ -3,6 +3,7 @@ package me.zipi.navitotesla.service.share
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import kotlinx.coroutines.delay
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
@@ -26,10 +27,7 @@ class TeslaShareByApi(
         val address = poi.getRoadAddress()
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 By api Skip\n$address")
-            try {
-                Thread.sleep(500)
-            } catch (_: InterruptedException) {
-            }
+            delay(500)
             return
         }
         AnalysisUtil.log("share using tesla api share")

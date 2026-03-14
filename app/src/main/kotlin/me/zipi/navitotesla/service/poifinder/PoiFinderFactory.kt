@@ -8,6 +8,8 @@ object PoiFinderFactory {
     private const val KAKAO_PACKAGE = "com.locnall.KimGiSa"
     private const val NAVER_PACKAGE = "com.nhn.android.nmap"
 
+    fun isNaverMap(packageName: String): Boolean = packageName.equals(NAVER_PACKAGE, ignoreCase = true)
+
     fun isNaviSupport(packageName: String): Boolean =
         listOf(TMAP_PACKAGE, TMAP_SK_PACKAGE, KAKAO_PACKAGE, NAVER_PACKAGE)
             .any { packageName.equals(it, ignoreCase = true) }

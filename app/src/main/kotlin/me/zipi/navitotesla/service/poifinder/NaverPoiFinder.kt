@@ -7,6 +7,7 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.RemoteConfigUtil
 import me.zipi.navitotesla.util.ResponseCloser
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -71,7 +72,7 @@ class NaverPoiFinder : PoiFinder {
                         .connectTimeout(120, TimeUnit.SECONDS)
                         .readTimeout(120, TimeUnit.SECONDS)
                         .addInterceptor(
-                            okhttp3.Interceptor { chain ->
+                            Interceptor { chain: Interceptor.Chain ->
                                 chain.proceed(
                                     chain
                                         .request()
