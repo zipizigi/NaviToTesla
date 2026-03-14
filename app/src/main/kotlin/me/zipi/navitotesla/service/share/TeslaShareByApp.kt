@@ -21,7 +21,7 @@ class TeslaShareByApp(
         intent.component = ComponentName("com.teslamotors.tesla", "com.tesla.share.ShareActivity")
         intent.type = "text/plain"
         val address =
-            if (Locale.getDefault().language.equals("ko", ignoreCase = true) || poi.isGpsEmpty()) {
+            if (Locale.getDefault().language == "ko" || poi.isGpsEmpty()) {
                 poi.getRoadAddress()
             } else {
                 poi.getGpsAddress()

@@ -28,16 +28,16 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
             }
             if (event.packageName == "com.nhn.android.nmap") {
                 // naver navi, 목적지 저장
-                val goalList: MutableList<String> = ArrayList()
+                val goalList = mutableListOf<String>()
                 // portrait
                 val portrait =
-                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
+                    rootInActiveWindow?.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
                 // landscape
                 val landscape =
-                    rootInActiveWindow.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
+                    rootInActiveWindow?.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/search_goal") ?: listOf()
                 goalList.addAll(parseNaverNaviDestination(portrait))
                 goalList.addAll(parseNaverNaviDestination(landscape))
-                if (goalList.size > 0) {
+                if (goalList.isNotEmpty()) {
                     NaverPoiFinder.addDestination(goalList[0])
                 }
             }

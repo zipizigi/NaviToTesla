@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import me.zipi.navitotesla.model.Poi
-import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
 
@@ -21,8 +20,9 @@ class PoiAddressEntity(
 ) {
     val isExpire: Boolean
         get() {
-            val diff = created!!.time - Calendar.getInstance().time.time
-            return registered != null && !registered && abs(diff) / 1000L / 60L / 60L / 24L >= expireDay
+            val createdTime = created?.time ?: return false
+            val diff = createdTime - System.currentTimeMillis()
+            return registered != null && !registered && abs(diff) / 1000L / 60L / 60L / 24L >= EXPIRE_DAY
         }
 
     fun isRegistered(): Boolean = registered != null && registered
@@ -30,6 +30,6 @@ class PoiAddressEntity(
     fun toPoi(): Poi = Poi(poiName = poi, roadAddress = address, address = address, longitude = longitude, latitude = latitude)
 
     companion object {
-        var expireDay = 10
+        const val EXPIRE_DAY = 10
     }
 }

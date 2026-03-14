@@ -96,10 +96,7 @@ class FavoriteDialogFragment :
         position: Int,
         id: Long,
     ) {
-        if (favoriteDialogViewModel.poiList.value == null) {
-            return
-        }
-        val poi: Poi = favoriteDialogViewModel.poiList.value!![position]
+        val poi = favoriteDialogViewModel.poiList.value?.get(position) ?: return
         favoriteDialogViewModel.selectedPoi.postValue(poi)
         if (binding.radioRoadAddress.isChecked) {
             binding.txtAddress.setText(poi.getRoadAddress())
@@ -176,7 +173,7 @@ class FavoriteDialogFragment :
         context: Context?,
         @LayoutRes resource: Int,
     ) : ArrayAdapter<Poi?>(
-            context!!,
+            requireNotNull(context),
             resource,
         ) {
         override fun getView(

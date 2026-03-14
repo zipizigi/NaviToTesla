@@ -10,8 +10,7 @@ object PoiFinderFactory {
 
     fun isNaviSupport(packageName: String): Boolean =
         listOf(TMAP_PACKAGE, TMAP_SK_PACKAGE, KAKAO_PACKAGE, NAVER_PACKAGE)
-            .map { packageName.equals(it, ignoreCase = true) }
-            .any { it }
+            .any { packageName.equals(it, ignoreCase = true) }
 
     @Throws(NotSupportedNaviException::class)
     fun getPoiFinder(packageName: String): PoiFinder =

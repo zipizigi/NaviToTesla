@@ -10,7 +10,7 @@ data class Poi(
     val latitude: String? = null,
 ) {
     @Suppress("unused")
-    fun isAddressEmpty(): Boolean = (roadAddress == null || roadAddress == "") && (address == null || address == "")
+    fun isAddressEmpty(): Boolean = roadAddress.isNullOrEmpty() && address.isNullOrEmpty()
 
     @Suppress("unused")
     fun isGpsEmpty(): Boolean = (longitude == null || latitude == null)
@@ -31,5 +31,5 @@ data class Poi(
             getGpsAddress()
         }
 
-    fun getGpsAddress(): String = String.format(Locale.getDefault(), "%s,%s", latitude, longitude)
+    fun getGpsAddress(): String = "$latitude,$longitude"
 }

@@ -1,7 +1,6 @@
 package me.zipi.navitotesla.model
 
 import com.google.gson.annotations.SerializedName
-import java.util.regex.Pattern
 
 class KakaoMap {
     data class Place(
@@ -20,11 +19,11 @@ class KakaoMap {
         fun getRoadAddressName(withLocalName: Boolean): String {
             // 시도 구군구 읍동면리 (산) 123(-2)
             var address = roadAddressName ?: ""
-            val match = pattern.matcher(addressName ?: "")
-            if (match.find() && withLocalName) {
-                val lowerAddrName = match.group(1)
-                if (lowerAddrName != null && lowerAddrName.isNotEmpty()) {
-                    val lastChar = lowerAddrName.substring(lowerAddrName.length - 1)
+            val match = pattern.find(addressName ?: "")
+            if (match != null && withLocalName) {
+                val lowerAddrName = match.groupValues[1]
+                if (lowerAddrName.isNotEmpty()) {
+                    val lastChar = lowerAddrName.last().toString()
                     if (lastChar == "동" || lastChar == "로" || lastChar == "가") {
                         address += " ($lowerAddrName)"
                     }
@@ -34,7 +33,7 @@ class KakaoMap {
         }
 
         companion object {
-            private val pattern = Pattern.compile("([^\\s]+)\\s(?:산\\s)?\\d+(?:-\\d)?$")
+            private val pattern = Regex("([^\\s]+)\\s(?:산\\s)?\\d+(?:-\\d)?$")
         }
     }
 

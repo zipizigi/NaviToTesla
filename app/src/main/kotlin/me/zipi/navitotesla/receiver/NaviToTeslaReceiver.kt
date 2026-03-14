@@ -19,18 +19,16 @@ class NaviToTeslaReceiver : BroadcastReceiver() {
             val action = intent.action
             AnalysisUtil.log("receive NaviToTesla broadcast: $action")
             val applicationContext = context.applicationContext
-            if (action.equals("navitotesla.ENABLE", ignoreCase = true)) {
-                EnablerUtil.setAppEnabled(true)
-                AnalysisUtil.makeToast(
-                    applicationContext,
-                    applicationContext.getString(R.string.enabledApp),
-                )
-            } else if (action.equals("navitotesla.DISABLE", ignoreCase = true)) {
-                EnablerUtil.setAppEnabled(false)
-                AnalysisUtil.makeToast(
-                    applicationContext,
-                    applicationContext.getString(R.string.disabledApp),
-                )
+            when {
+                action.equals("navitotesla.ENABLE", ignoreCase = true) -> {
+                    EnablerUtil.setAppEnabled(true)
+                    AnalysisUtil.makeToast(applicationContext, applicationContext.getString(R.string.enabledApp))
+                }
+
+                action.equals("navitotesla.DISABLE", ignoreCase = true) -> {
+                    EnablerUtil.setAppEnabled(false)
+                    AnalysisUtil.makeToast(applicationContext, applicationContext.getString(R.string.disabledApp))
+                }
             }
         }
     }

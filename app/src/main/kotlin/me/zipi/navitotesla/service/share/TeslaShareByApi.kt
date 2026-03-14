@@ -38,10 +38,7 @@ class TeslaShareByApi(
         val response: Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> =
             appRepository.teslaApi.share(vehicleId, ShareRequest(address))
 
-        var result: TeslaApiResponse.ObjectType<TeslaApiResponse.Result>? = null
-        if (response.isSuccessful) {
-            result = response.body()
-        }
+        val result = response.body().takeIf { response.isSuccessful }
         if (result != null && result.error == null && (result.response?.result == true)) {
             AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationSuccess) + "\n" + address)
             AnalysisUtil.log("send_success")
@@ -57,20 +54,14 @@ class TeslaShareByApi(
             }
             if (!response.isSuccessful) {
                 AnalysisUtil.log("Http response code: " + response.code())
-                if (response.errorBody() != null) {
-                    AnalysisUtil.log("Http error response: " + response.errorBody()!!.string())
-                }
+                response.errorBody()?.string()?.let { AnalysisUtil.log("Http error response: $it") }
             }
-            val exception: RuntimeException
-            if (response.code() == 401) {
-                var errorString = ""
-                if (response.errorBody() != null) {
-                    errorString = response.errorBody()!!.string()
+            val exception: RuntimeException =
+                if (response.code() == 401) {
+                    ForbiddenException(401, response.errorBody()?.string() ?: "")
+                } else {
+                    RuntimeException("Send address fail")
                 }
-                exception = ForbiddenException(401, errorString)
-            } else {
-                exception = RuntimeException("Send address fail")
-            }
             AnalysisUtil.logEvent("share_by_api_fail", Bundle())
             AnalysisUtil.recordException(exception)
             throw exception
