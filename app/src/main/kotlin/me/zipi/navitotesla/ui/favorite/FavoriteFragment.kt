@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentFavoriteBinding
 import me.zipi.navitotesla.db.AppDatabase
-import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.ui.favorite.PoiAddressRecyclerAdapter.OnFavoriteButtonClicked
 import me.zipi.navitotesla.util.AnalysisUtil

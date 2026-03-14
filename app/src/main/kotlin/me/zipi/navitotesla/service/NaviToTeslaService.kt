@@ -36,10 +36,9 @@ class NaviToTeslaService(
     context: Context,
 ) {
     private val context = context.applicationContext
-    private val pattern = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
     private val appRepository = AppRepository.getInstance()
 
-    fun isAddress(text: String): Boolean = pattern.matcher(text).find()
+    fun isAddress(text: String): Boolean = ADDRESS_PATTERN.matcher(text).find()
 
     private fun makeToast(text: String) {
         try {
@@ -304,5 +303,9 @@ class NaviToTeslaService(
 
     suspend fun clearPoiCache() {
         appRepository.clearAllPoi()
+    }
+
+    companion object {
+        private val ADDRESS_PATTERN = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
     }
 }
