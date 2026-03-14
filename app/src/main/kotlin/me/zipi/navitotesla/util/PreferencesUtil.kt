@@ -3,6 +3,7 @@ package me.zipi.navitotesla.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +11,6 @@ import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.model.Token
 import java.io.IOException
 import java.security.GeneralSecurityException
-import java.util.Calendar
 
 object PreferencesUtil {
     private lateinit var instance: SharedPreferences
@@ -41,7 +41,7 @@ object PreferencesUtil {
     suspend fun remove(key: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit().remove(key).apply()
+                instance.edit { remove(key) }
                 true
             } catch (e: Exception) {
                 Log.w(PreferencesUtil::class.java.name, "remove  error", e)
@@ -53,7 +53,7 @@ object PreferencesUtil {
     suspend fun clear() {
         withContext(Dispatchers.IO) {
             try {
-                instance.edit().clear().apply()
+                instance.edit { clear() }
             } catch (e: Exception) {
                 Log.w(PreferencesUtil::class.java.name, "clear error", e)
                 AnalysisUtil.recordException(e)
@@ -67,7 +67,7 @@ object PreferencesUtil {
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit().putBoolean(key, value).apply()
+                instance.edit { putBoolean(key, value) }
                 true
             } catch (e: Exception) {
                 Log.w(PreferencesUtil::class.java.name, "put boolean error", e)
@@ -82,7 +82,7 @@ object PreferencesUtil {
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit().putLong(key, value).apply()
+                instance.edit { putLong(key, value) }
                 true
             } catch (e: Exception) {
                 Log.w(PreferencesUtil::class.java.name, "put long error", e)
@@ -97,7 +97,7 @@ object PreferencesUtil {
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit().putString(key, value).apply()
+                instance.edit { putString(key, value) }
                 true
             } catch (e: Exception) {
                 Log.w(PreferencesUtil::class.java.name, "put string error", e)
@@ -191,7 +191,7 @@ object PreferencesUtil {
     suspend fun saveToken(token: Token) {
         put("refreshToken", token.refreshToken)
         put("accessToken", token.accessToken)
-        put("tokenUpdated", Calendar.getInstance().time.time)
+        put("tokenUpdated", System.currentTimeMillis())
     }
 
     suspend fun expireToken() {

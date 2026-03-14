@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder
+import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppUpdaterUtil
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -26,14 +27,14 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
             if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED && event.eventType != AccessibilityEvent.TYPE_VIEW_SELECTED) {
                 return
             }
-            if (event.packageName == "com.nhn.android.nmap") {
+            if (PoiFinderFactory.isNaverMap(event.packageName.toString())) {
                 val window = rootInActiveWindow ?: return
                 // route_search_bar: Compose 기반 경로 검색 바 (출발지, 목적지 순서로 TextView 포함)
                 val searchBarNodes = window.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/route_search_bar")
-                val texts = mutableListOf<String>()
-                searchBarNodes?.forEach { node -> collectTexts(node, texts) }
-                // 마지막 텍스트가 목적지
-                texts.lastOrNull()?.let { NaverPoiFinder.addDestination(it) }
+                searchBarNodes
+                    ?.flatMap { collectTexts(it) }
+                    ?.lastOrNull()
+                    ?.let { NaverPoiFinder.addDestination(it) }
             }
         } catch (e: Exception) {
             AnalysisUtil.warn("accessibility error: " + e.message)
@@ -43,15 +44,13 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    private fun collectTexts(
-        node: AccessibilityNodeInfo,
-        result: MutableList<String>,
-    ) {
-        val text = node.text?.toString()
-        if (!text.isNullOrBlank()) result.add(text)
+    private fun collectTexts(node: AccessibilityNodeInfo): List<String> {
+        val result = mutableListOf<String>()
+        node.text?.toString()?.takeIf { it.isNotBlank() }?.let { result.add(it) }
         for (i in 0 until node.childCount) {
-            node.getChild(i)?.let { collectTexts(it, result) }
+            node.getChild(i)?.let { result.addAll(collectTexts(it)) }
         }
+        return result
     }
 
     companion object {
@@ -69,7 +68,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         ) {
             CoroutineScope(Dispatchers.Main).launch {
                 // possible package
-                if (!packageName.equals("com.nhn.android.nmap", ignoreCase = true)) {
+                if (!PoiFinderFactory.isNaverMap(packageName)) {
                     return@launch
                 }
                 if (isAccessibilityServiceEnabled(context)) {

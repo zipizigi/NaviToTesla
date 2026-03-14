@@ -65,11 +65,6 @@ android {
 //            ext.enableCrashlytics = false
         }
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_1_8
-        }
-    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -80,6 +75,12 @@ android {
         resValues = true
     }
     namespace = "me.zipi.navitotesla"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+    }
 }
 
 dependencies {

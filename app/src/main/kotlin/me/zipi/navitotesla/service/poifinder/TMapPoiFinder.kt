@@ -34,7 +34,7 @@ class TMapPoiFinder : PoiFinder {
         val response = tMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
             Log.w(this.javaClass.name, "Tmap api error: " + response.errorBody())
-            AnalysisUtil.log("Tmap api error: " + response.errorBody())
+            AnalysisUtil.log("Tmap api error: " + response.errorBody()?.string().orEmpty())
         }
         if (response.isSuccessful && response.body()?.searchPoiInfo != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
