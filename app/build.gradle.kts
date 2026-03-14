@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("android")
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.gms.service)
@@ -77,6 +76,8 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
+        resValues = true
     }
     namespace = "me.zipi.navitotesla"
 }
