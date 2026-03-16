@@ -1,6 +1,7 @@
 package me.zipi.navitotesla.service.poifinder
 
 import android.util.Log
+import me.zipi.navitotesla.api.NaverFusionSearchApi
 import me.zipi.navitotesla.api.NaverMapApi
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -13,6 +14,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 /**
  * naver navi poi finder
@@ -26,14 +28,23 @@ class NaverPoiFinder : PoiFinder {
 
     @Throws(IOException::class)
     override suspend fun listPoiAddress(poiName: String): List<Poi> {
+        val ratio = RemoteConfigUtil.getString("naverApiRatio").toIntOrNull() ?: 100
+        return if (Random.nextInt(100) < ratio) {
+            listPoiAddressViaOpenApi(poiName)
+        } else {
+            listPoiAddressViaFusionSearch(poiName)
+        }
+    }
+
+    private suspend fun listPoiAddressViaOpenApi(poiName: String): List<Poi> {
         val poiList = mutableListOf<Poi>()
         val response = naverMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
-            Log.w(this.javaClass.name, "naver api error: " + response.errorBody())
+            Log.w(this.javaClass.name, "naver api error: " + response.errorBody()?.string().orEmpty())
             AnalysisUtil.log("naver api error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.items?.let { items ->
-            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
+            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName")
             items.forEach { place ->
                 poiList.add(
                     Poi(
@@ -42,6 +53,31 @@ class NaverPoiFinder : PoiFinder {
                         address = place.address,
                         longitude = place.longitude,
                         latitude = place.latitude,
+                    ),
+                )
+            }
+        }
+        ResponseCloser.closeAll(response)
+        return poiList
+    }
+
+    private suspend fun listPoiAddressViaFusionSearch(poiName: String): List<Poi> {
+        val poiList = mutableListOf<Poi>()
+        val response = naverFusionSearchApi.search(poiName)
+        if (!response.isSuccessful || response.body() == null) {
+            Log.w(this.javaClass.name, "naver fusion search error: " + response.errorBody()?.string().orEmpty())
+            AnalysisUtil.log("naver fusion search error: " + response.errorBody()?.string().orEmpty())
+        }
+        response.body()?.items?.let { items ->
+            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName")
+            items.forEach { place ->
+                poiList.add(
+                    Poi(
+                        poiName = place.name,
+                        roadAddress = place.getRoadAddressName(withLocalName),
+                        address = place.address,
+                        longitude = place.longitude?.toString(),
+                        latitude = place.latitude?.toString(),
                     ),
                 )
             }
@@ -61,16 +97,22 @@ class NaverPoiFinder : PoiFinder {
     }
 
     companion object {
+        private val httpClient =
+            OkHttpClient
+                .Builder()
+                .connectTimeout(120, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .addInterceptor(HttpRetryInterceptor(10))
+                .build()
+
         private val naverMapApi =
             Retrofit
                 .Builder()
                 .baseUrl("https://openapi.naver.com")
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(
-                    OkHttpClient
-                        .Builder()
-                        .connectTimeout(120, TimeUnit.SECONDS)
-                        .readTimeout(120, TimeUnit.SECONDS)
+                    httpClient
+                        .newBuilder()
                         .addInterceptor(
                             Interceptor { chain: Interceptor.Chain ->
                                 chain.proceed(
@@ -82,10 +124,31 @@ class NaverPoiFinder : PoiFinder {
                                         .build(),
                                 )
                             },
-                        ).addInterceptor(HttpRetryInterceptor(10))
-                        .build(),
+                        ).build(),
                 ).build()
                 .create(NaverMapApi::class.java)
+
+        private val naverFusionSearchApi =
+            Retrofit
+                .Builder()
+                .baseUrl("https://svc-api.map.naver.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(
+                    httpClient
+                        .newBuilder()
+                        .addInterceptor(
+                            Interceptor { chain: Interceptor.Chain ->
+                                chain.proceed(
+                                    chain
+                                        .request()
+                                        .newBuilder()
+                                        .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 13)")
+                                        .build(),
+                                )
+                            },
+                        ).build(),
+                ).build()
+                .create(NaverFusionSearchApi::class.java)
 
         // 접근성 도구로 판단한 목적지 임시 저장
         private var destination: String? = null
