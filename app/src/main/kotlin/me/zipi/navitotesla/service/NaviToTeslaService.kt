@@ -97,7 +97,9 @@ class NaviToTeslaService(
         } catch (e: DuplicatePoiException) {
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)
-            val duplicatedToast = { makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName)) }
+            val duplicatedToast = {
+                makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName))
+            }
             val selectionEnabled = PreferencesUtil.getBoolean("duplicatePoiSelection", true)
             if (selectionEnabled && e.candidates.isNotEmpty()) {
                 val shown =
