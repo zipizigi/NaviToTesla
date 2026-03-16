@@ -16,4 +16,8 @@
         <key>naverClientSecret</key>
         <value>default</value>
     </entry>
+    <entry>
+        <key>naverApiRatio</key>
+        <value>100</value>
+    </entry>
 </defaultsMap><!-- END xml_defaults -->
