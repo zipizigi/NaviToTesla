@@ -2,18 +2,18 @@
 <defaultsMap>
     <entry>
         <key>kakaoApiKey</key>
-        <value>paste here default kakao api key</value>
+        <value>default</value>
     </entry>
     <entry>
         <key>tmapApiKey</key>
-        <value>paste here default tmap api key</value>
+        <value>default</value>
     </entry>
     <entry>
         <key>naverClientId</key>
-        <value>paste here default</value>
+        <value>default</value>
     </entry>
     <entry>
         <key>naverClientSecret</key>
-        <value>paste here default</value>
+        <value>default</value>
     </entry>
 </defaultsMap><!-- END xml_defaults -->
