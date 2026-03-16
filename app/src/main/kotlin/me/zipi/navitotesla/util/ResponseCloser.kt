@@ -11,8 +11,8 @@ object ResponseCloser {
 
     fun close(response: Response<*>) {
         try {
-            response.raw().body?.close()
-        } catch (ignore: IllegalStateException) {
+            response.raw().body.close()
+        } catch (_: IllegalStateException) {
         } catch (e: Exception) {
             Log.w(ResponseCloser::class.java.name, "Http response close error", e)
             AnalysisUtil.log("Http response close error")

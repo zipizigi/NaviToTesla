@@ -17,6 +17,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import androidx.work.WorkerParameters
+import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
@@ -26,16 +27,17 @@ class ShareWorker(
     context: Context,
     workerParams: WorkerParameters,
 ) : CoroutineWorker(context, workerParams) {
-    private val naviToTeslaService: NaviToTeslaService
+    private val naviToTeslaService: NaviToTeslaService? =
+        if (AppRepository.isInitialized()) NaviToTeslaService(context) else null
     private val channelId = "location_share_channel"
-
-    init {
-        naviToTeslaService = NaviToTeslaService(context)
-    }
 
     override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(1, createNotification())
 
     override suspend fun doWork(): Result {
+        if (naviToTeslaService == null) {
+            AnalysisUtil.log("ShareWorker: AppRepository not initialized, skipping")
+            return Result.failure()
+        }
         AnalysisUtil.log("Start share worker")
         val inputData = inputData
         val packageName = inputData.getString("packageName")!!
@@ -72,7 +74,7 @@ class ShareWorker(
         if (packageName != null) {
             val poiFinder = PoiFinderFactory.getPoiFinder(packageName)
             address = poiFinder.parseDestination(notificationText ?: "")
-            if (!naviToTeslaService.isAddress(address)) {
+            if (naviToTeslaService != null && !naviToTeslaService.isAddress(address)) {
                 poiName = address
             }
         }
