@@ -24,6 +24,7 @@ import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.service.share.TeslaShareByApi
 import me.zipi.navitotesla.service.share.TeslaShareByApp
+import me.zipi.navitotesla.ui.poi.PoiSelectionOverlay
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.EnablerUtil
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -96,7 +97,23 @@ class NaviToTeslaService(
         } catch (e: DuplicatePoiException) {
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)
-            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName))
+            val duplicatedToast = {
+                makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName))
+            }
+            val selectionEnabled = PreferencesUtil.getBoolean("duplicatePoiSelection", true)
+            if (selectionEnabled && e.candidates.isNotEmpty()) {
+                val shown =
+                    PoiSelectionOverlay.show(context, e.candidates) {
+                        AnalysisUtil.log("duplicate poi selection dismissed: " + e.poiName)
+                        duplicatedToast()
+                    }
+                if (!shown) {
+                    AnalysisUtil.log("overlay permission denied for: " + e.poiName)
+                    duplicatedToast()
+                }
+            } else {
+                duplicatedToast()
+            }
         } catch (e: NotSupportedNaviException) {
             AnalysisUtil.logEvent("unsupported_navi", eventParam)
             AnalysisUtil.recordException(e)

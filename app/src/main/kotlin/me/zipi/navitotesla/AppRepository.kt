@@ -137,6 +137,8 @@ class AppRepository private constructor(
             }
         }
 
+        fun isInitialized(): Boolean = this::instance.isInitialized
+
         fun getInstance(): AppRepository = instance
     }
 }

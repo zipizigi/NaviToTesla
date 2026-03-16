@@ -89,4 +89,13 @@
     <string name="disableAccessibility">Disable accessibility services. Navi to Tesla is not available on certain navigations.\nYou can disable the Navi to Tesla accessibility service in your Android settings.</string>
     <string name="guidePermissionDeny">You can grant permission again in Android\'s settings.</string>
     <string name="guideGrantNotificationPermission">By adding notification permissions, you can receive related notifications when Navi to Tesla operates.</string>
+    <string name="duplicatePoiSelection">Duplicate destination</string>
+    <string name="guideDuplicatePoiSelection">If there are multiple destinations, select how to handle them. If you select Show popup, you can select the address directly.</string>
+    <string name="duplicatePoiIgnoreOption">Ignore</string>
+    <string name="duplicatePoiShowPopup">Show popup</string>
+    <string name="selectDestinationTitle">Select destination</string>
+    <string name="overlaySelectAddressTitle">Select address to send : %s</string>
+    <string name="overlayClose">Close</string>
+    <string name="overlayCloseWithTimer">Close (%d sec)</string>
+    <string name="guideGrantOverlayPermissionForSelection">To display the destination selection popup, the \"Display over other apps\" permission is required.\nPlease grant the permission.</string>
 </resources>

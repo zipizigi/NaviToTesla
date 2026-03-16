@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -30,6 +31,7 @@ import me.zipi.navitotesla.databinding.FragmentSettingsBinding
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.ui.setting.ConditionRecyclerAdapter.OnDeleteButtonClicked
 import me.zipi.navitotesla.util.EnablerUtil
+import me.zipi.navitotesla.util.PreferencesUtil
 
 class SettingFragment :
     Fragment(),
@@ -38,6 +40,7 @@ class SettingFragment :
     private lateinit var settingViewModel: SettingViewModel
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
+    private var isDuplicatePoiRadioInitializing = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,6 +54,7 @@ class SettingFragment :
         binding.btnConditionHelp.setOnClickListener(this)
         binding.btnAppEnableHelp.setOnClickListener(this)
         binding.btnAccEnableHelp.setOnClickListener(this)
+        binding.btnDuplicatePoiHelp.setOnClickListener(this)
         binding.radioGroupAppEnable.setOnCheckedChangeListener(this)
         binding.radioGroupConditionEnable.setOnCheckedChangeListener(this)
         binding.radioGroupAccEnable.setOnCheckedChangeListener(this)
@@ -83,6 +87,7 @@ class SettingFragment :
         binding.recylerBluetooth.layoutManager = LinearLayoutManager(context)
         settingViewModel.bluetoothConditions
             .observe(viewLifecycleOwner) { items -> conditionRecyclerAdapter.setItems(items) }
+        binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
         return root
     }
 
@@ -145,6 +150,18 @@ class SettingFragment :
                     )
                 }
             }
+            launch {
+                context?.run {
+                    val enabled = PreferencesUtil.getBoolean("duplicatePoiSelection", true)
+                    withContext(Dispatchers.Main) {
+                        isDuplicatePoiRadioInitializing = true
+                        binding.radioGroupDuplicatePoiSelection.check(
+                            if (enabled) binding.radioDuplicatePoiShowPopup.id else binding.radioDuplicatePoiIgnore.id,
+                        )
+                        isDuplicatePoiRadioInitializing = false
+                    }
+                }
+            }
         }
 
     override fun onDestroyView() {
@@ -162,6 +179,17 @@ class SettingFragment :
                     .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.guideAppEnable))
+                    .setCancelable(true)
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                    .create()
+                    .show()
+            }
+
+            binding.btnDuplicatePoiHelp.id -> {
+                AlertDialog
+                    .Builder(requireActivity())
+                    .setTitle(getString(R.string.guide))
+                    .setMessage(getString(R.string.guideDuplicatePoiSelection))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .create()
@@ -321,6 +349,21 @@ class SettingFragment :
                     }.create()
                     .show()
             }
+        } else if (checkedId == R.id.radioDuplicatePoiShowPopup) {
+            if (!isDuplicatePoiRadioInitializing) {
+                if (context != null && !Settings.canDrawOverlays(requireContext())) {
+                    showOverlayPermissionDialog()
+                }
+                lifecycleScope.launch {
+                    PreferencesUtil.put("duplicatePoiSelection", true)
+                }
+            }
+        } else if (checkedId == R.id.radioDuplicatePoiIgnore) {
+            if (!isDuplicatePoiRadioInitializing) {
+                lifecycleScope.launch {
+                    PreferencesUtil.put("duplicatePoiSelection", false)
+                }
+            }
         } else if (checkedId == R.id.radioAccDisable) {
             if (activity != null &&
                 NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
@@ -361,5 +404,36 @@ class SettingFragment :
         } catch (e: ActivityNotFoundException) {
             startActivity(Intent(Settings.ACTION_SETTINGS))
         }
+    }
+
+    private fun showOverlayPermissionDialog() {
+        if (activity == null) return
+        AlertDialog
+            .Builder(requireActivity())
+            .setTitle(getString(R.string.grantPermission))
+            .setMessage(getString(R.string.guideGrantOverlayPermissionForSelection))
+            .setCancelable(true)
+            .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int ->
+                try {
+                    startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${requireContext().packageName}"),
+                        ),
+                    )
+                } catch (_: ActivityNotFoundException) {
+                    startActivity(Intent(Settings.ACTION_SETTINGS))
+                }
+            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
+                lifecycleScope.launch {
+                    PreferencesUtil.put("duplicatePoiSelection", false)
+                    withContext(Dispatchers.Main) {
+                        isDuplicatePoiRadioInitializing = true
+                        binding.radioGroupDuplicatePoiSelection.check(binding.radioDuplicatePoiIgnore.id)
+                        isDuplicatePoiRadioInitializing = false
+                    }
+                }
+            }.create()
+            .show()
     }
 }
