@@ -12,6 +12,31 @@
         android:layout_height="wrap_content"
         android:paddingBottom="80dp">
 
+        <!-- Accessibility Service -->
+        <TextView
+            android:id="@+id/textAccEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/accessibilityService"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btnAccEnableHelp"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/ic_baseline_help_outline_24"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintStart_toEndOf="@+id/textAccEnable"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <RadioGroup
             android:id="@+id/radioGroupAccEnable"
             android:layout_width="wrap_content"
@@ -37,6 +62,7 @@
 
         </RadioGroup>
 
+        <!-- App Enable -->
         <TextView
             android:id="@+id/textAppEnable"
             android:layout_width="wrap_content"
@@ -49,18 +75,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/radioGroupAccEnable" />
 
-        <TextView
-            android:id="@+id/textAccEnable"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="24dp"
-            android:text="@string/accessibilityService"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <Button
             android:id="@+id/btnAppEnableHelp"
             style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
@@ -72,18 +86,6 @@
             android:textColor="@color/design_default_color_primary"
             app:layout_constraintStart_toEndOf="@+id/textAppEnable"
             app:layout_constraintTop_toBottomOf="@+id/radioGroupAccEnable" />
-
-        <Button
-            android:id="@+id/btnAccEnableHelp"
-            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="22dp"
-            android:background="@drawable/ic_baseline_help_outline_24"
-            android:textColor="@color/design_default_color_primary"
-            app:layout_constraintStart_toEndOf="@+id/textAccEnable"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <RadioGroup
             android:id="@+id/radioGroupAppEnable"
@@ -110,6 +112,81 @@
 
         </RadioGroup>
 
+        <!-- Duplicate POI Selection (above Condition) -->
+        <TextView
+            android:id="@+id/textDuplicatePoiSelection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/duplicatePoiSelection"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable" />
+
+        <Button
+            android:id="@+id/btnDuplicatePoiHelp"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/ic_baseline_help_outline_24"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintStart_toEndOf="@+id/textDuplicatePoiSelection"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupDuplicatePoiSelection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnDuplicatePoiHelp"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable">
+
+            <RadioButton
+                android:id="@+id/radioDuplicatePoiShowPopup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/duplicatePoiShowPopup" />
+
+            <RadioButton
+                android:id="@+id/radioDuplicatePoiIgnore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/duplicatePoiIgnoreOption" />
+
+        </RadioGroup>
+
+        <!-- Condition -->
+        <TextView
+            android:id="@+id/textCondition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/condition"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupDuplicatePoiSelection" />
+
+        <Button
+            android:id="@+id/btnConditionHelp"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/ic_baseline_help_outline_24"
+            android:textColor="@color/design_default_color_primary"
+            app:layout_constraintStart_toEndOf="@+id/textCondition"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupDuplicatePoiSelection" />
+
         <RadioGroup
             android:id="@+id/radioGroupConditionEnable"
             android:layout_width="wrap_content"
@@ -119,7 +196,7 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnConditionHelp"
-            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable">
+            app:layout_constraintTop_toBottomOf="@+id/radioGroupDuplicatePoiSelection">
 
             <RadioButton
                 android:id="@+id/radioConditionEnable"
@@ -134,30 +211,8 @@
                 android:text="@string/disable" />
 
         </RadioGroup>
-        <TextView
-            android:id="@+id/textCondition"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="48dp"
-            android:layout_marginTop="24dp"
-            android:text="@string/condition"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable" />
 
-        <Button
-            android:id="@+id/btnConditionHelp"
-            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="22dp"
-            android:background="@drawable/ic_baseline_help_outline_24"
-            android:textColor="@color/design_default_color_primary"
-            app:layout_constraintStart_toEndOf="@+id/textCondition"
-            app:layout_constraintTop_toBottomOf="@+id/radioGroupAppEnable" />
-
+        <!-- Bluetooth -->
         <TextView
             android:id="@+id/txtBluetooth"
             android:layout_width="wrap_content"

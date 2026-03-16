@@ -24,7 +24,7 @@ class HttpRetryInterceptor(
                 )
                 AnalysisUtil.info(String.format(Locale.getDefault(), "retry sleep... %dms", sleep))
             }
-        } catch (ignore: Exception) {
+        } catch (_: Exception) {
         }
     }
 
