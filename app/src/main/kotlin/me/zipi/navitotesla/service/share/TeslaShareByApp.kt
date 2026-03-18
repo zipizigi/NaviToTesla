@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -35,10 +34,10 @@ class TeslaShareByApp(
         }
         try {
             context.startActivity(intent)
-            AnalysisUtil.logEvent("share_by_app_success", Bundle())
+            AnalysisUtil.logEvent("share_by_app_success", eventParam(poi))
         } catch (e: ActivityNotFoundException) {
             AnalysisUtil.log("Tesla app is not installed")
-            AnalysisUtil.logEvent("share_by_app_fail", Bundle())
+            AnalysisUtil.logEvent("share_by_app_fail", eventParam(poi))
         }
     }
 }
