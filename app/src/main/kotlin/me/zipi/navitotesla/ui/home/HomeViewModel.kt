@@ -21,6 +21,8 @@ class HomeViewModel : ViewModel() {
 
     val isInstalledTeslaApp = MutableLiveData(false)
 
+    var lastFetchedToken: String = ""
+
     fun clearObserve(owner: LifecycleOwner?) {
         vehicleListLiveData.removeObservers(owner!!)
         tokenLiveData.removeObservers(owner)
