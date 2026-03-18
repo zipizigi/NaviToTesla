@@ -184,18 +184,10 @@ class NaviToTeslaService(
             AnalysisUtil.logEvent("address_ignore_or_not_found", eventParam)
             throw IgnorePoiException(packageName)
         }
-        val poiAddressEntity = appRepository.getPoiSync(poiName)
-        // 10 days cache
+        val poiAddressEntity = appRepository.getPoiSync(poiName, packageName)
         val poi: Poi
         if (poiAddressEntity != null && !poiAddressEntity.isExpire) {
-            poi =
-                Poi(
-                    poiName = poiAddressEntity.poi,
-                    roadAddress = poiAddressEntity.address,
-                    address = poiAddressEntity.address,
-                    longitude = poiAddressEntity.longitude,
-                    latitude = poiAddressEntity.latitude,
-                )
+            poi = poiAddressEntity.toPoi().copy(packageName = packageName)
             AnalysisUtil.logEvent("address_parse_cache", eventParam)
         } else if (isAddress(poiName)) {
             poi =
@@ -205,10 +197,11 @@ class NaviToTeslaService(
                     address = poiName,
                     longitude = null,
                     latitude = null,
+                    packageName = packageName,
                 )
             AnalysisUtil.logEvent("address_direct", eventParam)
         } else {
-            poi = poiFinder.findPoi(poiName)
+            poi = poiFinder.findPoi(poiName).copy(packageName = packageName)
             AnalysisUtil.logEvent("address_parse_api", eventParam)
             appRepository.savePoi(poi, false)
         }
