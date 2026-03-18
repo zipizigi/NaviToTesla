@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
@@ -31,7 +30,6 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import java.lang.ref.WeakReference
 
 object PoiSelectionOverlay {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var windowManager: WindowManager? = null
 
     @SuppressLint("StaticFieldLeak")
@@ -120,7 +118,7 @@ object PoiSelectionOverlay {
                     dismissCallback = null
                     dismiss()
                     if (AppRepository.isInitialized()) {
-                        scope.launch {
+                        CoroutineScope(Dispatchers.IO).launch {
                             AppRepository.getInstance().savePoi(selectedPoi, false)
                             NaviToTeslaService(appContext).share(selectedPoi)
                         }

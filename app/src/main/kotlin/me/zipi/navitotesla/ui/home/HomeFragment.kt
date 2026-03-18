@@ -27,11 +27,11 @@ import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.gun0912.tedpermission.coroutine.TedPermission
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -101,7 +101,7 @@ class HomeFragment :
         binding.txtVersion.setOnClickListener(this)
         binding.txtVersion.setOnLongClickListener(this)
 
-        CoroutineScope(Dispatchers.Default).launch {
+        lifecycleScope.launch(Dispatchers.Default) {
             permissionGrantedCheck()
         }
         return root
@@ -111,7 +111,7 @@ class HomeFragment :
         super.onResume()
         accessibilityGrantedCheck()
         permissionNotificationListenerGrantedCheck()
-        CoroutineScope(Dispatchers.Default).launch {
+        lifecycleScope.launch(Dispatchers.Default) {
             launch { updateVersion() }
             launch { updateToken() }
             launch { updateLatestVersion() }
@@ -137,7 +137,7 @@ class HomeFragment :
         if (activity == null) {
             return false
         }
-        CoroutineScope(Dispatchers.Default).launch {
+        lifecycleScope.launch(Dispatchers.Default) {
             if (view.id == binding.txtVersion.id && AnalysisUtil.isWritableLog) {
                 var size = (AnalysisUtil.logFileSize / 1024.0).toInt()
                 var type = "KB"
@@ -303,21 +303,21 @@ class HomeFragment :
             val oldRefreshToken = binding.txtRefreshToken.text.toString()
             binding.txtRefreshToken.setText(token.refreshToken)
             binding.txtAccessToken.text = token.accessToken
-            if (oldRefreshToken == token.refreshToken || homeViewModel.vehicleListLiveData.value?.size == 0) {
+            if (oldRefreshToken != token.refreshToken || homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
                 homeViewModel.refreshToken.postValue(token.refreshToken)
             } else {
-                Log.i(this.javaClass.name, "disable post value, refresh token is same")
+                Log.i(this.javaClass.name, "skip refresh token fetch, token unchanged and vehicles loaded")
             }
         }
     }
 
     private fun onTxtVersionClicked() {
-        CoroutineScope(Dispatchers.Default).launch { AppUpdaterUtil.dialog(activity, true) }
+        lifecycleScope.launch(Dispatchers.Default) { AppUpdaterUtil.dialog(activity, true) }
     }
 
     private fun onBtnPoiCacheClearClick() {
         binding.btnPoiCacheClear.isEnabled = false
-        CoroutineScope(Dispatchers.Default).launch {
+        lifecycleScope.launch(Dispatchers.Default) {
             if (context == null || activity == null) {
                 return@launch
             }
@@ -353,7 +353,7 @@ class HomeFragment :
     }
 
     private fun onBtnTokenClearClick() {
-        CoroutineScope(Dispatchers.Default).launch {
+        lifecycleScope.launch(Dispatchers.Default) {
             homeViewModel.vehicleListLiveData.postValue(mutableListOf())
             homeViewModel.refreshToken.postValue("")
             if (context != null) {
@@ -391,7 +391,7 @@ class HomeFragment :
             }
         }
         val context: Activity = requireActivity()
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val token = naviToTeslaService.refreshToken(refreshToken)
                 if (homeViewModel.tokenLiveData.value != token) {
@@ -450,7 +450,7 @@ class HomeFragment :
     ) {
         if (homeViewModel.vehicleListLiveData.value != null) {
             val vid: Long = homeViewModel.vehicleListLiveData.value!![i].id
-            naviToTeslaService.saveVehicleId(vid)
+            lifecycleScope.launch(Dispatchers.IO) { naviToTeslaService.saveVehicleId(vid) }
         }
     }
 
@@ -602,42 +602,35 @@ class HomeFragment :
         }
     }
 
-    @Synchronized
     private fun overlayPermissionGrantedCheck() {
-        if (activity != null) {
-            requireActivity().runOnUiThread {
-                if (context != null &&
-                    !Settings.canDrawOverlays(
-                        context,
-                    ) &&
-                    (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
-                ) {
-                    permissionAlertDialog =
-                        AlertDialog
-                            .Builder(requireContext())
-                            .setTitle(getString(R.string.grantPermission))
-                            .setMessage(getString(R.string.guideGrantOverlayPermission))
-                            .setPositiveButton(
-                                getString(R.string.confirm),
-                            ) { _: DialogInterface?, _: Int ->
-                                if (permissionAlertDialog != null) {
-                                    permissionAlertDialog = null
-                                }
-                                startActivity(
-                                    Intent(
-                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                        Uri.parse("package:" + requireContext().packageName),
-                                    ),
-                                )
-                            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
-                                if (permissionAlertDialog != null) {
-                                    permissionAlertDialog = null
-                                }
-                                binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-                            }.setCancelable(false)
-                            .show()
-                }
-            }
+        if (context != null &&
+            !Settings.canDrawOverlays(context) &&
+            (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
+        ) {
+            permissionAlertDialog =
+                AlertDialog
+                    .Builder(requireContext())
+                    .setTitle(getString(R.string.grantPermission))
+                    .setMessage(getString(R.string.guideGrantOverlayPermission))
+                    .setPositiveButton(
+                        getString(R.string.confirm),
+                    ) { _: DialogInterface?, _: Int ->
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                ("package:" + requireContext().packageName).toUri(),
+                            ),
+                        )
+                    }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                        binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
+                    }.setCancelable(false)
+                    .show()
         }
     }
 

@@ -8,6 +8,8 @@ import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.ShareWorker
 import me.zipi.navitotesla.background.VersionCheckWorker
@@ -19,10 +21,16 @@ import me.zipi.navitotesla.util.RemoteConfigUtil
 
 class NotificationListener : NotificationListenerService() {
     private lateinit var naviToTeslaService: NaviToTeslaService
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
         naviToTeslaService = NaviToTeslaService(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
@@ -33,7 +41,7 @@ class NotificationListener : NotificationListenerService() {
                 "onNotificationRemoved ~ " +
                     " packageName: " + sbn.packageName,
             )
-            naviToTeslaService.notificationClear()
+            serviceScope.launch { naviToTeslaService.notificationClear() }
             val param = Bundle()
             param.putString("package", sbn.packageName)
             AnalysisUtil.logEvent("notification_removed", param)
@@ -41,9 +49,9 @@ class NotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        CoroutineScope(Dispatchers.Main).launch {
-            super.onNotificationPosted(sbn)
-            if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
+        super.onNotificationPosted(sbn)
+        if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
+            serviceScope.launch {
                 val extras = sbn.notification.extras
                 val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
                 val text = extras.getString(Notification.EXTRA_TEXT) ?: ""

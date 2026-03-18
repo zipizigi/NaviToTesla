@@ -7,9 +7,6 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.perf.metrics.AddTrace
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.exception.DuplicatePoiException
@@ -57,10 +54,9 @@ class NaviToTeslaService(
     /**
      * 안내 종료
      */
-    fun notificationClear() =
-        CoroutineScope(Dispatchers.IO).launch {
-            PreferencesUtil.put("lastAddress", "")
-        }
+    suspend fun notificationClear() {
+        PreferencesUtil.put("lastAddress", "")
+    }
 
     @AddTrace(name = "share")
     suspend fun share(
@@ -303,10 +299,8 @@ class NaviToTeslaService(
         return vehicles
     }
 
-    fun saveVehicleId(id: Long) {
-        CoroutineScope(Dispatchers.IO).launch {
-            PreferencesUtil.put("vehicleId", id)
-        }
+    suspend fun saveVehicleId(id: Long) {
+        PreferencesUtil.put("vehicleId", id)
     }
 
     suspend fun loadVehicleId(): Long = PreferencesUtil.getLong("vehicleId", 0L)
