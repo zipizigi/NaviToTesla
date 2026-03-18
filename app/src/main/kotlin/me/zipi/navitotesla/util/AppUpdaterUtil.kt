@@ -15,6 +15,7 @@ import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
+import androidx.core.net.toUri
 import com.dcastalia.localappupdate.DownloadApk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -167,7 +168,7 @@ object AppUpdaterUtil {
                     context.startActivity(
                         Intent(
                             Intent.ACTION_VIEW,
-                            Uri.parse("market://details?id=$appPackageName"),
+                            "market://details?id=$appPackageName".toUri(),
                         ),
                     )
                     clearDoNotShow()

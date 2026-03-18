@@ -27,6 +27,7 @@ import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -620,7 +621,7 @@ class HomeFragment :
                         startActivity(
                             Intent(
                                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:" + requireContext().packageName),
+                                ("package:" + requireContext().packageName).toUri(),
                             ),
                         )
                     }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->

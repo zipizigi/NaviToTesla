@@ -30,17 +30,20 @@ class BluetoothReceiver : BroadcastReceiver() {
                 intent.extras?.getParcelable(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
             } else {
                 @Suppress("DEPRECATION")
-                intent.extras?.getParcelable<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                intent.extras?.getParcelable(BluetoothDevice.EXTRA_DEVICE)
             } ?: return
 
         AnalysisUtil.log("receive bluetooth broadcast: ${intent.action} - ${device.name}")
         when (intent.action) {
-            BluetoothDevice.ACTION_ACL_CONNECTED ->
+            BluetoothDevice.ACTION_ACL_CONNECTED -> {
                 EnablerUtil.addConnectedBluetooth(
                     device.name,
                 )
+            }
 
-            BluetoothDevice.ACTION_ACL_DISCONNECTED -> EnablerUtil.removeConnectedBluetooth(device.name)
+            BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
+                EnablerUtil.removeConnectedBluetooth(device.name)
+            }
         }
     }
 }
