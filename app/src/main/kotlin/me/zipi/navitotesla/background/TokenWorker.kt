@@ -10,9 +10,6 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -37,27 +34,25 @@ class TokenWorker(
     companion object {
         private const val WORKER_NAME = "refreshTokenWorker"
 
-        fun startBackgroundWork(context: Context) {
-            CoroutineScope(Dispatchers.Main).launch {
-                if (PreferencesUtil.loadToken() == null) {
-                    AnalysisUtil.log("Token is empty. add token refresh work ignore")
-                    return@launch
-                }
-                AnalysisUtil.log("Add background refresh token")
-                val workRequest: PeriodicWorkRequest =
-                    PeriodicWorkRequestBuilder<TokenWorker>(350, TimeUnit.MINUTES)
-                        .setConstraints(
-                            Constraints
-                                .Builder()
-                                .setRequiredNetworkType(NetworkType.CONNECTED)
-                                .build(),
-                        ).build()
-                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                    WORKER_NAME,
-                    ExistingPeriodicWorkPolicy.KEEP,
-                    workRequest,
-                )
+        suspend fun startBackgroundWork(context: Context) {
+            if (PreferencesUtil.loadToken() == null) {
+                AnalysisUtil.log("Token is empty. add token refresh work ignore")
+                return
             }
+            AnalysisUtil.log("Add background refresh token")
+            val workRequest: PeriodicWorkRequest =
+                PeriodicWorkRequestBuilder<TokenWorker>(350, TimeUnit.MINUTES)
+                    .setConstraints(
+                        Constraints
+                            .Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build(),
+                    ).build()
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                WORKER_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest,
+            )
         }
 
         fun cancelBackgroundWork(context: Context) {

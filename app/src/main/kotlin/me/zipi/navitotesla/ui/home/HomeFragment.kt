@@ -601,42 +601,35 @@ class HomeFragment :
         }
     }
 
-    @Synchronized
     private fun overlayPermissionGrantedCheck() {
-        if (activity != null) {
-            requireActivity().runOnUiThread {
-                if (context != null &&
-                    !Settings.canDrawOverlays(
-                        context,
-                    ) &&
-                    (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
-                ) {
-                    permissionAlertDialog =
-                        AlertDialog
-                            .Builder(requireContext())
-                            .setTitle(getString(R.string.grantPermission))
-                            .setMessage(getString(R.string.guideGrantOverlayPermission))
-                            .setPositiveButton(
-                                getString(R.string.confirm),
-                            ) { _: DialogInterface?, _: Int ->
-                                if (permissionAlertDialog != null) {
-                                    permissionAlertDialog = null
-                                }
-                                startActivity(
-                                    Intent(
-                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                        Uri.parse("package:" + requireContext().packageName),
-                                    ),
-                                )
-                            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
-                                if (permissionAlertDialog != null) {
-                                    permissionAlertDialog = null
-                                }
-                                binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-                            }.setCancelable(false)
-                            .show()
-                }
-            }
+        if (context != null &&
+            !Settings.canDrawOverlays(context) &&
+            (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing)
+        ) {
+            permissionAlertDialog =
+                AlertDialog
+                    .Builder(requireContext())
+                    .setTitle(getString(R.string.grantPermission))
+                    .setMessage(getString(R.string.guideGrantOverlayPermission))
+                    .setPositiveButton(
+                        getString(R.string.confirm),
+                    ) { _: DialogInterface?, _: Int ->
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + requireContext().packageName),
+                            ),
+                        )
+                    }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
+                        if (permissionAlertDialog != null) {
+                            permissionAlertDialog = null
+                        }
+                        binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
+                    }.setCancelable(false)
+                    .show()
         }
     }
 
