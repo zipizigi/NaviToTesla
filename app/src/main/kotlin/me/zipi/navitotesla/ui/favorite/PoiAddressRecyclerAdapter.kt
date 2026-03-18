@@ -83,9 +83,9 @@ class PoiAddressRecyclerAdapter(
         override fun onClick(view: View) {
             listenerRef.get()?.let {
                 if (view.id == shareButton.id) {
-                    listenerRef.get()?.onShareClick(adapterPosition)
+                    it.onShareClick(bindingAdapterPosition)
                 } else {
-                    listenerRef.get()?.onClick(adapterPosition)
+                    it.onClick(bindingAdapterPosition)
                 }
             }
         }

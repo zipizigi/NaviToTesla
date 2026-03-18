@@ -2,6 +2,9 @@ package me.zipi.navitotesla
 
 import android.app.Application
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -17,8 +20,8 @@ class Application : Application() {
         RemoteConfigUtil.initialize()
         AnalysisUtil.initialize(this.applicationContext)
         if (!BuildConfig.DEBUG) {
-            TokenWorker.startBackgroundWork(this)
-            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false)
+            CoroutineScope(Dispatchers.IO).launch { TokenWorker.startBackgroundWork(this@Application) }
+            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = false
         }
     }
 

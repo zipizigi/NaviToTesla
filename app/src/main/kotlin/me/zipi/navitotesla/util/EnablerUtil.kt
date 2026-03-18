@@ -11,10 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.ConditionEntity
+import java.util.Collections.synchronizedSet
 import java.util.Date
 
 object EnablerUtil {
-    private val connectedBluetoothDevice = mutableSetOf<String>()
+    private val connectedBluetoothDevice: MutableSet<String> = synchronizedSet(mutableSetOf())
 
     fun addConnectedBluetooth(name: String?) {
         if (name == null) {
