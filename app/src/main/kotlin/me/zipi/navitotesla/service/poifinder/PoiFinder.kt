@@ -10,7 +10,7 @@ interface PoiFinder {
         val poiList = listPoiAddress(poiName).filter { it.poiName.equals(poiName, ignoreCase = true) }
 
         return if (poiList.size > 1) {
-            throw DuplicatePoiException(poiName, poiList)
+            throw DuplicatePoiException(poiName, poiList.map { it.copy(isDuplicate = true) })
         } else if (poiList.size == 1) {
             poiList[0]
         } else {

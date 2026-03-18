@@ -1,13 +1,13 @@
 package me.zipi.navitotesla.model
 
-import java.util.Locale
-
 data class Poi(
     val poiName: String? = null,
     private val roadAddress: String? = null,
     private val address: String? = null,
     val longitude: String? = null,
     val latitude: String? = null,
+    val packageName: String = "",
+    val isDuplicate: Boolean = false,
 ) {
     @Suppress("unused")
     fun isAddressEmpty(): Boolean = roadAddress.isNullOrEmpty() && address.isNullOrEmpty()

@@ -18,6 +18,15 @@ interface PoiAddressDao {
     @Query("SELECT * FROM poi_address WHERE poi = :poi LIMIT 1")
     suspend fun findPoi(poi: String): PoiAddressEntity?
 
+    @Query("SELECT * FROM poi_address WHERE poi = :poi AND packageName = :packageName")
+    suspend fun findPoiByPackage(
+        poi: String,
+        packageName: String,
+    ): PoiAddressEntity?
+
+    @Query("SELECT * FROM poi_address WHERE poi = :poi ORDER BY created DESC LIMIT 1")
+    suspend fun findPoiLatest(poi: String): PoiAddressEntity?
+
     @Query("SELECT * FROM poi_address WHERE created < :date AND (registered IS NULL OR registered = 0)")
     suspend fun findExpired(date: Long): List<PoiAddressEntity>
 

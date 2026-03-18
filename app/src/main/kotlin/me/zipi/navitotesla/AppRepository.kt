@@ -87,7 +87,15 @@ class AppRepository private constructor(
             ).build()
             .create()
 
-    suspend fun getPoiSync(poiName: String): PoiAddressEntity? = database.poiAddressDao().findPoi(poiName)
+    suspend fun getPoiSync(
+        poiName: String,
+        packageName: String = "",
+    ): PoiAddressEntity? =
+        if (packageName.isNotEmpty()) {
+            database.poiAddressDao().findPoiByPackage(poiName, packageName)
+        } else {
+            database.poiAddressDao().findPoiLatest(poiName)
+        }
 
     suspend fun savePoi(
         poi: Poi,
@@ -105,6 +113,8 @@ class AppRepository private constructor(
                     latitude = poi.latitude,
                     longitude = poi.longitude,
                     created = Date(),
+                    packageName = poi.packageName,
+                    isDuplicate = poi.isDuplicate,
                 ),
             )
         }
