@@ -6,13 +6,16 @@ import java.io.IOException
 
 interface PoiFinder {
     @Throws(DuplicatePoiException::class, IOException::class)
-    suspend fun findPoi(poiName: String): Poi {
+    suspend fun findPoi(
+        poiName: String,
+        packageName: String = "",
+    ): Poi {
         val poiList = listPoiAddress(poiName).filter { it.poiName.equals(poiName, ignoreCase = true) }
 
         return if (poiList.size > 1) {
-            throw DuplicatePoiException(poiName, poiList.map { it.copy(isDuplicate = true) })
+            throw DuplicatePoiException(poiName, poiList.map { it.copy(isDuplicate = true, packageName = packageName) })
         } else if (poiList.size == 1) {
-            poiList[0]
+            poiList[0].copy(packageName = packageName)
         } else {
             Poi()
         }
