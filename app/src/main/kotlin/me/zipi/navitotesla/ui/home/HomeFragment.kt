@@ -300,10 +300,9 @@ class HomeFragment :
             binding.txtRefreshToken.setText("")
             binding.txtAccessToken.text = ""
         } else {
-            val oldRefreshToken = binding.txtRefreshToken.text.toString()
             binding.txtRefreshToken.setText(token.refreshToken)
             binding.txtAccessToken.text = token.accessToken
-            if (oldRefreshToken != token.refreshToken || homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
+            if (homeViewModel.lastFetchedToken != token.refreshToken || homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
                 homeViewModel.refreshToken.postValue(token.refreshToken)
             } else {
                 Log.i(this.javaClass.name, "skip refresh token fetch, token unchanged and vehicles loaded")
@@ -381,6 +380,9 @@ class HomeFragment :
         if (!binding.btnSave.isEnabled) {
             return
         }
+        if (homeViewModel.lastFetchedToken == refreshToken && !homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
+            return
+        }
         binding.btnSave.isEnabled = false
         binding.btnSave.text = getString(R.string.checking)
         if (activity != null) {
@@ -404,6 +406,7 @@ class HomeFragment :
                         naviToTeslaService.saveVehicleId(vehicleList[0].id)
                     }
                 }
+                homeViewModel.lastFetchedToken = refreshToken
                 homeViewModel.vehicleListLiveData.postValue(vehicleList)
                 withContext(Dispatchers.Main) {
                     binding.btnSave.isEnabled = true

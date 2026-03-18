@@ -197,7 +197,7 @@ class NaviToTeslaService(
                 )
             AnalysisUtil.logEvent("address_direct", eventParam)
         } else {
-            poi = poiFinder.findPoi(poiName).copy(packageName = packageName)
+            poi = poiFinder.findPoi(poiName, packageName)
             AnalysisUtil.logEvent("address_parse_api", eventParam)
             appRepository.savePoi(poi, false)
         }
