@@ -9,7 +9,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -30,6 +29,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import com.gun0912.tedpermission.coroutine.TedPermission
 import kotlinx.coroutines.Dispatchers
@@ -68,20 +68,21 @@ class HomeFragment :
         if (this.activity != null) {
             this.requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         }
-        homeViewModel = ViewModelProvider(this)[HomeViewModel::class.java]
+        homeViewModel = ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        homeViewModel.vehicleListLiveData.observe(viewLifecycleOwner) { updateSpinner() }
-        homeViewModel.tokenLiveData.observe(viewLifecycleOwner) { renderToken() }
-        homeViewModel.appVersion.observe(viewLifecycleOwner) { renderVersion() }
-        homeViewModel.isUpdateAvailable.observe(viewLifecycleOwner) { renderVersion() }
-        homeViewModel.refreshToken.observe(viewLifecycleOwner) { refreshToken: String ->
+        homeViewModel.vehicleListLiveData.distinctUntilChanged().observe(viewLifecycleOwner) { updateSpinner() }
+        homeViewModel.tokenLiveData.distinctUntilChanged().observe(viewLifecycleOwner) { renderToken() }
+        homeViewModel.appVersion.distinctUntilChanged().observe(viewLifecycleOwner) { renderVersion() }
+        homeViewModel.isUpdateAvailable.distinctUntilChanged().observe(viewLifecycleOwner) { renderVersion() }
+        homeViewModel.refreshToken.distinctUntilChanged().observe(viewLifecycleOwner) { refreshToken: String ->
             getAccessTokenAndVehicles(refreshToken)
         }
-        homeViewModel.isInstalledTeslaApp.observe(viewLifecycleOwner) { isInstalled: Boolean ->
+        homeViewModel.isInstalledTeslaApp.distinctUntilChanged().observe(viewLifecycleOwner) { isInstalled: Boolean ->
             onChangeTeslaAppInstalled(isInstalled)
         }
-        homeViewModel.shareMode.observe(viewLifecycleOwner) { mode: String ->
+        homeViewModel.shareMode.distinctUntilChanged().observe(viewLifecycleOwner) { mode: String ->
+            AnalysisUtil.log("------ $mode")
             onChangedTeslaShareMode(
                 mode,
             )
@@ -121,11 +122,6 @@ class HomeFragment :
                 launch { AppUpdaterUtil.dialog(activity, false) }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        homeViewModel.clearObserve(viewLifecycleOwner)
     }
 
     override fun onAttach(context: Context) {
@@ -302,7 +298,7 @@ class HomeFragment :
         } else {
             binding.txtRefreshToken.setText(token.refreshToken)
             binding.txtAccessToken.text = token.accessToken
-            if (homeViewModel.lastFetchedToken != token.refreshToken || homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
+            if (homeViewModel.refreshToken.value != token.refreshToken || homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
                 homeViewModel.refreshToken.postValue(token.refreshToken)
             } else {
                 Log.i(this.javaClass.name, "skip refresh token fetch, token unchanged and vehicles loaded")
@@ -380,7 +376,10 @@ class HomeFragment :
         if (!binding.btnSave.isEnabled) {
             return
         }
-        if (homeViewModel.lastFetchedToken == refreshToken && !homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
+        val tokenChanged = homeViewModel.lastFetchedToken != refreshToken
+        val noVehicles = homeViewModel.vehicleListLiveData.value.isNullOrEmpty()
+        val withinCooldown = (System.currentTimeMillis() - homeViewModel.lastTokenFetchTime) < 10 * 60 * 1000L
+        if (!tokenChanged && !noVehicles && withinCooldown) {
             return
         }
         binding.btnSave.isEnabled = false
@@ -407,6 +406,7 @@ class HomeFragment :
                     }
                 }
                 homeViewModel.lastFetchedToken = refreshToken
+                homeViewModel.lastTokenFetchTime = System.currentTimeMillis()
                 homeViewModel.vehicleListLiveData.postValue(vehicleList)
                 withContext(Dispatchers.Main) {
                     binding.btnSave.isEnabled = true
@@ -503,14 +503,14 @@ class HomeFragment :
                         startActivity(
                             Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("market://search?q=log viewer"),
+                                "market://search?q=log viewer".toUri(),
                             ),
                         )
                     } catch (anfe: ActivityNotFoundException) {
                         startActivity(
                             Intent(
                                 Intent.ACTION_VIEW,
-                                Uri.parse("https://play.google.com/store/apps/search?q=log viewer"),
+                                "https://play.google.com/store/apps/search?q=log viewer".toUri(),
                             ),
                         )
                     }
