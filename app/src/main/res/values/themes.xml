@@ -46,7 +46,6 @@
     <!-- Reusable card shell. -->
     <style name="Widget.NaviToTesla.Card" parent="Widget.Material3.CardView.Filled">
         <item name="cardCornerRadius">@dimen/card_radius</item>
-        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
         <item name="contentPadding">@dimen/card_padding</item>
         <item name="cardElevation">@dimen/card_elevation</item>
     </style>

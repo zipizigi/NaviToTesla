@@ -47,26 +47,23 @@
                             android:text="@string/shareMode"
                             android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
 
-                        <RadioGroup
+                        <com.google.android.material.button.MaterialButtonToggleGroup
                             android:id="@+id/radioGroupShareMode"
+                            style="@style/Widget.NaviToTesla.SegmentedToggle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/space_md"
-                            android:orientation="horizontal">
+                            android:layout_marginTop="@dimen/space_md">
 
-                            <com.google.android.material.radiobutton.MaterialRadioButton
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/radioUsingTeslaApi"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="@dimen/space_xl"
+                                style="@style/Widget.NaviToTesla.SegmentedButton"
                                 android:text="@string/usingTeslaApi" />
 
-                            <com.google.android.material.radiobutton.MaterialRadioButton
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/radioUsingTeslaApp"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                style="@style/Widget.NaviToTesla.SegmentedButton"
                                 android:text="@string/usingTeslaApp" />
-                        </RadioGroup>
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
 
                         <TextView
                             android:layout_width="match_parent"
