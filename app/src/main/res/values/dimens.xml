@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Spacing scale. -->
-    <dimen name="space_xxs">2dp</dimen>
     <dimen name="space_xs">4dp</dimen>
     <dimen name="space_sm">8dp</dimen>
     <dimen name="space_md">12dp</dimen>
     <dimen name="space_lg">16dp</dimen>
     <dimen name="space_xl">24dp</dimen>
-    <dimen name="space_xxl">32dp</dimen>
 
     <!-- Card radii / elevation. -->
     <dimen name="card_radius">16dp</dimen>
-    <dimen name="card_radius_large">28dp</dimen>
     <dimen name="card_padding">16dp</dimen>
     <dimen name="card_elevation">0dp</dimen>
 
@@ -19,6 +16,4 @@
     <dimen name="bottomnav_safe_area">88dp</dimen>
     <dimen name="bluetooth_list_height">160dp</dimen>
     <dimen name="favorite_list_min_height">220dp</dimen>
-    <dimen name="help_icon_size">28dp</dimen>
-    <dimen name="status_dot_size">8dp</dimen>
 </resources>
