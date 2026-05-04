@@ -1,16 +1,112 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.NaviToTesla" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+
+    <style name="Theme.NaviToTesla" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/md_primary_light</item>
+        <item name="colorOnPrimary">@color/md_on_primary_light</item>
+        <item name="colorPrimaryContainer">@color/md_primary_container_light</item>
+        <item name="colorOnPrimaryContainer">@color/md_on_primary_container_light</item>
+
+        <item name="colorSecondary">@color/md_secondary_light</item>
+        <item name="colorOnSecondary">@color/md_on_secondary_light</item>
+        <item name="colorSecondaryContainer">@color/md_secondary_container_light</item>
+        <item name="colorOnSecondaryContainer">@color/md_on_secondary_container_light</item>
+
+        <item name="android:colorBackground">@color/md_background_light</item>
+        <item name="colorOnBackground">@color/md_on_background_light</item>
+        <item name="colorSurface">@color/md_surface_light</item>
+        <item name="colorOnSurface">@color/md_on_surface_light</item>
+        <item name="colorSurfaceVariant">@color/md_surface_variant_light</item>
+        <item name="colorOnSurfaceVariant">@color/md_on_surface_variant_light</item>
+        <item name="colorSurfaceContainer">@color/md_surface_container_light</item>
+        <item name="colorSurfaceContainerHigh">@color/md_surface_container_high_light</item>
+
+        <item name="colorOutline">@color/md_outline_light</item>
+        <item name="colorOutlineVariant">@color/md_outline_variant_light</item>
+        <item name="colorError">@color/md_error_light</item>
+        <item name="colorOnError">@color/md_on_error_light</item>
+
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">?attr/colorSurfaceContainer</item>
     </style>
+
+    <!-- Section title used inside cards (e.g. "전송 방식", "Tesla 토큰"). -->
+    <style name="TextAppearance.NaviToTesla.SectionTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.NaviToTesla.SectionLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="TextAppearance.NaviToTesla.Helper" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Reusable card shell. -->
+    <style name="Widget.NaviToTesla.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">@dimen/card_radius</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+        <item name="contentPadding">@dimen/card_padding</item>
+        <item name="cardElevation">@dimen/card_elevation</item>
+    </style>
+
+    <!-- Help icon button: rounded, small. -->
+    <style name="Widget.NaviToTesla.HelpButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">0dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:gravity">center</item>
+        <item name="iconTint">?attr/colorOnSurfaceVariant</item>
+        <item name="icon">@drawable/ic_baseline_help_outline_24</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="cornerRadius">20dp</item>
+    </style>
+
+    <!-- Add icon button: 40dp tonal circle with centered 20dp icon. -->
+    <style name="Widget.NaviToTesla.AddButton" parent="Widget.Material3.Button">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">0dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:gravity">center</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconPadding">0dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconTint">?attr/colorOnPrimaryContainer</item>
+        <item name="backgroundTint">?attr/colorPrimaryContainer</item>
+        <item name="cornerRadius">20dp</item>
+        <item name="rippleColor">?attr/colorOnPrimaryContainer</item>
+    </style>
+
+    <style name="Widget.NaviToTesla.SegmentedToggle" parent="Widget.Material3.MaterialButtonToggleGroup">
+        <item name="singleSelection">true</item>
+        <item name="selectionRequired">true</item>
+    </style>
+
+    <style name="Widget.NaviToTesla.SegmentedButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
 </resources>
