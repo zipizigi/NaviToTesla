@@ -12,6 +12,8 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
+import me.zipi.navitotesla.R
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
@@ -134,7 +136,15 @@ class FavoriteDialogFragment :
                 created = Date(),
             )
         viewLifecycleOwner.lifecycleScope.launch {
-            AppDatabase.getInstance().poiAddressDao().insertPoi(entity)
+            val dao = AppDatabase.getInstance().poiAddressDao()
+            val existing = dao.findRegisteredByPoi(entity.poi)
+            if (existing != null) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, R.string.duplicatedPoiName, Toast.LENGTH_LONG).show()
+                }
+                return@launch
+            }
+            dao.insertPoi(entity)
             withContext(Dispatchers.Main) {
                 dismiss()
             }

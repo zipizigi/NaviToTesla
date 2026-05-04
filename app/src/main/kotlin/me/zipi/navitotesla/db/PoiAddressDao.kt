@@ -36,6 +36,9 @@ interface PoiAddressDao {
     @Query("SELECT * FROM poi_address WHERE registered = 1 ORDER BY poi")
     suspend fun findRegisteredPoi(): List<PoiAddressEntity>
 
+    @Query("SELECT * FROM poi_address WHERE poi = :poi AND registered = 1 LIMIT 1")
+    suspend fun findRegisteredByPoi(poi: String): PoiAddressEntity?
+
     @Delete
     suspend fun delete(poiAddressEntity: PoiAddressEntity)
 
