@@ -4,98 +4,90 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:weightSum="100"
-    tools:context=".ui.favorite.FavoriteFragment"
-    android:baselineAligned="false">
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/space_lg"
+    android:paddingTop="@dimen/space_lg"
+    android:paddingBottom="@dimen/bottomnav_safe_area"
+    tools:context=".ui.favorite.FavoriteFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- Card: Favorites -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.NaviToTesla.Card"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="50">
+        android:layout_marginEnd="@dimen/space_md"
+        android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/txtFavorite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/favorite"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btnFavoriteHelp"
-            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/ic_baseline_help_outline_24"
-            android:textColor="@color/design_default_color_primary"
-            app:layout_constraintStart_toEndOf="@+id/txtFavorite"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/btnFavoriteAdd"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/ic_baseline_add_24"
-            app:layout_constraintStart_toEndOf="@+id/btnFavoriteHelp"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recylerRegistered"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="52dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtFavorite">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        </androidx.recyclerview.widget.RecyclerView>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/txtFavorite"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/favorite"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFavoriteHelp"
+                    style="@style/Widget.NaviToTesla.HelpButton" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFavoriteAdd"
+                    style="@style/Widget.NaviToTesla.AddButton"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:contentDescription="@string/favoriteName"
+                    app:icon="@drawable/ic_baseline_add_24"
+                    tools:ignore="SpeakableTextPresentCheck" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recylerRegistered"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/space_sm"
+                android:layout_weight="1"
+                android:overScrollMode="ifContentScrolls" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Card: Recent destinations -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.NaviToTesla.Card"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="50">
+        android:layout_weight="1">
 
-        <TextView
-            android:id="@+id/txtRecent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="8dp"
-            android:text="@string/recentDestination"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recylerHistory"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginBottom="52dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtRecent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        </androidx.recyclerview.widget.RecyclerView>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/txtRecent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/recentDestination"
+                android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recylerHistory"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/space_sm"
+                android:layout_weight="1"
+                android:overScrollMode="ifContentScrolls" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

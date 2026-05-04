@@ -11,7 +11,7 @@
     <string name="addressOrCord">Address or Coordinates</string>
     <string name="destination">Destination</string>
     <string name="roadAddress">Road</string>
-    <string name="lotNumberAddress">Lot number</string>
+    <string name="lotNumberAddress">Lot</string>
     <string name="address">Address</string>
     <string name="searchResult">Search Result</string>
     <string name="favorite">Favorite</string>
@@ -93,4 +93,11 @@
     <string name="duplicatePoiShowPopup">Show popup</string>
     <string name="overlayClose">Close</string>
     <string name="overlayCloseWithTimer">Close (%d sec)</string>
+    <string name="sectionToken">Tesla Token</string>
+    <string name="sectionMaintenance">Maintenance</string>
+    <string name="sectionService">Service</string>
+    <string name="sectionBehavior">Behavior</string>
+    <string name="helperRefreshToken">Paste the refresh token issued from your Tesla account.</string>
+    <string name="helperShareMode">API mode talks to the vehicle directly. App mode forwards via the installed Tesla app.</string>
+    <string name="emptyBluetoothList">No Bluetooth devices added.\nTap + to add a device.</string>
 </resources>

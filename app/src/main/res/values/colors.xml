@@ -1,10 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Legacy purple palette retained for any external references. -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+
+    <!-- Material 3 light scheme (Tesla red brand). -->
+    <color name="md_primary_light">#B91C1C</color>
+    <color name="md_on_primary_light">#FFFFFF</color>
+    <color name="md_primary_container_light">#FFDAD6</color>
+    <color name="md_on_primary_container_light">#410002</color>
+    <color name="md_secondary_light">#775653</color>
+    <color name="md_on_secondary_light">#FFFFFF</color>
+    <color name="md_secondary_container_light">#FFDAD6</color>
+    <color name="md_on_secondary_container_light">#2C1513</color>
+    <color name="md_background_light">#FFFBFF</color>
+    <color name="md_on_background_light">#201A19</color>
+    <color name="md_surface_light">#FFFBFF</color>
+    <color name="md_on_surface_light">#201A19</color>
+    <color name="md_surface_variant_light">#F5DDDA</color>
+    <color name="md_on_surface_variant_light">#534341</color>
+    <color name="md_surface_container_light">#F4EFEC</color>
+    <color name="md_surface_container_high_light">#ECE6E3</color>
+    <color name="md_outline_light">#85736F</color>
+    <color name="md_outline_variant_light">#D8C2BE</color>
+    <color name="md_error_light">#BA1A1A</color>
+    <color name="md_on_error_light">#FFFFFF</color>
+    <color name="md_success_light">#2E7D32</color>
+    <color name="md_success_container_light">#C8E6C9</color>
+    <color name="md_on_success_container_light">#1B5E20</color>
+
+    <!-- Material 3 dark scheme. -->
+    <color name="md_primary_dark">#FFB4AB</color>
+    <color name="md_on_primary_dark">#690005</color>
+    <color name="md_primary_container_dark">#93000A</color>
+    <color name="md_on_primary_container_dark">#FFDAD6</color>
+    <color name="md_secondary_dark">#E7BDB8</color>
+    <color name="md_on_secondary_dark">#442927</color>
+    <color name="md_secondary_container_dark">#5D3F3C</color>
+    <color name="md_on_secondary_container_dark">#FFDAD6</color>
+    <color name="md_background_dark">#201A19</color>
+    <color name="md_on_background_dark">#EDE0DE</color>
+    <color name="md_surface_dark">#201A19</color>
+    <color name="md_on_surface_dark">#EDE0DE</color>
+    <color name="md_surface_variant_dark">#534341</color>
+    <color name="md_on_surface_variant_dark">#D8C2BE</color>
+    <color name="md_surface_container_dark">#2B2322</color>
+    <color name="md_surface_container_high_dark">#362E2D</color>
+    <color name="md_outline_dark">#A08C89</color>
+    <color name="md_outline_variant_dark">#534341</color>
+    <color name="md_error_dark">#FFB4AB</color>
+    <color name="md_on_error_dark">#690005</color>
+    <color name="md_success_dark">#81C784</color>
+    <color name="md_success_container_dark">#1B5E20</color>
+    <color name="md_on_success_container_dark">#C8E6C9</color>
 </resources>
