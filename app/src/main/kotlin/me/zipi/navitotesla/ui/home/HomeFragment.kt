@@ -474,13 +474,12 @@ class HomeFragment :
         sb.append(homeViewModel.appVersion.value)
         if (homeViewModel.isUpdateAvailable.value == true) {
             sb.append("\n").append("(").append(getString(R.string.updateAvailable)).append(")")
-            val typedValue = android.util.TypedValue()
-            binding.txtVersion.context.theme.resolveAttribute(
-                androidx.appcompat.R.attr.colorError,
-                typedValue,
-                true,
+            binding.txtVersion.setTextColor(
+                com.google.android.material.color.MaterialColors.getColor(
+                    binding.txtVersion,
+                    androidx.appcompat.R.attr.colorError,
+                ),
             )
-            binding.txtVersion.setTextColor(typedValue.data)
         }
         binding.txtVersion.text = sb.toString()
     }

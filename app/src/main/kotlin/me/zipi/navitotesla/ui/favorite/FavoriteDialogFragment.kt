@@ -12,7 +12,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioGroup
 import android.widget.TextView
-import android.widget.Toast
 import me.zipi.navitotesla.R
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
@@ -139,9 +138,7 @@ class FavoriteDialogFragment :
             val dao = AppDatabase.getInstance().poiAddressDao()
             val existing = dao.findRegisteredByPoi(entity.poi)
             if (existing != null) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, R.string.duplicatedPoiName, Toast.LENGTH_LONG).show()
-                }
+                AnalysisUtil.makeToast(context, getString(R.string.duplicatedPoiName))
                 return@launch
             }
             dao.insertPoi(entity)
