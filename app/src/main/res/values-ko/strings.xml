@@ -93,4 +93,11 @@
     <string name="overlayCloseWithTimer">닫기 (%d초 후 자동 닫힘)</string>
     <string name="overlaySelectAddressTitle">전송할 주소 선택 : %s</string>
     <string name="guideGrantOverlayPermissionForSelection">목적지 선택 팝업을 표시하려면 \"다른 앱 위에 표시\" 권한이 필요합니다.\n권한을 허용해주세요.</string>
+    <string name="sectionToken">Tesla 토큰</string>
+    <string name="sectionMaintenance">관리</string>
+    <string name="sectionService">서비스</string>
+    <string name="sectionBehavior">동작</string>
+    <string name="helperRefreshToken">Tesla 계정에서 발급한 refresh token을 붙여넣으세요.</string>
+    <string name="helperShareMode">API 모드는 차량과 직접 통신합니다. App 모드는 설치된 Tesla 앱을 통해 전달합니다.</string>
+    <string name="emptyBluetoothList">등록된 블루투스가 없습니다.\n+ 버튼을 눌러 추가하세요.</string>
 </resources>
