@@ -1,14 +1,18 @@
 package me.zipi.navitotesla.ui.favorite
 
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioGroup
 import android.widget.TextView
+import me.zipi.navitotesla.R
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
@@ -59,6 +63,19 @@ class FavoriteDialogFragment :
         binding.radioGroup.setOnCheckedChangeListener(this)
         favoriteDialogViewModel.poiList.observe(viewLifecycleOwner) { updateSpinner() }
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            val metrics = resources.displayMetrics
+            val isLandscape =
+                resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val widthFraction = if (isLandscape) 0.7f else 0.92f
+            val width = (metrics.widthPixels * widthFraction).toInt()
+            window.setLayout(width, WindowManager.LayoutParams.WRAP_CONTENT)
+            window.setGravity(Gravity.CENTER)
+        }
     }
 
     override fun onResume() {
@@ -118,7 +135,13 @@ class FavoriteDialogFragment :
                 created = Date(),
             )
         viewLifecycleOwner.lifecycleScope.launch {
-            AppDatabase.getInstance().poiAddressDao().insertPoi(entity)
+            val dao = AppDatabase.getInstance().poiAddressDao()
+            val existing = dao.findRegisteredByPoi(entity.poi)
+            if (existing != null) {
+                AnalysisUtil.makeToast(context, getString(R.string.duplicatedPoiName))
+                return@launch
+            }
+            dao.insertPoi(entity)
             withContext(Dispatchers.Main) {
                 dismiss()
             }

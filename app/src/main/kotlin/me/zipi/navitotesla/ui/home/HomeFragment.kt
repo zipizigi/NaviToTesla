@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -22,7 +21,7 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.RadioGroup
+import com.google.android.material.button.MaterialButtonToggleGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
@@ -55,7 +54,7 @@ class HomeFragment :
     AdapterView.OnItemSelectedListener,
     View.OnClickListener,
     OnLongClickListener,
-    RadioGroup.OnCheckedChangeListener {
+    MaterialButtonToggleGroup.OnButtonCheckedListener {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var binding: FragmentHomeBinding
     private lateinit var naviToTeslaService: NaviToTeslaService
@@ -88,7 +87,7 @@ class HomeFragment :
             )
         }
         binding.txtAccessToken.movementMethod = ScrollingMovementMethod()
-        binding.radioGroupShareMode.setOnCheckedChangeListener(this)
+        binding.radioGroupShareMode.addOnButtonCheckedListener(this)
         setEventListener(
             requireActivity(),
             KeyboardVisibilityEventListener { isOpen: Boolean ->
@@ -376,6 +375,9 @@ class HomeFragment :
         if (!binding.btnSave.isEnabled) {
             return
         }
+        // Cooldown gate: refreshToken observer → renderToken → may post refreshToken back,
+        // which would re-enter this method. tokenChanged + cooldown breaks that loop.
+        // Do not remove without re-introducing equivalent loop guard.
         val tokenChanged = homeViewModel.lastFetchedToken != refreshToken
         val noVehicles = homeViewModel.vehicleListLiveData.value.isNullOrEmpty()
         val withinCooldown = (System.currentTimeMillis() - homeViewModel.lastTokenFetchTime) < 10 * 60 * 1000L
@@ -472,7 +474,12 @@ class HomeFragment :
         sb.append(homeViewModel.appVersion.value)
         if (homeViewModel.isUpdateAvailable.value == true) {
             sb.append("\n").append("(").append(getString(R.string.updateAvailable)).append(")")
-            binding.txtVersion.setTextColor(Color.RED)
+            binding.txtVersion.setTextColor(
+                com.google.android.material.color.MaterialColors.getColor(
+                    binding.txtVersion,
+                    androidx.appcompat.R.attr.colorError,
+                ),
+            )
         }
         binding.txtVersion.text = sb.toString()
     }
@@ -538,13 +545,17 @@ class HomeFragment :
         }
 
     // share mode
-    override fun onCheckedChanged(
-        group: RadioGroup,
+    override fun onButtonChecked(
+        group: MaterialButtonToggleGroup,
         checkedId: Int,
+        isChecked: Boolean,
     ) {
+        if (!isChecked) {
+            return
+        }
         lifecycleScope.launch {
             val shareMode =
-                if (binding.radioUsingTeslaApp.id == group.checkedRadioButtonId) {
+                if (checkedId == binding.radioUsingTeslaApp.id) {
                     "app"
                 } else {
                     "api"
@@ -580,10 +591,16 @@ class HomeFragment :
         }
 
         withContext(Dispatchers.Main) {
-            if (shareMode == "api") {
-                binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
-            } else {
-                binding.radioGroupShareMode.check(binding.radioUsingTeslaApp.id)
+            val targetId =
+                if (shareMode == "api") {
+                    binding.radioUsingTeslaApi.id
+                } else {
+                    binding.radioUsingTeslaApp.id
+                }
+            if (binding.radioGroupShareMode.checkedButtonId != targetId) {
+                binding.radioGroupShareMode.check(targetId)
+            }
+            if (shareMode != "api") {
                 overlayPermissionGrantedCheck()
             }
         }
