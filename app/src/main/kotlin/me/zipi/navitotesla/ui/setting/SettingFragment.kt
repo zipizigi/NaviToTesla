@@ -86,7 +86,10 @@ class SettingFragment :
         binding.recylerBluetooth.adapter = conditionRecyclerAdapter
         binding.recylerBluetooth.layoutManager = LinearLayoutManager(context)
         settingViewModel.bluetoothConditions
-            .observe(viewLifecycleOwner) { items -> conditionRecyclerAdapter.setItems(items) }
+            .observe(viewLifecycleOwner) { items ->
+                conditionRecyclerAdapter.setItems(items)
+                binding.textBluetoothEmpty.visibility = if (items.isNullOrEmpty()) View.VISIBLE else View.GONE
+            }
         binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
         return root
     }
@@ -303,6 +306,7 @@ class SettingFragment :
     }
 
     private fun onChangedConditionEnabled(enabled: Boolean) {
+        binding.cardBluetooth.visibility = if (enabled) View.VISIBLE else View.GONE
         lifecycleScope.launch {
             if (context != null) {
                 EnablerUtil.setConditionEnabled(enabled)

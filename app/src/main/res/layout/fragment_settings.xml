@@ -236,6 +236,7 @@
 
         <!-- Card: Bluetooth whitelist -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBluetooth"
             style="@style/Widget.NaviToTesla.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -267,20 +268,26 @@
                         tools:ignore="SpeakableTextPresentCheck" />
                 </LinearLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recylerBluetooth"
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/bluetooth_list_height"
-                    android:layout_marginTop="@dimen/space_sm"
-                    android:overScrollMode="ifContentScrolls" />
+                    android:layout_marginTop="@dimen/space_sm">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_sm"
-                    android:text="@string/emptyBluetoothList"
-                    android:textAlignment="center"
-                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recylerBluetooth"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:overScrollMode="ifContentScrolls" />
+
+                    <TextView
+                        android:id="@+id/textBluetoothEmpty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/emptyBluetoothList"
+                        android:textAlignment="center"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+                </FrameLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
