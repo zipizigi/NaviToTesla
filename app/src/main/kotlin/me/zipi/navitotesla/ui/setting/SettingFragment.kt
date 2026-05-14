@@ -19,6 +19,7 @@ import android.widget.RadioGroup
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -41,6 +42,8 @@ class SettingFragment :
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
     private var isDuplicatePoiRadioInitializing = false
+    private var diagnosticsUserToggled = false
+    private var diagnosticsExpanded = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,7 +89,10 @@ class SettingFragment :
         binding.recylerBluetooth.adapter = conditionRecyclerAdapter
         binding.recylerBluetooth.layoutManager = LinearLayoutManager(context)
         settingViewModel.bluetoothConditions
-            .observe(viewLifecycleOwner) { items -> conditionRecyclerAdapter.setItems(items) }
+            .observe(viewLifecycleOwner) { items ->
+                conditionRecyclerAdapter.setItems(items)
+                binding.textBluetoothEmpty.visibility = if (items.isNullOrEmpty()) View.VISIBLE else View.GONE
+            }
         binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
         return root
     }
@@ -104,6 +110,111 @@ class SettingFragment :
     override fun onResume() {
         super.onResume()
         updateConditions()
+        updateDiagnostics()
+    }
+
+    private fun updateDiagnostics() {
+        val ctx = context ?: return
+        val notiOk = NotificationManagerCompat.from(ctx).areNotificationsEnabled()
+        val listenerOk =
+            NotificationManagerCompat
+                .getEnabledListenerPackages(ctx)
+                .contains(ctx.packageName)
+        val overlayOk = Settings.canDrawOverlays(ctx)
+        val accOk = NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(ctx)
+        bindDiagnosticRow(
+            binding.diagRowNotification,
+            R.string.diagPermNotification,
+            R.string.guideGrantNotificationPermission,
+            notiOk,
+        ) { openAppNotificationSettings() }
+        bindDiagnosticRow(
+            binding.diagRowNotificationListener,
+            R.string.diagPermNotificationListener,
+            R.string.guideGrantPermission,
+            listenerOk,
+        ) { openNotificationListenerSettings() }
+        bindDiagnosticRow(
+            binding.diagRowOverlay,
+            R.string.diagPermOverlay,
+            R.string.guideGrantOverlayPermission,
+            overlayOk,
+        ) { openOverlaySettings() }
+        bindDiagnosticRow(
+            binding.diagRowAccessibility,
+            R.string.diagPermAccessibility,
+            R.string.guideRequireAccessibility,
+            accOk,
+        ) { openAccessibilitySettings() }
+
+        val anyFail = !(notiOk && listenerOk && overlayOk && accOk)
+        if (!diagnosticsUserToggled) {
+            applyDiagnosticsExpanded(anyFail)
+        }
+        binding.diagHeader.setOnClickListener {
+            diagnosticsUserToggled = true
+            applyDiagnosticsExpanded(!diagnosticsExpanded)
+        }
+    }
+
+    private fun applyDiagnosticsExpanded(expanded: Boolean) {
+        diagnosticsExpanded = expanded
+        binding.diagContent.visibility = if (expanded) View.VISIBLE else View.GONE
+        binding.diagExpandIcon.rotation = if (expanded) 180f else 0f
+    }
+
+    private fun bindDiagnosticRow(
+        row: me.zipi.navitotesla.databinding.ViewDiagnosticRowBinding,
+        labelRes: Int,
+        guideRes: Int,
+        ok: Boolean,
+        onFix: () -> Unit,
+    ) {
+        row.diagLabel.setText(labelRes)
+        row.diagIcon.setImageResource(if (ok) R.drawable.ic_check_circle_20 else R.drawable.ic_warning_20)
+        row.diagStatusOk.visibility = if (ok) View.VISIBLE else View.GONE
+        row.diagFixButton.visibility = if (ok) View.GONE else View.VISIBLE
+        row.diagFixButton.setOnClickListener { onFix() }
+        row.diagInfoButton.setOnClickListener { showDiagnosticGuide(labelRes, guideRes) }
+    }
+
+    private fun showDiagnosticGuide(
+        titleRes: Int,
+        messageRes: Int,
+    ) {
+        if (activity == null) return
+        AlertDialog
+            .Builder(requireActivity())
+            .setTitle(getString(titleRes))
+            .setMessage(getString(messageRes))
+            .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+            .setCancelable(true)
+            .show()
+    }
+
+    private fun openAppNotificationSettings() {
+        val intent =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, requireContext().packageName)
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .setData(Uri.fromParts("package", requireContext().packageName, null))
+            }
+        runCatching { startActivity(intent) }
+    }
+
+    private fun openNotificationListenerSettings() {
+        runCatching { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+    }
+
+    private fun openOverlaySettings() {
+        val intent =
+            Intent(
+                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:${requireContext().packageName}"),
+            )
+        runCatching { startActivity(intent) }
     }
 
     private fun updateConditions() =
@@ -303,6 +414,7 @@ class SettingFragment :
     }
 
     private fun onChangedConditionEnabled(enabled: Boolean) {
+        binding.cardBluetooth.visibility = if (enabled) View.VISIBLE else View.GONE
         lifecycleScope.launch {
             if (context != null) {
                 EnablerUtil.setConditionEnabled(enabled)

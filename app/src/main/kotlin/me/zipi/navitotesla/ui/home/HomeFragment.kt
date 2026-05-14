@@ -21,7 +21,6 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import com.google.android.material.button.MaterialButtonToggleGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
@@ -30,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.gun0912.tedpermission.coroutine.TedPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -81,7 +81,6 @@ class HomeFragment :
             onChangeTeslaAppInstalled(isInstalled)
         }
         homeViewModel.shareMode.distinctUntilChanged().observe(viewLifecycleOwner) { mode: String ->
-            AnalysisUtil.log("------ $mode")
             onChangedTeslaShareMode(
                 mode,
             )

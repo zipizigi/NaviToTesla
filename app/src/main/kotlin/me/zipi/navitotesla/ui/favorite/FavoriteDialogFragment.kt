@@ -12,7 +12,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioGroup
 import android.widget.TextView
-import me.zipi.navitotesla.R
 import androidx.annotation.LayoutRes
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
@@ -20,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FavoriteDialogFragmentBinding
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity

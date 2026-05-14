@@ -78,6 +78,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".receiver.PackageReplacedReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+
     </application>
     <queries>
         <package android:name="com.teslamotors.tesla"/>
