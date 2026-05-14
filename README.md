@@ -36,8 +36,11 @@ Tesla App이 없는 경우에 사용한다.
 
 #### 1. Refresh Token 구하기
 
-android : https://play.google.com/store/apps/details?id=net.leveugle.teslatokens  
+데스크톱 GUI (Win/Mac/Linux, 권장) : https://github.com/adriankumpf/tesla_auth  
+웹 (PC 브라우저 + 개발자도구 필요) : https://www.myteslamate.com/tesla-token/  
 iOS : https://apps.apple.com/kr/app/auth-app-for-tesla/id1552058613
+
+> Tesla 로그인 후 `tesla://` 스킴으로 리디렉트되어 모바일 브라우저에서는 토큰 추출이 어렵습니다. PC에서 발급 후 안드로이드 기기로 옮겨 붙여넣는 것을 권장합니다.
 
 Tesla 계정 로그인 후 생성되는 Refresh Token을 복사한다.
 
