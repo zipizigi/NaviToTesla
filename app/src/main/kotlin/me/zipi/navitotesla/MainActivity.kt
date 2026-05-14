@@ -63,13 +63,14 @@ class MainActivity : AppCompatActivity() {
                 maxWidth = dpToPx(280)
             }
         val params =
-            FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ).apply {
-                gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
-                bottomMargin = resources.getDimensionPixelSize(R.dimen.bottomnav_safe_area) + dpToPx(16)
-            }
+            FrameLayout
+                .LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                ).apply {
+                    gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+                    bottomMargin = resources.getDimensionPixelSize(R.dimen.bottomnav_safe_area) + dpToPx(16)
+                }
         root.addView(text, params)
         text.alpha = 0f
         text
