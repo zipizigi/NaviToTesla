@@ -98,6 +98,14 @@
     <string name="sectionToken">Tesla Token</string>
     <string name="sectionMaintenance">Maintenance</string>
     <string name="sectionService">Service</string>
+    <string name="sectionDiagnostics">Diagnostics</string>
+    <string name="diagPermNotification">Notification</string>
+    <string name="diagPermNotificationListener">Notification access</string>
+    <string name="diagPermOverlay">Display over other apps</string>
+    <string name="diagPermAccessibility">Accessibility service</string>
+    <string name="diagOk">OK</string>
+    <string name="diagFix">Allow</string>
+    <string name="diagInfo">Info</string>
     <string name="sectionBehavior">Behavior</string>
     <string name="helperRefreshToken">Paste the refresh token issued from your Tesla account.</string>
     <string name="helperShareMode">API mode talks to the vehicle directly. App mode forwards via the installed Tesla app.</string>

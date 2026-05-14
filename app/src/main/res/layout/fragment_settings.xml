@@ -125,6 +125,81 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Card: Diagnostics -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardDiagnostics"
+            style="@style/Widget.NaviToTesla.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_md">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/diagHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingVertical="@dimen/space_xs">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/sectionDiagnostics"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+                    <ImageView
+                        android:id="@+id/diagExpandIcon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_expand_more_20"
+                        tools:ignore="ContentDescription" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/diagContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <include
+                        android:id="@+id/diagRowNotification"
+                        layout="@layout/view_diagnostic_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm" />
+
+                    <include
+                        android:id="@+id/diagRowNotificationListener"
+                        layout="@layout/view_diagnostic_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/diagRowOverlay"
+                        layout="@layout/view_diagnostic_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/diagRowAccessibility"
+                        layout="@layout/view_diagnostic_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Card: Behavior (Duplicate POI + Condition) -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.NaviToTesla.Card"

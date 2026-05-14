@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="40dp"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/diagIcon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_check_circle_20"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/diagLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_md"
+        android:layout_weight="1"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        tools:text="Notification" />
+
+    <ImageButton
+        android:id="@+id/diagInfoButton"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="@dimen/space_xs"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/diagInfo"
+        android:padding="6dp"
+        android:src="@drawable/ic_info_outline_20" />
+
+    <TextView
+        android:id="@+id/diagStatusOk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/diagOk"
+        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/diagFixButton"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingHorizontal="@dimen/space_md"
+        android:paddingVertical="@dimen/space_xs"
+        android:text="@string/diagFix"
+        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:visibility="gone" />
+</LinearLayout>
