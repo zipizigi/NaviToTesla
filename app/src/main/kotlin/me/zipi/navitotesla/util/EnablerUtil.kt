@@ -141,6 +141,6 @@ object EnablerUtil {
                 BluetoothManager::class.java,
             )
         val adapter = bluetoothManager.adapter ?: return emptyList()
-        return adapter.bondedDevices.map { it.name }
+        return adapter.bondedDevices.mapNotNull { it.name }
     }
 }
