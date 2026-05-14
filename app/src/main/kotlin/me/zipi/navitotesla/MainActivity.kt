@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
             "requireAccessibility" -> {
                 HomeFragment.nextAction = action
             }
+
             RelaunchNotifier.NOTI_ACTION_VALUE -> {
                 showBriefMessage(getString(R.string.guideRelaunchReason))
             }
