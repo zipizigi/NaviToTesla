@@ -93,7 +93,7 @@ class NaverPoiFinder : PoiFinder {
         // 안내가 시작될 경우 도착지를 이용하여 전송한다. 목적지가 입력된지 특정 시간 내에만 동작한다.
         return notificationText != "내비게이션 - 안내 중" ||
             destination.isNullOrEmpty() ||
-            System.currentTimeMillis() - savedTime > 3 * 60 * 1000
+            System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS
     }
 
     companion object {
@@ -151,17 +151,27 @@ class NaverPoiFinder : PoiFinder {
                 .create(NaverFusionSearchApi::class.java)
 
         // 접근성 도구로 판단한 목적지 임시 저장
-        private var destination: String? = null
-        private var savedTime = System.currentTimeMillis()
+        @Volatile private var destination: String? = null
+
+        @Volatile private var savedTime = System.currentTimeMillis()
+
+        private val PLACEHOLDER_TEXTS =
+            setOf("도착지 입력", "출발지 입력", "경유지 입력")
+
+        private const val DESTINATION_TTL_MS = 60_000L
 
         fun addDestination(dest: String) {
-            // 접근성 도구로 도착지가 비어있을 경우 임시 변수 초기화
-            if (dest.trim().equals("도착지 입력", ignoreCase = true)) {
-                destination = ""
+            val cleaned = dest.trim()
+            if (cleaned.isEmpty()) return
+            if (PLACEHOLDER_TEXTS.any { it.equals(cleaned, ignoreCase = true) }) {
+                destination = null
                 return
             }
-            // 도착지가 입력
-            destination = dest.trim()
+            if (cleaned == destination) {
+                savedTime = System.currentTimeMillis()
+                return
+            }
+            destination = cleaned
             savedTime = System.currentTimeMillis()
         }
     }

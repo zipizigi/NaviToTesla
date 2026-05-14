@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.graphics.Rect
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
@@ -22,20 +23,30 @@ import me.zipi.navitotesla.util.AppUpdaterUtil
 import me.zipi.navitotesla.util.PreferencesUtil
 
 class NaviToTeslaAccessibilityService : AccessibilityService() {
+    @Volatile private var lastCaptureAt = 0L
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         try {
-            if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED && event.eventType != AccessibilityEvent.TYPE_VIEW_SELECTED) {
+            if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED &&
+                event.eventType != AccessibilityEvent.TYPE_VIEW_SELECTED
+            ) {
                 return
             }
-            if (PoiFinderFactory.isNaverMap(event.packageName.toString())) {
-                val window = rootInActiveWindow ?: return
-                // route_search_bar: Compose 기반 경로 검색 바 (출발지, 목적지 순서로 TextView 포함)
-                val searchBarNodes = window.findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/route_search_bar")
-                searchBarNodes
-                    ?.flatMap { collectTexts(it) }
-                    ?.lastOrNull()
-                    ?.let { NaverPoiFinder.addDestination(it) }
-            }
+            if (!PoiFinderFactory.isNaverMap(event.packageName?.toString() ?: return)) return
+
+            val viewId = event.source?.viewIdResourceName
+            if (viewId != null && viewId !in NAVER_CAPTURE_TRIGGER_HINT_IDS) return
+
+            val now = System.currentTimeMillis()
+            if (now - lastCaptureAt < CAPTURE_DEBOUNCE_MS) return
+            lastCaptureAt = now
+
+            val window = rootInActiveWindow ?: return
+            val texts =
+                window
+                    .findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/route_search_bar")
+                    ?.flatMap { collectTextsWithBounds(it) } ?: emptyList()
+            destinationFrom(texts)?.let { NaverPoiFinder.addDestination(it) }
         } catch (e: Exception) {
             AnalysisUtil.warn("accessibility error: " + e.message)
             AnalysisUtil.recordException(e)
@@ -44,16 +55,40 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
-    private fun collectTexts(node: AccessibilityNodeInfo): List<String> {
-        val result = mutableListOf<String>()
-        node.text?.toString()?.takeIf { it.isNotBlank() }?.let { result.add(it) }
+    private fun collectTextsWithBounds(node: AccessibilityNodeInfo): List<Pair<String, Rect>> {
+        if (!node.isVisibleToUser) return emptyList()
+        val result = mutableListOf<Pair<String, Rect>>()
+        node.text?.toString()?.takeIf { it.isNotBlank() }?.let {
+            val rect = Rect()
+            node.getBoundsInScreen(rect)
+            result.add(it to rect)
+        }
         for (i in 0 until node.childCount) {
-            node.getChild(i)?.let { result.addAll(collectTexts(it)) }
+            node.getChild(i)?.let { result.addAll(collectTextsWithBounds(it)) }
         }
         return result
     }
 
+    private fun destinationFrom(texts: List<Pair<String, Rect>>): String? {
+        val anchorY = texts.firstOrNull { it.first == ENTRANCE_CHANGE_LABEL }?.second?.top
+        val mainRows = if (anchorY != null) texts.filter { it.second.top < anchorY } else texts
+        return mainRows.lastOrNull()?.first
+    }
+
     companion object {
+        private const val CAPTURE_DEBOUNCE_MS = 200L
+
+        private const val ENTRANCE_CHANGE_LABEL = "출입구 변경"
+
+        private val NAVER_CAPTURE_TRIGGER_HINT_IDS =
+            setOf(
+                "com.nhn.android.nmap:id/v_start_guidance",
+                "com.nhn.android.nmap:id/btn_route_start",
+                "com.nhn.android.nmap:id/btn_route_goal",
+                "com.nhn.android.nmap:id/btn_route",
+                "com.nhn.android.nmap:id/route_search_bar",
+            )
+
         private var lastNotifyAppVersion: String? = null
 
         /**
