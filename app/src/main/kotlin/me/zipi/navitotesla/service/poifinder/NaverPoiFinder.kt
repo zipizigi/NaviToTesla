@@ -160,6 +160,8 @@ class NaverPoiFinder : PoiFinder {
 
         private const val DESTINATION_TTL_MS = 60_000L
 
+        fun isDestinationEmpty(): Boolean = destination.isNullOrEmpty()
+
         fun addDestination(dest: String) {
             val cleaned = dest.trim()
             if (cleaned.isEmpty()) return

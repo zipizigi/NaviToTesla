@@ -25,6 +25,21 @@ import me.zipi.navitotesla.util.PreferencesUtil
 class NaviToTeslaAccessibilityService : AccessibilityService() {
     @Volatile private var lastCaptureAt = 0L
 
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        connectedAt = System.currentTimeMillis()
+    }
+
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        connectedAt = 0L
+        return super.onUnbind(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connectedAt = 0L
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         try {
             if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED &&
@@ -33,9 +48,6 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 return
             }
             if (!PoiFinderFactory.isNaverMap(event.packageName?.toString() ?: return)) return
-
-            val viewId = event.source?.viewIdResourceName
-            if (viewId != null && viewId !in NAVER_CAPTURE_TRIGGER_HINT_IDS) return
 
             val now = System.currentTimeMillis()
             if (now - lastCaptureAt < CAPTURE_DEBOUNCE_MS) return
@@ -80,14 +92,9 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
         private const val ENTRANCE_CHANGE_LABEL = "출입구 변경"
 
-        private val NAVER_CAPTURE_TRIGGER_HINT_IDS =
-            setOf(
-                "com.nhn.android.nmap:id/v_start_guidance",
-                "com.nhn.android.nmap:id/btn_route_start",
-                "com.nhn.android.nmap:id/btn_route_goal",
-                "com.nhn.android.nmap:id/btn_route",
-                "com.nhn.android.nmap:id/route_search_bar",
-            )
+        @Volatile private var connectedAt = 0L
+
+        fun isAccessibilityServiceRunning(): Boolean = connectedAt > 0L
 
         private var lastNotifyAppVersion: String? = null
 
@@ -102,75 +109,74 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
             packageName: String,
         ) {
             CoroutineScope(Dispatchers.Main).launch {
-                // possible package
                 if (!PoiFinderFactory.isNaverMap(packageName)) {
                     return@launch
                 }
-                if (isAccessibilityServiceEnabled(context)) {
+                if (!isAccessibilityServiceEnabled(context)) {
+                    notifyRequireAccessibility(context)
                     return@launch
                 }
-
-                // AppUpdaterUtil.getCurrentVersion(this.getContext()
-                val currentVersion = AppUpdaterUtil.getCurrentVersion(context)
-                if (lastNotifyAppVersion == null) {
-                    lastNotifyAppVersion =
-                        PreferencesUtil.getString("lastNotifyAppVersionForAccessibility")
+                if (!isAccessibilityServiceRunning()) {
+                    me.zipi.navitotesla.util.RelaunchNotifier.show(context)
                 }
-                if (lastNotifyAppVersion != null && lastNotifyAppVersion == currentVersion) {
-                    return@launch
-                }
-                lastNotifyAppVersion = currentVersion
-                PreferencesUtil.put("lastNotifyAppVersionForAccessibility", currentVersion)
-                val notificationManager =
-                    context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val mChannel =
-                        NotificationChannel(
-                            "notification_channel",
-                            "Notification",
-                            NotificationManager.IMPORTANCE_LOW,
-                        )
-                    notificationManager.createNotificationChannel(mChannel)
-                }
-                val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                intent!!.putExtra("noti_action", "requireAccessibility")
-                val contentIntent =
-                    PendingIntent.getActivity(
-                        context,
-                        1,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                    )
-                val notification =
-                    NotificationCompat
-                        .Builder(context, "notification_channel")
-                        .setContentIntent(contentIntent)
-                        .setContentTitle(context.getString(R.string.requireAccessibility))
-                        .setContentText(context.getString(R.string.guideRequireAccessibility))
-                        .setSmallIcon(R.drawable.ic_baseline_accessibility_new_24)
-                        .setOnlyAlertOnce(true)
-                        .setAutoCancel(true)
-                        .build()
-                notificationManager.notify(2, notification)
             }
+        }
+
+        private suspend fun notifyRequireAccessibility(context: Context) {
+            val currentVersion = AppUpdaterUtil.getCurrentVersion(context)
+            if (lastNotifyAppVersion == null) {
+                lastNotifyAppVersion =
+                    PreferencesUtil.getString("lastNotifyAppVersionForAccessibility")
+            }
+            if (lastNotifyAppVersion != null && lastNotifyAppVersion == currentVersion) {
+                return
+            }
+            lastNotifyAppVersion = currentVersion
+            PreferencesUtil.put("lastNotifyAppVersionForAccessibility", currentVersion)
+            val notificationManager =
+                context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val mChannel =
+                    NotificationChannel(
+                        "notification_channel",
+                        "Notification",
+                        NotificationManager.IMPORTANCE_LOW,
+                    )
+                notificationManager.createNotificationChannel(mChannel)
+            }
+            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+            intent!!.putExtra("noti_action", "requireAccessibility")
+            val contentIntent =
+                PendingIntent.getActivity(
+                    context,
+                    1,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+            val notification =
+                NotificationCompat
+                    .Builder(context, "notification_channel")
+                    .setContentIntent(contentIntent)
+                    .setContentTitle(context.getString(R.string.requireAccessibility))
+                    .setContentText(context.getString(R.string.guideRequireAccessibility))
+                    .setSmallIcon(R.drawable.ic_baseline_accessibility_new_24)
+                    .setOnlyAlertOnce(true)
+                    .setAutoCancel(true)
+                    .build()
+            notificationManager.notify(2, notification)
         }
 
         fun isAccessibilityServiceEnabled(context: Context?): Boolean {
             if (context == null) {
                 return false
             }
-            val am = context.getSystemService(ACCESSIBILITY_SERVICE) as AccessibilityManager
-            val enabledServices =
-                am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
-            for (enabledService in enabledServices) {
-                val enabledServiceInfo = enabledService.resolveInfo.serviceInfo
-                if (enabledServiceInfo.packageName == context.packageName &&
-                    enabledServiceInfo.name == NaviToTeslaAccessibilityService::class.java.name
-                ) {
-                    return true
-                }
-            }
-            return false
+            val expected = "${context.packageName}/${NaviToTeslaAccessibilityService::class.java.name}"
+            val enabled =
+                android.provider.Settings.Secure.getString(
+                    context.contentResolver,
+                    android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+                ) ?: return false
+            return enabled.split(':').any { it == expected }
         }
     }
 }

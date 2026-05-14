@@ -81,7 +81,6 @@ class HomeFragment :
             onChangeTeslaAppInstalled(isInstalled)
         }
         homeViewModel.shareMode.distinctUntilChanged().observe(viewLifecycleOwner) { mode: String ->
-            AnalysisUtil.log("------ $mode")
             onChangedTeslaShareMode(
                 mode,
             )
