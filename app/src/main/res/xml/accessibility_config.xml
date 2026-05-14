@@ -4,6 +4,6 @@
     android:accessibilityEventTypes="typeViewClicked|typeViewSelected"
     android:accessibilityFlags="flagDefault|flagReportViewIds"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:notificationTimeout="100"
+    android:notificationTimeout="300"
     android:canRetrieveWindowContent="true"
     />
