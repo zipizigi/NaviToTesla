@@ -12,6 +12,9 @@ on:
         required: true
         default: 'Description release'
 
+permissions:
+  contents: write
+
 jobs:
   build:
 
@@ -30,17 +33,19 @@ jobs:
         with:
           cache-overwrite-existing: true
 
-      - name: Get short SHA
+      - name: Compute release version
         id: slug
-        run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
+        run: |
+          sha8=$(echo ${GITHUB_SHA} | cut -c1-8)
+          echo "sha8=$sha8" >> $GITHUB_OUTPUT
+          echo "VERSION=1.${{ github.run_number }}" >> $GITHUB_ENV
+          echo "RELEASE=1.${{ github.run_number }}.$sha8" >> $GITHUB_ENV
 
       - name: create google-services.json
         run: |
           echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
 
       - name: build
-        env:
-          RELEASE: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease bundlePlaystoreRelease --stacktrace
@@ -83,68 +88,63 @@ jobs:
 
       - name: copy release file
         run: |
-          cp ${{steps.sign_apk.outputs.signedReleaseFile}} navi-to-tesla_nostore.1.${{ github.run_number }}.apk
-          cp ${{steps.sign_playstore_apk.outputs.signedReleaseFile}} navi-to-tesla_playstore.1.${{ github.run_number }}.apk
-          cp ${{steps.sign_aab.outputs.signedReleaseFile}} navi-to-tesla.1.${{ github.run_number }}.aab
+          cp ${{ steps.sign_apk.outputs.signedReleaseFile }} navi-to-tesla_nostore.${{ env.VERSION }}.apk
+          cp ${{ steps.sign_playstore_apk.outputs.signedReleaseFile }} navi-to-tesla_playstore.${{ env.VERSION }}.apk
+          cp ${{ steps.sign_aab.outputs.signedReleaseFile }} navi-to-tesla.${{ env.VERSION }}.aab
 
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Generate release notes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USER_BODY: ${{ github.event.inputs.releaseBody }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          notes=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -X POST /repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="$RELEASE" \
+            -f target_commitish="$GITHUB_SHA" \
+            --jq .body)
+
+          # Dependencies 섹션을 HTML 주석으로 감싸 렌더링 시 숨김 (소스에는 남음).
+          transformed=$(echo "$notes" | awk '
+            BEGIN { in_deps = 0 }
+            /^### Dependencies$/ { in_deps = 1; print "<!--"; print; next }
+            in_deps && (/^### / || /^## / || /^\*\*Full Changelog/) { in_deps = 0; print "-->"; print; next }
+            { print }
+            END { if (in_deps) print "-->" }
+          ')
+
+          {
+            printf '%s\n\n' "$USER_BODY"
+            printf '%s\n' "$transformed"
+          } > release-notes.md
+
+          echo "===== release-notes.md ====="
+          cat release-notes.md
+
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
-          release_name: Release 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
-          body: ${{ github.event.inputs.releaseBody }}
-          draft: false
+          tag_name: ${{ env.RELEASE }}
+          name: Release ${{ env.RELEASE }}
+          body_path: release-notes.md
           prerelease: true
+          files: |
+            navi-to-tesla_nostore.${{ env.VERSION }}.apk
+            navi-to-tesla_playstore.${{ env.VERSION }}.apk
+            navi-to-tesla.${{ env.VERSION }}.aab
 
-      - name: Upload Release Asset(nostore)
-        id: upload-release-asset-apk
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
-          asset_name: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
-          asset_content_type: application/vnd.android.package-archive
       - uses: actions/upload-artifact@v7
         with:
           name: navi-to-tesla_nostore
-          path: navi-to-tesla_nostore.1.${{ github.run_number }}.apk
-
-      - name: Upload Release Asset(store)
-        id: upload-release-asset-apk-playstore
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
-          asset_name: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
-          asset_content_type: application/vnd.android.package-archive
+          path: navi-to-tesla_nostore.${{ env.VERSION }}.apk
       - uses: actions/upload-artifact@v7
         with:
           name: navi-to-tesla_playstore
-          path: navi-to-tesla_playstore.1.${{ github.run_number }}.apk
-
-      - name: Upload Release Asset
-        id: upload-release-asset-aab
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: navi-to-tesla.1.${{ github.run_number }}.aab
-          asset_name: navi-to-tesla.1.${{ github.run_number }}.aab
-          asset_content_type: application/vnd.android.package-archive
-      # Example use of `signedReleaseFile` output -- not needed
+          path: navi-to-tesla_playstore.${{ env.VERSION }}.apk
       - uses: actions/upload-artifact@v7
         with:
           name: navi-to-tesla_playstore-bundle
-          path: navi-to-tesla.1.${{ github.run_number }}.aab
+          path: navi-to-tesla.${{ env.VERSION }}.aab
 
       - name: Upload to Google play
         id: upload-release-to-play
@@ -152,8 +152,8 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_JSON }}
           packageName: me.zipi.navitotesla
-          releaseFiles: ${{steps.sign_aab.outputs.signedReleaseFile}}
-          releaseName: 1.${{ github.run_number }}.${{ steps.slug.outputs.sha8 }}
+          releaseFiles: ${{ steps.sign_aab.outputs.signedReleaseFile }}
+          releaseName: ${{ env.RELEASE }}
           track: internal
           status: completed
           mappingFile: app/build/outputs/mapping/playstoreRelease/mapping.txt
