@@ -104,18 +104,11 @@ jobs:
             -f target_commitish="$GITHUB_SHA" \
             --jq .body)
 
-          # Dependencies 섹션을 HTML 주석으로 감싸 렌더링 시 숨김 (소스에는 남음).
-          transformed=$(echo "$notes" | awk '
-            BEGIN { in_deps = 0 }
-            /^### Dependencies$/ { in_deps = 1; print "<!--"; print; next }
-            in_deps && (/^### / || /^## / || /^\*\*Full Changelog/) { in_deps = 0; print "-->"; print; next }
-            { print }
-            END { if (in_deps) print "-->" }
-          ')
-
+          # 자동 생성 노트 전체를 HTML 주석으로 감싸 렌더링 시 숨김.
+          # 사용자 입력 description 만 표면에 노출, 자동 노트는 raw/edit 뷰에서만 확인 가능.
           {
             printf '%s\n\n' "$USER_BODY"
-            printf '%s\n' "$transformed"
+            printf '<!--\n%s\n-->\n' "$notes"
           } > release-notes.md
 
           echo "===== release-notes.md ====="
@@ -154,6 +147,7 @@ jobs:
           packageName: me.zipi.navitotesla
           releaseFiles: ${{ steps.sign_aab.outputs.signedReleaseFile }}
           releaseName: ${{ env.RELEASE }}
-          track: internal
+          tracks: internal
           status: completed
+          changesNotSentForReview: true
           mappingFile: app/build/outputs/mapping/playstoreRelease/mapping.txt
