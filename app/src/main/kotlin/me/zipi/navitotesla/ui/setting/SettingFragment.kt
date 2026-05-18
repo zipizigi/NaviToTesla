@@ -145,7 +145,7 @@ class SettingFragment :
             R.string.diagPermAccessibility,
             R.string.guideRequireAccessibility,
             accOk,
-        ) { openAccessibilitySettings() }
+        ) { showAccessibilityConsentDialog() }
 
         val anyFail = !(notiOk && listenerOk && overlayOk && accOk)
         if (!diagnosticsUserToggled) {
@@ -448,18 +448,7 @@ class SettingFragment :
                     activity,
                 )
             ) {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.accessibility_description))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
-                    .setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
-                        setAccRadio(
-                            false,
-                        )
-                    }.create()
-                    .show()
+                showAccessibilityConsentDialog(onDeny = { setAccRadio(false) })
             }
         } else if (checkedId == R.id.radioDuplicatePoiShowPopup) {
             if (!isDuplicatePoiRadioInitializing) {
@@ -516,6 +505,21 @@ class SettingFragment :
         } catch (e: ActivityNotFoundException) {
             startActivity(Intent(Settings.ACTION_SETTINGS))
         }
+    }
+
+    private fun showAccessibilityConsentDialog(onDeny: () -> Unit = {}) {
+        if (activity == null) return
+        AlertDialog
+            .Builder(requireActivity())
+            .setTitle(getString(R.string.guide))
+            .setMessage(getString(R.string.accessibility_description))
+            .setCancelable(true)
+            .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int ->
+                openAccessibilitySettings()
+            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
+                onDeny()
+            }.create()
+            .show()
     }
 
     private fun showOverlayPermissionDialog() {
