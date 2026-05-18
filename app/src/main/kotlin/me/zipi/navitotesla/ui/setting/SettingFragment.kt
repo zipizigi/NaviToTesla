@@ -121,7 +121,6 @@ class SettingFragment :
                 .getEnabledListenerPackages(ctx)
                 .contains(ctx.packageName)
         val overlayOk = Settings.canDrawOverlays(ctx)
-        val accOk = NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(ctx)
         bindDiagnosticRow(
             binding.diagRowNotification,
             R.string.diagPermNotification,
@@ -140,14 +139,8 @@ class SettingFragment :
             R.string.guideGrantOverlayPermission,
             overlayOk,
         ) { openOverlaySettings() }
-        bindDiagnosticRow(
-            binding.diagRowAccessibility,
-            R.string.diagPermAccessibility,
-            R.string.guideRequireAccessibility,
-            accOk,
-        ) { showAccessibilityConsentDialog() }
 
-        val anyFail = !(notiOk && listenerOk && overlayOk && accOk)
+        val anyFail = !(notiOk && listenerOk && overlayOk)
         if (!diagnosticsUserToggled) {
             applyDiagnosticsExpanded(anyFail)
         }

@@ -102,7 +102,6 @@
     <string name="diagPermNotification">알림 권한</string>
     <string name="diagPermNotificationListener">알림 접근 권한</string>
     <string name="diagPermOverlay">다른 앱 위에 표시</string>
-    <string name="diagPermAccessibility">접근성 서비스</string>
     <string name="diagOk">정상</string>
     <string name="diagFix">허용</string>
     <string name="diagInfo">설명</string>

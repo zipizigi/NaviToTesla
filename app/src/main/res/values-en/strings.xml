@@ -102,7 +102,6 @@
     <string name="diagPermNotification">Notification</string>
     <string name="diagPermNotificationListener">Notification access</string>
     <string name="diagPermOverlay">Display over other apps</string>
-    <string name="diagPermAccessibility">Accessibility service</string>
     <string name="diagOk">OK</string>
     <string name="diagFix">Allow</string>
     <string name="diagInfo">Info</string>
