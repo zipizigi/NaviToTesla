@@ -9,6 +9,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileNotFoundException
@@ -66,7 +67,9 @@ object AnalysisUtil {
         get() = externalDir != null
 
     fun recordException(e: Throwable) {
-        firebaseCrashlytics.recordException(e)
+        if (e !is CancellationException) {
+            firebaseCrashlytics.recordException(e)
+        }
         PrintWriter(StringWriter()).use { writer ->
             e.printStackTrace(writer)
             appendLog("WARN", e.toString() + System.lineSeparator() + writer)
