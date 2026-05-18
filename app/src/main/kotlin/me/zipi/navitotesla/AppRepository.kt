@@ -90,12 +90,16 @@ class AppRepository private constructor(
     suspend fun getPoiSync(
         poiName: String,
         packageName: String = "",
-    ): PoiAddressEntity? =
-        if (packageName.isNotEmpty()) {
-            database.poiAddressDao().findPoiByPackage(poiName, packageName)
-        } else {
-            database.poiAddressDao().findPoiLatest(poiName)
-        }
+    ): PoiAddressEntity? {
+        val byPackage =
+            if (packageName.isNotEmpty()) {
+                database.poiAddressDao().findPoiByPackage(poiName, packageName)
+            } else {
+                database.poiAddressDao().findPoiLatest(poiName)
+            }
+        if (byPackage != null) return byPackage
+        return database.poiAddressDao().findRegisteredByPoi(poiName)
+    }
 
     suspend fun savePoi(
         poi: Poi,

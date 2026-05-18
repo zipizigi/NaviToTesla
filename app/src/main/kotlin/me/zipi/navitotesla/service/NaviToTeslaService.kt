@@ -150,6 +150,11 @@ class NaviToTeslaService(
             } else {
                 TeslaShareByApp(context).share(poi)
             }
+        } else {
+            AnalysisUtil.log("share skipped: empty poi name=${poi.poiName}, pkg=${poi.packageName}")
+            makeToast(
+                context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.addressNotFound),
+            )
         }
     }
 
