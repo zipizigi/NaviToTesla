@@ -11,6 +11,11 @@ on:
         description: 'Release description'
         required: true
         default: 'Description release'
+      changesNotSentForReview:
+        description: 'Play 업로드만 하고 review 자동 제출은 생략 (정책 거부로 자동 전송 막힐 때 true)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -149,5 +154,5 @@ jobs:
           releaseName: ${{ env.RELEASE }}
           tracks: internal
           status: completed
-          changesNotSentForReview: true
+          changesNotSentForReview: ${{ github.event.inputs.changesNotSentForReview }}
           mappingFile: app/build/outputs/mapping/playstoreRelease/mapping.txt
