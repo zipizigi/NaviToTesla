@@ -53,6 +53,11 @@ firebase-perf = { module = "com.google.firebase:firebase-perf" }
 junit = "junit:junit:4.13.2"
 androidx-test-junit = "androidx.test.ext:junit:1.3.0"
 androidx-test-espresso = "androidx.test.espresso:espresso-core:3.7.0"
+androidx-test-core = "androidx.test:core:1.7.0"
+androidx-work-testing = "androidx.work:work-testing:2.11.2"
+kotlinx-coroutines-test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0"
+mockk = "io.mockk:mockk:1.14.4"
+robolectric = "org.robolectric:robolectric:4.16"
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
