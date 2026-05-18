@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +22,9 @@ import me.zipi.navitotesla.util.RemoteConfigUtil
 
 class NotificationListener : NotificationListenerService() {
     private lateinit var naviToTeslaService: NaviToTeslaService
-    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    @VisibleForTesting
+    internal var serviceScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
