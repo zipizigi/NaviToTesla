@@ -85,6 +85,10 @@ class NaviToTeslaService(
                     share(poi)
                 }
             } else {
+                val deltaMs = if (lastShareAt > 0L) System.currentTimeMillis() - lastShareAt else -1L
+                AnalysisUtil.log(
+                    "skip share: duplicate dest, pkg=$packageName, addr=${poi.getRoadAddress()}, deltaMs=$deltaMs",
+                )
                 AnalysisUtil.logEvent("previous_request_address", eventParam)
             }
             appRepository.clearExpiredPoi()
@@ -139,6 +143,7 @@ class NaviToTeslaService(
                 },
         )
         if (!poi.isAddressEmpty()) {
+            lastShareAt = System.currentTimeMillis()
             makeToast(context.getString(R.string.requestSend) + "\n" + poi.getRoadAddress())
             val shareMode = PreferencesUtil.getString("shareMode", "app")
             if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
@@ -314,5 +319,8 @@ class NaviToTeslaService(
 
     companion object {
         private val ADDRESS_PATTERN = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
+
+        @Volatile
+        private var lastShareAt: Long = 0L
     }
 }
