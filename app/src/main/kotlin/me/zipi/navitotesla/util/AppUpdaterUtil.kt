@@ -106,7 +106,8 @@ object AppUpdaterUtil {
                         release = response.body()?.firstOrNull { it.isPreRelease != true }
                     }
                     val apkUrl = getLatestApkUrl(release)
-                    val releaseDescription = release?.let { "${it.tagName}\n${it.body}" }.orEmpty()
+                    val releaseDescription =
+                        release?.let { "${it.tagName}\n${extractDescription(it.body)}" }.orEmpty()
 
                     AlertDialog
                         .Builder(
@@ -366,4 +367,18 @@ object AppUpdaterUtil {
         } catch (e: PackageManager.NameNotFoundException) {
             false
         }
+
+    private val HTML_COMMENT_REGEX = Regex("(?s)<!--.*?-->")
+    private const val AUTO_NOTES_MARKER = "## What's Changed"
+
+    /**
+     * GitHub 릴리즈 본문에서 사용자 description 만 추려낸다.
+     * - HTML 주석 블록(`<!-- ... -->`) 제거 (신규 워크플로가 자동 노트를 여기 감싸 둠)
+     * - 그래도 남아있는 자동 생성 마커(`## What's Changed` 이후) 잘라냄 (구버전 릴리즈 호환)
+     */
+    internal fun extractDescription(body: String?): String {
+        if (body == null) return ""
+        val withoutComments = body.replace(HTML_COMMENT_REGEX, "")
+        return withoutComments.substringBefore(AUTO_NOTES_MARKER).trim()
+    }
 }
