@@ -38,6 +38,7 @@ jobs:
         run: |
           sha8=$(echo ${GITHUB_SHA} | cut -c1-8)
           echo "sha8=$sha8" >> $GITHUB_OUTPUT
+          echo "VERSION=1.${{ github.run_number }}" >> $GITHUB_ENV
           echo "RELEASE=1.${{ github.run_number }}.$sha8" >> $GITHUB_ENV
 
       - name: create google-services.json
@@ -87,9 +88,9 @@ jobs:
 
       - name: copy release file
         run: |
-          cp ${{ steps.sign_apk.outputs.signedReleaseFile }} navi-to-tesla_nostore.${{ env.RELEASE }}.apk
-          cp ${{ steps.sign_playstore_apk.outputs.signedReleaseFile }} navi-to-tesla_playstore.${{ env.RELEASE }}.apk
-          cp ${{ steps.sign_aab.outputs.signedReleaseFile }} navi-to-tesla.${{ env.RELEASE }}.aab
+          cp ${{ steps.sign_apk.outputs.signedReleaseFile }} navi-to-tesla_nostore.${{ env.VERSION }}.apk
+          cp ${{ steps.sign_playstore_apk.outputs.signedReleaseFile }} navi-to-tesla_playstore.${{ env.VERSION }}.apk
+          cp ${{ steps.sign_aab.outputs.signedReleaseFile }} navi-to-tesla.${{ env.VERSION }}.aab
 
       - name: Generate release notes
         env:
@@ -128,22 +129,22 @@ jobs:
           body_path: release-notes.md
           prerelease: true
           files: |
-            navi-to-tesla_nostore.${{ env.RELEASE }}.apk
-            navi-to-tesla_playstore.${{ env.RELEASE }}.apk
-            navi-to-tesla.${{ env.RELEASE }}.aab
+            navi-to-tesla_nostore.${{ env.VERSION }}.apk
+            navi-to-tesla_playstore.${{ env.VERSION }}.apk
+            navi-to-tesla.${{ env.VERSION }}.aab
 
       - uses: actions/upload-artifact@v7
         with:
           name: navi-to-tesla_nostore
-          path: navi-to-tesla_nostore.${{ env.RELEASE }}.apk
+          path: navi-to-tesla_nostore.${{ env.VERSION }}.apk
       - uses: actions/upload-artifact@v7
         with:
           name: navi-to-tesla_playstore
-          path: navi-to-tesla_playstore.${{ env.RELEASE }}.apk
+          path: navi-to-tesla_playstore.${{ env.VERSION }}.apk
       - uses: actions/upload-artifact@v7
         with:
           name: navi-to-tesla_playstore-bundle
-          path: navi-to-tesla.${{ env.RELEASE }}.aab
+          path: navi-to-tesla.${{ env.VERSION }}.aab
 
       - name: Upload to Google play
         id: upload-release-to-play
