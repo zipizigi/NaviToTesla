@@ -76,7 +76,7 @@
     <string name="guideGrantBluetoothPermission">해당 기능을 사용하려면 블루투스 접근 권한이 필요합니다.</string>
     <string name="enabledApp">Navi to Tesla가 활성화 되었습니다</string>
     <string name="disabledApp">Navi to Tesla가 비활성화 되었습니다</string>
-    <string name="accessibility_description">Navi to Tesla는 특정 내비게이션의 목적지를 가져오기 위해 Android 접근성 기능을 사용합니다.\n\n[접근 대상 앱]\n- 네이버 내비\n\n[수집 정보]\n- 위 내비게이션 앱의 목적지 정보만 수집합니다.\n- 그 외 정보는 일절 수집하지 않습니다.\n\n[수집 시점]\n- 위 내비게이션 안내 시작 시 수집합니다.\n- 앱이 닫혀 있더라도, 수집 시점에 백그라운드에서 동작합니다.\n\n[사용 목적]\n- 고객 본인 소유 Tesla 차량으로 목적지 전송\n- 빠른 응답을 위해 변환된 주소·좌표를 기기 내부에 임시 캐시\n\n[저장 정보]\n- 저장 위치: 사용자 기기 내부\n- 자동 정리: 일정 기간이 지난 캐시는 자동 삭제됩니다.\n\n[외부 공유 범위]\n- 고객 본인 소유 Tesla 차량 외 어떤 서버나 제3자에도 전송·공유하지 않습니다.\n\n[비활성화 시 영향]\n- 위에 명시한 내비게이션 연동을 사용할 수 없습니다.\n- 다른 내비게이션은 정상 동작합니다.\n\n[비활성화 방법]\n- Android 설정에서 언제든 끌 수 있습니다.</string>
+    <string name="accessibility_description">Navi to Tesla는 특정 내비게이션의 목적지를 가져오기 위해 Android 접근성 기능을 사용합니다.\n\n[접근 대상 앱]\n대상 앱은 접근성 기능 외에는 목적지 정보를 가져올 방법이 없습니다.\n- 네이버 내비\n\n[수집 정보]\n- 위 내비게이션 앱의 목적지 정보만 수집합니다.\n- 그 외 정보는 일절 수집하지 않습니다.\n\n[수집 시점]\n- 위 내비게이션 안내 시작 시 수집합니다.\n- 앱이 닫혀 있더라도, 수집 시점에 백그라운드에서 동작합니다.\n\n[사용 목적]\n- 고객 본인 소유 Tesla 차량으로 목적지 전송\n- 빠른 응답을 위해 변환된 주소·좌표를 기기 내부에 임시 캐시\n\n[저장 정보]\n- 저장 대상: 목적지명, 변환된 주소, 좌표\n- 저장 위치: 사용자 기기 내부\n- 자동 정리: 일정 기간이 지난 캐시는 자동 삭제됩니다.\n\n[외부 공유 범위]\n- 고객 본인 소유 Tesla 차량 외 어떤 서버나 제3자에도 전송·공유하지 않습니다.\n\n[비활성화 시 영향]\n- 위에 명시한 내비게이션 연동을 사용할 수 없습니다.\n- 다른 내비게이션은 정상 동작합니다.\n\n[비활성화 방법]\n- Android 설정에서 언제든 끌 수 있습니다.</string>
     <string name="requireAccessibility">접근성 서비스가 필요합니다</string>
     <string name="guideRequireAccessibility">일부 내비게이션 앱의 경우 접근성 서비스를 이용하여 Navi to Tesla를 이용할 수 있습니다.\n자세한 내용은 설정탭에서 확인할 수 있습니다.</string>
     <string name="guideRequireRelaunch">Navi to Tesla 업데이트가 적용되었습니다. 다시 실행해 주세요.</string>

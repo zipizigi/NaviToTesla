@@ -70,7 +70,6 @@ class NaviToTeslaService(
         }
         AnalysisUtil.setCustomKey("packageName", packageName)
         AnalysisUtil.setCustomKey("notificationTitle", notificationTitle ?: "")
-        AnalysisUtil.setCustomKey("notificationText", notificationText ?: "")
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
         try {

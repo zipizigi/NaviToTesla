@@ -1,8 +1,10 @@
 # 접근성 기능 사용 안내
 
-Navi to Tesla 는 특정 내비게이션의 목적지를 가져오기 위해 Android 접근성(AccessibilityService) 기능을 사용합니다. 
+Navi to Tesla 는 특정 내비게이션의 목적지를 가져오기 위해 Android 접근성(AccessibilityService) 기능을 사용합니다.
 
 ## 접근 대상 앱
+
+대상 앱은 접근성 기능 외에는 목적지 정보를 가져올 방법이 없습니다.
 
 - 네이버 내비 (`com.nhn.android.nmap`)
 

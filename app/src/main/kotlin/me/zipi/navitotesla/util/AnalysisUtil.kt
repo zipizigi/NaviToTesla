@@ -9,7 +9,6 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileNotFoundException
@@ -20,6 +19,7 @@ import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
 
 object AnalysisUtil {
     private val firebaseCrashlytics = FirebaseCrashlytics.getInstance()
@@ -44,23 +44,24 @@ object AnalysisUtil {
     }
 
     fun log(message: String) {
-        firebaseCrashlytics.log(message)
         appendLog("INFO", message)
     }
 
     fun info(message: String) {
-        firebaseCrashlytics.log(message)
         appendLog("INFO", message)
     }
 
     fun warn(message: String) {
-        firebaseCrashlytics.log(message)
         appendLog("WARN", message)
     }
 
     fun error(message: String) {
-        firebaseCrashlytics.log(message)
         appendLog("ERROR", message)
+    }
+
+    fun report(message: String) {
+        firebaseCrashlytics.log(message)
+        log(message)
     }
 
     val isWritableLog: Boolean
