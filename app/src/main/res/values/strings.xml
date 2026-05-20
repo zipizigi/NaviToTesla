@@ -45,8 +45,6 @@
     <string name="sendDestination">Send destination</string>
     <string name="confirmSendDestination">Send destination?</string>
     <string name="guideFavorite">You can enter real addresses of destinations that overlap with your favorite destinations, such as home and work.</string>
-    <string name="viewLogFile">View log file</string>
-    <string name="guideViewLogFile">Do you want to check the log file (%1$d%2$s)?</string>
     <string name="grantPermission">Request for permission</string>
     <string name="guideGrantPermission">Notification access permission is required to use Navi To Tesla.\nPlease grant permission to Navi To Tesla.</string>
     <string name="guideGrantStoragePermission">Storage access permission is required to use Navi To Tesla.\nPlease grant permission to Navi To Tesla.</string>
@@ -107,6 +105,7 @@
     <string name="diagPermNotification">Notification</string>
     <string name="diagPermNotificationListener">Notification access</string>
     <string name="diagPermOverlay">Display over other apps</string>
+    <string name="diagLogFile">Log file</string>
     <string name="diagOk">OK</string>
     <string name="diagFix">Allow</string>
     <string name="diagInfo">Info</string>

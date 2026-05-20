@@ -1,6 +1,7 @@
 package me.zipi.navitotesla
 
 import android.app.Application
+import android.os.Build
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,10 @@ class Application : Application() {
         AppRepository.initialize(database)
         RemoteConfigUtil.initialize()
         AnalysisUtil.initialize(this.applicationContext)
+        AnalysisUtil.log(
+            "App started: v${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_MODE}, " +
+                "sdk=${Build.VERSION.SDK_INT}, device=${Build.MANUFACTURER} ${Build.MODEL})",
+        )
         if (!BuildConfig.DEBUG) {
             CoroutineScope(Dispatchers.IO).launch { TokenWorker.startBackgroundWork(this@Application) }
             FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = false

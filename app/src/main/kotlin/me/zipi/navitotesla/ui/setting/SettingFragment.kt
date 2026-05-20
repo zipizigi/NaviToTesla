@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,8 @@ import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -27,12 +30,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentSettingsBinding
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.ui.setting.ConditionRecyclerAdapter.OnDeleteButtonClicked
+import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.EnablerUtil
 import me.zipi.navitotesla.util.PreferencesUtil
+import java.io.File
 
 class SettingFragment :
     Fragment(),
@@ -140,6 +146,8 @@ class SettingFragment :
             overlayOk,
         ) { openOverlaySettings() }
 
+        bindLogRow()
+
         val anyFail = !(notiOk && listenerOk && overlayOk)
         if (!diagnosticsUserToggled) {
             applyDiagnosticsExpanded(anyFail)
@@ -154,6 +162,64 @@ class SettingFragment :
         diagnosticsExpanded = expanded
         binding.diagContent.visibility = if (expanded) View.VISIBLE else View.GONE
         binding.diagExpandIcon.rotation = if (expanded) 180f else 0f
+    }
+
+    private fun bindLogRow() {
+        val ctx = context ?: return
+        val row = binding.diagRowLogFile
+        if (!AnalysisUtil.isWritableLog) {
+            row.root.visibility = View.GONE
+            return
+        }
+        lifecycleScope.launch {
+            val size = withContext(Dispatchers.IO) { AnalysisUtil.logFileSize }
+            if (size <= 0L) {
+                row.root.visibility = View.GONE
+                return@launch
+            }
+            row.root.visibility = View.VISIBLE
+            row.logSize.text = Formatter.formatShortFileSize(ctx, size)
+            row.logOpenButton.setOnClickListener { openLogFile() }
+        }
+    }
+
+    private fun openLogFile() {
+        val activity = activity ?: return
+        if (!AnalysisUtil.isWritableLog) return
+        try {
+            val uri =
+                FileProvider.getUriForFile(
+                    activity,
+                    "${BuildConfig.APPLICATION_ID}.provider",
+                    File(AnalysisUtil.logFilePath),
+                )
+            val intent =
+                Intent(Intent.ACTION_VIEW)
+                    .setDataAndType(uri, "text/plain")
+                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            AlertDialog
+                .Builder(activity)
+                .setCancelable(true)
+                .setTitle(getString(R.string.requireLogViewApp))
+                .setMessage(getString(R.string.guideRequireLogViewApp))
+                .setPositiveButton(getString(R.string.install)) { _: DialogInterface?, _: Int ->
+                    try {
+                        startActivity(
+                            Intent(Intent.ACTION_VIEW, "market://search?q=log viewer".toUri()),
+                        )
+                    } catch (_: ActivityNotFoundException) {
+                        startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                "https://play.google.com/store/apps/search?q=log viewer".toUri(),
+                            ),
+                        )
+                    }
+                }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                .show()
+        }
     }
 
     private fun bindDiagnosticRow(

@@ -15,7 +15,6 @@ import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnLongClickListener
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -23,7 +22,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -47,13 +45,11 @@ import me.zipi.navitotesla.util.AppUpdaterUtil
 import me.zipi.navitotesla.util.PreferencesUtil
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent.setEventListener
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
-import java.io.File
 
 class HomeFragment :
     Fragment(),
     AdapterView.OnItemSelectedListener,
     View.OnClickListener,
-    OnLongClickListener,
     MaterialButtonToggleGroup.OnButtonCheckedListener {
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var binding: FragmentHomeBinding
@@ -98,7 +94,6 @@ class HomeFragment :
         binding.btnPaste.setOnClickListener(this)
         binding.btnTokenClear.setOnClickListener(this)
         binding.txtVersion.setOnClickListener(this)
-        binding.txtVersion.setOnLongClickListener(this)
 
         lifecycleScope.launch(Dispatchers.Default) {
             permissionGrantedCheck()
@@ -125,35 +120,6 @@ class HomeFragment :
     override fun onAttach(context: Context) {
         super.onAttach(context)
         naviToTeslaService = NaviToTeslaService(context)
-    }
-
-    override fun onLongClick(view: View): Boolean {
-        if (activity == null) {
-            return false
-        }
-        lifecycleScope.launch(Dispatchers.Default) {
-            if (view.id == binding.txtVersion.id && AnalysisUtil.isWritableLog) {
-                var size = (AnalysisUtil.logFileSize / 1024.0).toInt()
-                var type = "KB"
-                if (size > 1024) {
-                    type = "MB"
-                    size /= 1024
-                }
-                launch(Dispatchers.Main) {
-                    AlertDialog
-                        .Builder(requireActivity())
-                        .setCancelable(true)
-                        .setTitle(getString(R.string.viewLogFile))
-                        .setMessage(getString(R.string.guideViewLogFile, size, type))
-                        .setPositiveButton(getString(R.string.open)) { _: DialogInterface?, _: Int -> openLogFile() }
-                        .setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
-                        .setNeutralButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
-                            AnalysisUtil.deleteLogFile()
-                        }.show()
-                }
-            }
-        }
-        return false
     }
 
     override fun onClick(view: View) {
@@ -481,48 +447,6 @@ class HomeFragment :
             )
         }
         binding.txtVersion.text = sb.toString()
-    }
-
-    private fun openLogFile() {
-        if (activity == null && !AnalysisUtil.isWritableLog) {
-            return
-        }
-        try {
-            val uri =
-                FileProvider.getUriForFile(
-                    requireActivity(),
-                    BuildConfig.APPLICATION_ID + ".provider",
-                    File(AnalysisUtil.logFilePath),
-                )
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(uri, "plain/text")
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            AlertDialog
-                .Builder(requireActivity())
-                .setCancelable(true)
-                .setTitle(getString(R.string.requireLogViewApp))
-                .setMessage(getString(R.string.guideRequireLogViewApp))
-                .setPositiveButton(getString(R.string.install)) { _: DialogInterface?, _: Int ->
-                    try {
-                        startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                "market://search?q=log viewer".toUri(),
-                            ),
-                        )
-                    } catch (anfe: ActivityNotFoundException) {
-                        startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                "https://play.google.com/store/apps/search?q=log viewer".toUri(),
-                            ),
-                        )
-                    }
-                }.setNegativeButton(getString(R.string.close)) { _: DialogInterface?, _: Int -> }
-                .show()
-        }
     }
 
     private val isTeslaAppInstalled: Boolean
