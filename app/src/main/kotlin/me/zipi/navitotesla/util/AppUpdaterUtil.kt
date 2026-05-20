@@ -289,6 +289,10 @@ object AppUpdaterUtil {
     }
 
     private fun permissionCheck(activity: Activity): Boolean {
+        // playstore 빌드는 자체 APK 다운로드 경로가 없어 외부 저장소 권한 자체가 불필요.
+        if (BuildConfig.BUILD_MODE == "playstore") {
+            return true
+        }
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
             return true
         }

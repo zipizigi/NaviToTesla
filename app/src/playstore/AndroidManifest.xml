@@ -2,4 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove"/>
+    <!--
+        AppUpdate 라이브러리(AndroidAppUpdateLibrary) 가 manifest 에 자동 선언하지만,
+        playstore 빌드는 Play 스토어 redirect 만 쓰고 APK 자동 다운로드 경로를 안 타므로 권한 제거.
+    -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
 </manifest>
