@@ -45,7 +45,6 @@ class TeslaShareByApi(
             AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: ""))
 
             AnalysisUtil.log("send_fail")
-            AnalysisUtil.setCustomKey("address", address)
             if (result?.errorDescription != null) {
                 AnalysisUtil.log("errorDescription: " + result.errorDescription)
             }
