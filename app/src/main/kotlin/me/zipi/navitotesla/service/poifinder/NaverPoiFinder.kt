@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.service.poifinder
 
-import android.util.Log
 import me.zipi.navitotesla.api.NaverFusionSearchApi
 import me.zipi.navitotesla.api.NaverMapApi
 import me.zipi.navitotesla.model.Poi
@@ -40,8 +39,7 @@ class NaverPoiFinder : PoiFinder {
         val poiList = mutableListOf<Poi>()
         val response = naverMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
-            Log.w(this.javaClass.name, "naver api error: " + response.errorBody()?.string().orEmpty())
-            AnalysisUtil.log("naver api error: " + response.errorBody()?.string().orEmpty())
+            AnalysisUtil.warn("naver api error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.items?.let { items ->
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName")
@@ -65,8 +63,7 @@ class NaverPoiFinder : PoiFinder {
         val poiList = mutableListOf<Poi>()
         val response = naverFusionSearchApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
-            Log.w(this.javaClass.name, "naver fusion search error: " + response.errorBody()?.string().orEmpty())
-            AnalysisUtil.log("naver fusion search error: " + response.errorBody()?.string().orEmpty())
+            AnalysisUtil.warn("naver fusion search error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.items?.let { items ->
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName")

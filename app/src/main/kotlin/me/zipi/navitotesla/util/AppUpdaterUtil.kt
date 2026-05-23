@@ -12,7 +12,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import androidx.core.net.toUri
@@ -137,13 +136,12 @@ object AppUpdaterUtil {
                     dialogLastCheck = System.currentTimeMillis()
                     ResponseCloser.closeAll(response)
                 } catch (e: Exception) {
-                    Log.w(AppUpdaterUtil::class.java.name, "error update dialog show", e)
-                    AnalysisUtil.log("fail update")
+                    AnalysisUtil.warn("error update dialog show", e)
                     AnalysisUtil.recordException(e)
                 }
             }
         } catch (e: NullPointerException) {
-            Log.w(AppUpdaterUtil::class.java.name, "activity is null", e)
+            AnalysisUtil.warn("activity is null", e)
         }
     }
 
@@ -207,8 +205,7 @@ object AppUpdaterUtil {
             }
             clearDoNotShow()
         } catch (e: Exception) {
-            Log.w(AppUpdaterUtil::class.java.name, "fail update")
-            AnalysisUtil.log("fail update")
+            AnalysisUtil.warn("fail update", e)
             AnalysisUtil.recordException(e)
         }
     }
@@ -239,7 +236,7 @@ object AppUpdaterUtil {
                     ]
                 }
             } catch (e: Exception) {
-                Log.w(AppUpdaterUtil::class.java.name, "getLatestVersion fail", e)
+                AnalysisUtil.warn("getLatestVersion fail", e)
                 AnalysisUtil.recordException(e)
             }
             return@withContext "1.0"

@@ -4,7 +4,6 @@ import android.app.Notification
 import android.os.Bundle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.CoroutineScope
@@ -39,11 +38,7 @@ class NotificationListener : NotificationListenerService() {
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         super.onNotificationRemoved(sbn)
         if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
-            Log.i(
-                this.javaClass.name,
-                "onNotificationRemoved ~ " +
-                    " packageName: " + sbn.packageName,
-            )
+            AnalysisUtil.log("onNotificationRemoved ~ packageName: ${sbn.packageName}")
             serviceScope.launch { naviToTeslaService.notificationClear() }
             val param = Bundle()
             param.putString("package", sbn.packageName)
@@ -61,16 +56,10 @@ class NotificationListener : NotificationListenerService() {
                 val subText = extras.getString(Notification.EXTRA_SUB_TEXT) ?: ""
                 val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
 
-                Log.i(
-                    this.javaClass.name,
-                    "onNotificationPosted ~ " +
-                        " packageName: " + sbn.packageName +
-                        " id: " + sbn.id +
-                        " postTime: " + sbn.postTime +
-                        " title: " + title +
-                        " text : " + text +
-                        " subText: " + subText +
-                        " bigText: " + bigText,
+                AnalysisUtil.log(
+                    "onNotificationPosted ~ packageName: ${sbn.packageName} " +
+                        "id: ${sbn.id} postTime: ${sbn.postTime} title: $title " +
+                        "text: $text subText: $subText bigText: $bigText",
                 )
 
                 val bundle = Bundle()

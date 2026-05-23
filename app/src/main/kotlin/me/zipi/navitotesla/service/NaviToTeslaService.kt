@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
 import com.google.firebase.perf.metrics.AddTrace
 import me.zipi.navitotesla.AppRepository
@@ -40,7 +39,6 @@ class NaviToTeslaService(
 
     private fun makeToast(text: String) {
         try {
-            Log.i(this.javaClass.name, text)
             AnalysisUtil.log(text)
             Handler(Looper.getMainLooper()).post {
                 Toast.makeText(context, text, Toast.LENGTH_LONG).show()
@@ -122,7 +120,7 @@ class NaviToTeslaService(
             AnalysisUtil.logEvent("error_share", eventParam)
             AnalysisUtil.recordException(e)
         } catch (e: Exception) {
-            Log.e(NaviToTeslaService::class.java.name, "thread inside error", e)
+            AnalysisUtil.error("thread inside error", e)
             makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.apiError))
             AnalysisUtil.logEvent("error_share", eventParam)
             AnalysisUtil.recordException(e)
@@ -252,7 +250,7 @@ class NaviToTeslaService(
             }
             ResponseCloser.closeAll(newToken)
         } catch (e: Exception) {
-            Log.w(this.javaClass.name, "refresh token fail", e)
+            AnalysisUtil.warn("refresh token fail", e)
             makeToast(context.getString(R.string.refreshTokenError))
             AnalysisUtil.recordException(e)
         }
@@ -294,10 +292,10 @@ class NaviToTeslaService(
                         )
                     }?.let { vehicles.addAll(it) }
             } else {
-                Log.w(this.javaClass.name, "get vehicle error: $response")
+                AnalysisUtil.warn("get vehicle error: $response")
             }
         } catch (e: Exception) {
-            Log.w(this.javaClass.name, "get vehicle error", e)
+            AnalysisUtil.warn("get vehicle error", e)
             AnalysisUtil.recordException(e)
         }
         if (vehicles.isEmpty()) {

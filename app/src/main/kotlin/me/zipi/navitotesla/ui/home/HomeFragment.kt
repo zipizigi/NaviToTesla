@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.text.method.ScrollingMovementMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -265,7 +264,7 @@ class HomeFragment :
             if (homeViewModel.refreshToken.value != token.refreshToken || homeViewModel.vehicleListLiveData.value.isNullOrEmpty()) {
                 homeViewModel.refreshToken.postValue(token.refreshToken)
             } else {
-                Log.i(this.javaClass.name, "skip refresh token fetch, token unchanged and vehicles loaded")
+                AnalysisUtil.log("skip refresh token fetch, token unchanged and vehicles loaded")
             }
         }
     }
@@ -287,7 +286,7 @@ class HomeFragment :
                 PreferencesUtil.put("denyNotificationPermission", false)
                 PreferencesUtil.put("denyFilePermission", false)
             } catch (e: Exception) {
-                Log.w(this.javaClass.name, "clear poi cache error", e)
+                AnalysisUtil.warn("clear poi cache error", e)
                 AnalysisUtil.recordException(e)
             }
             if (activity != null) {
@@ -383,7 +382,7 @@ class HomeFragment :
                 withContext(Dispatchers.Main) {
                     binding.btnSave.isEnabled = true
                 }
-                Log.e(this.javaClass.name, "thread inside error", e)
+                AnalysisUtil.error("thread inside error", e)
                 AnalysisUtil.recordException(e)
             }
         }

@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
@@ -31,7 +32,18 @@ class ShareWorker(
         if (AppRepository.isInitialized()) NaviToTeslaService(context) else null
     private val channelId = "location_share_channel"
 
-    override suspend fun getForegroundInfo(): ForegroundInfo = ForegroundInfo(1, createNotification())
+    override suspend fun getForegroundInfo(): ForegroundInfo =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14 (API 34) 부터는 ForegroundInfo 에 서비스 타입 필수.
+            // 짧은 작업(목적지 1회 전송) 이라 SHORT_SERVICE 가 적합.
+            ForegroundInfo(
+                1,
+                createNotification(),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE,
+            )
+        } else {
+            ForegroundInfo(1, createNotification())
+        }
 
     override suspend fun doWork(): Result {
         if (naviToTeslaService == null) {

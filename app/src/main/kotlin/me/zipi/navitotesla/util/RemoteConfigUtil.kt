@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.util
 
-import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
@@ -21,7 +20,7 @@ object RemoteConfigUtil {
         remoteConfig.setConfigSettingsAsync(configSettings)
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
         remoteConfig.fetchAndActivate().addOnCompleteListener {
-            Log.i(RemoteConfigUtil::class.java.name, "Remote config fetch ok")
+            AnalysisUtil.log("Remote config fetch ok")
         }
     }
 
