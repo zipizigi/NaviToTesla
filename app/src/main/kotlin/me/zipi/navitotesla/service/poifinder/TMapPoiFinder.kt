@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.service.poifinder
 
-import android.util.Log
 import me.zipi.navitotesla.api.TMapApi
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -33,8 +32,7 @@ class TMapPoiFinder : PoiFinder {
         val listPoi = mutableListOf<Poi>()
         val response = tMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
-            Log.w(this.javaClass.name, "Tmap api error: " + response.errorBody())
-            AnalysisUtil.log("Tmap api error: " + response.errorBody()?.string().orEmpty())
+            AnalysisUtil.warn("Tmap api error: " + response.errorBody()?.string().orEmpty())
         }
         if (response.isSuccessful && response.body()?.searchPoiInfo != null) {
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부

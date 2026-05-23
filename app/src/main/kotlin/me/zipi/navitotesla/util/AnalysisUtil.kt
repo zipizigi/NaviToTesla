@@ -51,13 +51,24 @@ object AnalysisUtil {
         appendLog("INFO", message)
     }
 
-    fun warn(message: String) {
-        appendLog("WARN", message)
+    fun warn(
+        message: String,
+        e: Throwable? = null,
+    ) {
+        appendLog("WARN", withStack(message, e))
     }
 
-    fun error(message: String) {
-        appendLog("ERROR", message)
+    fun error(
+        message: String,
+        e: Throwable? = null,
+    ) {
+        appendLog("ERROR", withStack(message, e))
     }
+
+    private fun withStack(
+        message: String,
+        e: Throwable?,
+    ): String = if (e == null) message else "$message${System.lineSeparator()}${e.stackTraceToString()}"
 
     fun report(message: String) {
         firebaseCrashlytics.log(message)

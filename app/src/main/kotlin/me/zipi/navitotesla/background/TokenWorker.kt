@@ -1,7 +1,6 @@
 package me.zipi.navitotesla.background
 
 import android.content.Context
-import android.util.Log
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -20,7 +19,6 @@ class TokenWorker(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
-        Log.i(TokenWorker::class.java.name, "Start background refresh token")
         AnalysisUtil.log("Start background refresh token")
         val service = NaviToTeslaService(applicationContext)
         val token = service.refreshToken()

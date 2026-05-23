@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.service.poifinder
 
-import android.util.Log
 import me.zipi.navitotesla.api.KakaoMapApi
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -27,8 +26,7 @@ class KakaoPoiFinder : PoiFinder {
         val poiList = mutableListOf<Poi>()
         val response = kakaoMapApi.search(poiName)
         if (!response.isSuccessful || response.body() == null) {
-            Log.w(this.javaClass.name, "Kakao api error: " + response.errorBody())
-            AnalysisUtil.log("Kakao api error: " + response.errorBody()?.string().orEmpty())
+            AnalysisUtil.warn("Kakao api error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.let { body ->
             val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부

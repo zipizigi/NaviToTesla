@@ -2,7 +2,6 @@ package me.zipi.navitotesla.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -44,7 +43,7 @@ object PreferencesUtil {
                 instance.edit { remove(key) }
                 true
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "remove  error", e)
+                AnalysisUtil.warn("remove  error", e)
                 AnalysisUtil.recordException(e)
                 false
             }
@@ -55,7 +54,7 @@ object PreferencesUtil {
             try {
                 instance.edit { clear() }
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "clear error", e)
+                AnalysisUtil.warn("clear error", e)
                 AnalysisUtil.recordException(e)
             }
         }
@@ -70,7 +69,7 @@ object PreferencesUtil {
                 instance.edit { putBoolean(key, value) }
                 true
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "put boolean error", e)
+                AnalysisUtil.warn("put boolean error", e)
                 AnalysisUtil.recordException(e)
                 false
             }
@@ -85,7 +84,7 @@ object PreferencesUtil {
                 instance.edit { putLong(key, value) }
                 true
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "put long error", e)
+                AnalysisUtil.warn("put long error", e)
                 AnalysisUtil.recordException(e)
                 false
             }
@@ -100,7 +99,7 @@ object PreferencesUtil {
                 instance.edit { putString(key, value) }
                 true
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "put string error", e)
+                AnalysisUtil.warn("put string error", e)
                 AnalysisUtil.recordException(e)
                 false
             }
@@ -114,7 +113,7 @@ object PreferencesUtil {
             try {
                 instance.getString(key, defaultValue)
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "get string error", e)
+                AnalysisUtil.warn("get string error", e)
                 AnalysisUtil.recordException(e)
                 defaultValue
             }
@@ -127,7 +126,7 @@ object PreferencesUtil {
         try {
             instance.getString(key, defaultValue)
         } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "get string error", e)
+            AnalysisUtil.warn("get string error", e)
             AnalysisUtil.recordException(e)
             defaultValue
         }
@@ -146,7 +145,7 @@ object PreferencesUtil {
             try {
                 instance.getBoolean(key, defaultValue)
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "get boolean error", e)
+                AnalysisUtil.warn("get boolean error", e)
                 AnalysisUtil.recordException(e)
                 defaultValue
             }
@@ -158,7 +157,7 @@ object PreferencesUtil {
                 val result = instance.getLong(key, -1)
                 if (result == -1L) null else result
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "get long error", e)
+                AnalysisUtil.warn("get long error", e)
                 AnalysisUtil.recordException(e)
                 null
             }
@@ -169,7 +168,7 @@ object PreferencesUtil {
             val result = instance.getLong(key, -1)
             if (result == -1L) null else result
         } catch (e: Exception) {
-            Log.w(PreferencesUtil::class.java.name, "get long error", e)
+            AnalysisUtil.warn("get long error", e)
             AnalysisUtil.recordException(e)
             null
         }
@@ -182,7 +181,7 @@ object PreferencesUtil {
             try {
                 instance.getLong(key, defaultValue)
             } catch (e: Exception) {
-                Log.w(PreferencesUtil::class.java.name, "get long error", e)
+                AnalysisUtil.warn("get long error", e)
                 AnalysisUtil.recordException(e)
                 defaultValue
             }

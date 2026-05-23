@@ -1,7 +1,6 @@
 package me.zipi.navitotesla.service.share
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.delay
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
@@ -41,7 +40,7 @@ class TeslaShareByApi(
             AnalysisUtil.log("send_success")
             AnalysisUtil.logEvent("share_by_api_success", eventParam(poi))
         } else {
-            Log.w(NaviToTeslaService::class.java.name, response.toString())
+            AnalysisUtil.warn(response.toString())
             AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: ""))
 
             AnalysisUtil.log("send_fail")
