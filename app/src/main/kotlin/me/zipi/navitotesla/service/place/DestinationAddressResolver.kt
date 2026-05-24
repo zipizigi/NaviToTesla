@@ -51,7 +51,9 @@ object DestinationAddressResolver {
                 return jibunAddress
             }
 
-            null -> Unit
+            null -> {
+                // miss → 다음 단계
+            }
         }
 
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
