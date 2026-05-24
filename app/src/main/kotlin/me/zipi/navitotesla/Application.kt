@@ -24,9 +24,9 @@ class Application : Application() {
             "App started: v${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_MODE}, " +
                 "sdk=${Build.VERSION.SDK_INT}, device=${Build.MANUFACTURER} ${Build.MODEL})",
         )
+        FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
         if (!BuildConfig.DEBUG) {
             CoroutineScope(Dispatchers.IO).launch { TokenWorker.startBackgroundWork(this@Application) }
-            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = false
         }
     }
 
