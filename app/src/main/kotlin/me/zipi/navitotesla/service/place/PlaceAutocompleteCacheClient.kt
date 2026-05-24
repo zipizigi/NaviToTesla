@@ -1,6 +1,7 @@
 package me.zipi.navitotesla.service.place
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
@@ -29,6 +30,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
     private const val COLLECTION = "place_autocomplete_cache"
     private const val FIELD_SEARCHABLE = "searchable"
     private const val FIELD_EXPIRES_AT = "expiresAt"
+    private const val FIELD_CREATED_AT = "createdAt"
     private const val DEFAULT_TTL_DAYS = 30L
 
     override suspend fun lookup(address: String): PlaceAutocompleteCacheEntry? =
@@ -71,6 +73,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
                     mapOf(
                         FIELD_SEARCHABLE to searchable,
                         FIELD_EXPIRES_AT to expiresAt,
+                        FIELD_CREATED_AT to FieldValue.serverTimestamp(),
                     ),
                 ).await()
         } catch (e: CancellationException) {

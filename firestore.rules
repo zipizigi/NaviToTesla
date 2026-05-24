@@ -10,10 +10,11 @@ service cloud.firestore {
       allow read: if true;
 
       allow create, update: if
-        request.resource.data.keys().hasOnly(['searchable', 'expiresAt'])
+        request.resource.data.keys().hasOnly(['searchable', 'expiresAt', 'createdAt'])
         && request.resource.data.searchable is bool
         && request.resource.data.expiresAt is timestamp
-        && request.resource.data.expiresAt > request.time;
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.createdAt == request.time;
 
       allow delete: if false;
     }
