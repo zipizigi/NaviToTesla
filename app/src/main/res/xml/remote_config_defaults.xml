@@ -20,4 +20,16 @@
         <key>naverApiRatio</key>
         <value>100</value>
     </entry>
+    <entry>
+        <key>googlePlaceCheckLookupEnabled</key>
+        <value>false</value>
+    </entry>
+    <entry>
+        <key>googlePlaceCheckUpdateEnabled</key>
+        <value>false</value>
+    </entry>
+    <entry>
+        <key>googlePlacesApiKey</key>
+        <value>default</value>
+    </entry>
 </defaultsMap><!-- END xml_defaults -->

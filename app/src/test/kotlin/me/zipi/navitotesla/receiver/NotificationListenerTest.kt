@@ -77,11 +77,12 @@ class NotificationListenerTest {
 
     @Test
     fun `TMap (KU) 알림 수신 시 ShareWorker startShare 가 호출된다`() {
-        val sbn = buildSbn(
-            packageName = "com.skt.tmap.ku",
-            title = "경로주행",
-            text = "내 위치 > 강남역",
-        )
+        val sbn =
+            buildSbn(
+                packageName = "com.skt.tmap.ku",
+                title = "경로주행",
+                text = "내 위치 > 강남역",
+            )
 
         listener.onNotificationPosted(sbn)
 
@@ -97,11 +98,12 @@ class NotificationListenerTest {
 
     @Test
     fun `TMap (SK) 알림 수신 시 ShareWorker startShare 가 호출된다`() {
-        val sbn = buildSbn(
-            packageName = "com.skt.skaf.l001mtm091",
-            title = "경로주행",
-            text = "내 위치 > 송파구청",
-        )
+        val sbn =
+            buildSbn(
+                packageName = "com.skt.skaf.l001mtm091",
+                title = "경로주행",
+                text = "내 위치 > 송파구청",
+            )
 
         listener.onNotificationPosted(sbn)
 
@@ -117,11 +119,12 @@ class NotificationListenerTest {
 
     @Test
     fun `KakaoNavi 알림 수신 시 ShareWorker startShare 가 호출된다`() {
-        val sbn = buildSbn(
-            packageName = "com.locnall.KimGiSa",
-            title = "길안내 주행 중",
-            text = "목적지 : 송파구청",
-        )
+        val sbn =
+            buildSbn(
+                packageName = "com.locnall.KimGiSa",
+                title = "길안내 주행 중",
+                text = "목적지 : 송파구청",
+            )
 
         listener.onNotificationPosted(sbn)
 
@@ -137,11 +140,12 @@ class NotificationListenerTest {
 
     @Test
     fun `지원하지 않는 패키지의 알림은 ShareWorker 를 호출하지 않는다`() {
-        val sbn = buildSbn(
-            packageName = "com.google.android.apps.maps",
-            title = "Driving",
-            text = "Continue ahead",
-        )
+        val sbn =
+            buildSbn(
+                packageName = "com.google.android.apps.maps",
+                title = "Driving",
+                text = "Continue ahead",
+            )
 
         listener.onNotificationPosted(sbn)
 
@@ -155,23 +159,35 @@ class NotificationListenerTest {
         title: String,
         text: String,
     ): StatusBarNotification {
-        val notification = Notification().apply {
-            extras = Bundle().apply {
-                putString(Notification.EXTRA_TITLE, title)
-                putString(Notification.EXTRA_TEXT, text)
+        val notification =
+            Notification().apply {
+                extras =
+                    Bundle().apply {
+                        putString(Notification.EXTRA_TITLE, title)
+                        putString(Notification.EXTRA_TEXT, text)
+                    }
             }
-        }
         return StatusBarNotification(
-            /* pkg = */ packageName,
-            /* opPkg = */ packageName,
-            /* id = */ 1,
-            /* tag = */ "tag",
-            /* uid = */ 0,
-            /* initialPid = */ 0,
-            /* score = */ 0,
-            /* notification = */ notification,
-            /* user = */ UserHandle.getUserHandleForUid(0),
-            /* postTime = */ System.currentTimeMillis(),
+            // pkg =
+            packageName,
+            // opPkg =
+            packageName,
+            // id =
+            1,
+            // tag =
+            "tag",
+            // uid =
+            0,
+            // initialPid =
+            0,
+            // score =
+            0,
+            // notification =
+            notification,
+            // user =
+            UserHandle.getUserHandleForUid(0),
+            // postTime =
+            System.currentTimeMillis(),
         )
     }
 }

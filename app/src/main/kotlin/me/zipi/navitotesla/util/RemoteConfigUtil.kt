@@ -6,6 +6,9 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import me.zipi.navitotesla.R
 
 object RemoteConfigUtil {
+    const val KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED = "googlePlaceCheckLookupEnabled"
+    const val KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED = "googlePlaceCheckUpdateEnabled"
+    const val KEY_GOOGLE_PLACES_API_KEY = "googlePlacesApiKey"
     private const val FETCH_INTERVAL_SECONDS = 20 * 3600L
     private const val DEFAULT_VALUE = "default"
 

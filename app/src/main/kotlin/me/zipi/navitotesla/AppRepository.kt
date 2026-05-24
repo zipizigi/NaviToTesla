@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import me.zipi.navitotesla.api.TeslaApi
 import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
+import me.zipi.navitotesla.db.DestinationSendCacheEntity
 import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -132,6 +133,15 @@ class AppRepository private constructor(
                 database.poiAddressDao().delete(entity)
             }
         }
+    }
+
+    suspend fun clearExpiredDestinationSendCache() {
+        val expireDate =
+            (
+                System.currentTimeMillis() -
+                    DestinationSendCacheEntity.EXPIRE_DAY * 1000 * 60 * 60 * 24 * 1.2
+            ).toLong()
+        database.destinationSendCacheDao().deleteExpired(expireDate)
     }
 
     suspend fun clearAllPoi() {
