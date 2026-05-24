@@ -136,11 +136,8 @@ class AppRepository private constructor(
     }
 
     suspend fun clearExpiredDestinationSendCache() {
-        val expireDate =
-            (
-                System.currentTimeMillis() -
-                    DestinationSendCacheEntity.EXPIRE_DAY * 1000 * 60 * 60 * 24 * 1.2
-            ).toLong()
+        val ttlMs = DestinationSendCacheEntity.EXPIRE_DAY.toLong() * 1000L * 60L * 60L * 24L
+        val expireDate = (System.currentTimeMillis() - ttlMs * 12 / 10).toLong()
         database.destinationSendCacheDao().deleteExpired(expireDate)
     }
 

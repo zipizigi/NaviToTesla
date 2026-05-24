@@ -9,6 +9,7 @@ object RemoteConfigUtil {
     const val KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED = "googlePlaceCheckLookupEnabled"
     const val KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED = "googlePlaceCheckUpdateEnabled"
     const val KEY_GOOGLE_PLACES_API_KEY = "googlePlacesApiKey"
+    const val KEY_GOOGLE_PLACE_CHECK_TTL_DAYS = "googlePlaceCheckTtlDays"
     private const val FETCH_INTERVAL_SECONDS = 20 * 3600L
     private const val DEFAULT_VALUE = "default"
 
@@ -42,5 +43,10 @@ object RemoteConfigUtil {
     fun getBoolean(key: String): Boolean {
         val remoteConfig = FirebaseRemoteConfig.getInstance()
         return remoteConfig.getBoolean(key)
+    }
+
+    fun getLong(key: String): Long {
+        val remoteConfig = FirebaseRemoteConfig.getInstance()
+        return remoteConfig.getLong(key)
     }
 }

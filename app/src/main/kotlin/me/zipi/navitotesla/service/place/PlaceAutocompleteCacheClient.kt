@@ -1,18 +1,14 @@
 package me.zipi.navitotesla.service.place
 
-import com.google.firebase.firestore.FieldValue
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import me.zipi.navitotesla.util.AnalysisUtil
+import me.zipi.navitotesla.util.RemoteConfigUtil
 import java.security.MessageDigest
+import java.util.Date
 
-/**
- * 캐시 조회 결과.
- *   - null = 캐시 miss (분석된 적 없거나 조회 실패)
- *   - Searchable = positive (자동완성 매치 있음 → 도로명 전송)
- *   - NotSearchable = negative (자동완성 매치 없음 → 구주소 전송)
- */
 sealed class PlaceAutocompleteCacheEntry {
     object Searchable : PlaceAutocompleteCacheEntry()
 
@@ -20,6 +16,7 @@ sealed class PlaceAutocompleteCacheEntry {
 }
 
 interface PlaceAutocompleteCacheClient {
+    /** null = miss (분석된 적 없거나 조회 실패). */
     suspend fun lookup(address: String): PlaceAutocompleteCacheEntry?
 
     suspend fun cache(
@@ -31,7 +28,8 @@ interface PlaceAutocompleteCacheClient {
 object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
     private const val COLLECTION = "place_autocomplete_cache"
     private const val FIELD_SEARCHABLE = "searchable"
-    private const val FIELD_CREATED_AT = "createdAt"
+    private const val FIELD_EXPIRES_AT = "expiresAt"
+    private const val DEFAULT_TTL_DAYS = 30L
 
     override suspend fun lookup(address: String): PlaceAutocompleteCacheEntry? =
         try {
@@ -45,8 +43,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
             if (!doc.exists()) {
                 null
             } else {
-                val searchable = doc.getBoolean(FIELD_SEARCHABLE)
-                when (searchable) {
+                when (doc.getBoolean(FIELD_SEARCHABLE)) {
                     true -> PlaceAutocompleteCacheEntry.Searchable
                     false -> PlaceAutocompleteCacheEntry.NotSearchable
                     null -> null
@@ -55,7 +52,6 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AnalysisUtil.log("FirestorePlaceAutocompleteCacheClient.lookup failed: ${e.javaClass.simpleName}")
             AnalysisUtil.recordException(e)
             null
         }
@@ -65,6 +61,8 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         searchable: Boolean,
     ) {
         try {
+            val ttlDays = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_TTL_DAYS).takeIf { it > 0L } ?: DEFAULT_TTL_DAYS
+            val expiresAt = Timestamp(Date(System.currentTimeMillis() + ttlDays * 24L * 60L * 60L * 1000L))
             FirebaseFirestore
                 .getInstance()
                 .collection(COLLECTION)
@@ -72,13 +70,12 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
                 .set(
                     mapOf(
                         FIELD_SEARCHABLE to searchable,
-                        FIELD_CREATED_AT to FieldValue.serverTimestamp(),
+                        FIELD_EXPIRES_AT to expiresAt,
                     ),
                 ).await()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AnalysisUtil.log("FirestorePlaceAutocompleteCacheClient.cache failed: ${e.javaClass.simpleName}")
             AnalysisUtil.recordException(e)
         }
     }

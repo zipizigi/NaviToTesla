@@ -1,25 +1,19 @@
-// 배포: Firebase CLI 설치 후 `firebase deploy --only firestore:rules`
-// TTL Policy: Firestore 콘솔 > Time-to-live > 컬렉션 place_autocomplete_cache, 필드 createdAt, 만료 +30 days
-// App Check 활성화: Firebase 콘솔 > App Check > Firestore 강제 적용
+// 배포: `firebase deploy --only firestore:rules`
+// 콘솔 운영:
+//   - App Check > APIs > Cloud Firestore enforce 활성 (토큰 검증 위임)
+//   - Time-to-live > 컬렉션 place_autocomplete_cache, 필드 expiresAt (Timestamp). 만료 시각 도래 시 자동 삭제.
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /place_autocomplete_cache/{docId} {
-      // 읽기: App Check 통과한 클라이언트만
-      allow read: if request.app != null;
+      allow read: if true;
 
-      // 쓰기: App Check + 정확한 스키마 (searchable: bool, createdAt: serverTimestamp)
-      allow create: if request.app != null
-        && request.resource.data.keys().hasOnly(['searchable', 'createdAt'])
+      allow create, update: if
+        request.resource.data.keys().hasOnly(['searchable', 'expiresAt'])
         && request.resource.data.searchable is bool
-        && request.resource.data.createdAt == request.time;
-
-      // 동일 분석 결과 재기록 허용 (스키마 동일 + searchable 값 동일성은 강제하지 않음 — 차후 알고리즘 변경 대비)
-      allow update: if request.app != null
-        && request.resource.data.keys().hasOnly(['searchable', 'createdAt'])
-        && request.resource.data.searchable is bool
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time;
 
       allow delete: if false;
     }

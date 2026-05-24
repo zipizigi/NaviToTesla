@@ -1,7 +1,6 @@
 package me.zipi.navitotesla
 
 import android.app.Application
-import android.content.res.Configuration
 import android.os.Build
 import com.google.android.libraries.places.api.Places
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -10,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.db.AppDatabase
+import me.zipi.navitotesla.service.place.FirebaseAppCheckTokenProvider
 import me.zipi.navitotesla.service.place.PlacesAutocompleteClient
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppCheckUtil
@@ -25,8 +25,7 @@ class Application : Application() {
         AppRepository.initialize(database)
         RemoteConfigUtil.initialize()
         AppCheckUtil.initialize()
-        if (BuildConfig.BUILD_MODE == "playstore") {
-            // RemoteConfigUtil.getString 이 Tasks.await 으로 main thread 를 차단할 수 있어 background 에서 수행.
+        if (BuildConfig.DEBUG || BuildConfig.BUILD_MODE == "playstore") {
             CoroutineScope(Dispatchers.IO).launch { initializePlacesSdk() }
         }
         AnalysisUtil.initialize(this.applicationContext)
@@ -45,16 +44,9 @@ class Application : Application() {
         if (placesKey.isEmpty() || placesKey == "default") return
         try {
             Places.initializeWithNewPlacesApiEnabled(this.applicationContext, placesKey, Locale.KOREA)
-            // Places SDK 응답 언어는 client context 의 locale 을 따른다. 디바이스 기본이 영어인 경우에도
-            // 한국어 결과를 받기 위해 KOREA locale context 로 client 생성.
-            val koreaConfig =
-                Configuration(this.applicationContext.resources.configuration).apply {
-                    setLocale(Locale.KOREA)
-                }
-            val koreaContext = this.applicationContext.createConfigurationContext(koreaConfig)
-            PlacesAutocompleteClient.setClient(Places.createClient(koreaContext))
+            Places.setPlacesAppCheckTokenProvider(FirebaseAppCheckTokenProvider())
+            PlacesAutocompleteClient.setClient(Places.createClient(this.applicationContext))
         } catch (e: Exception) {
-            AnalysisUtil.log("Places SDK init failed: ${e.javaClass.simpleName}")
             AnalysisUtil.recordException(e)
         }
     }
