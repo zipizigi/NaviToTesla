@@ -9,10 +9,11 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import kotlinx.coroutines.runBlocking
+import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.db.AppDatabase
-import me.zipi.navitotesla.db.DestinationSendCacheDao
-import me.zipi.navitotesla.db.DestinationSendCacheEntity
+import me.zipi.navitotesla.db.PoiAddressDao
+import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
@@ -21,7 +22,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
-import java.util.Date
 
 class DestinationAddressResolverTest {
     private val poi =
@@ -32,7 +32,8 @@ class DestinationAddressResolverTest {
             packageName = "com.example.navi",
         )
 
-    private lateinit var dao: DestinationSendCacheDao
+    private lateinit var dao: PoiAddressDao
+    private lateinit var repository: AppRepository
     private lateinit var fakeMatcher: PlaceAutocompleteMatcher
     private lateinit var fakeCacheClient: PlaceAutocompleteCacheClient
 
@@ -40,7 +41,7 @@ class DestinationAddressResolverTest {
     fun setUp() {
         assumeTrue("playstore flavor 에서만 의미", BuildConfig.BUILD_MODE == "playstore")
         dao = mockk(relaxed = true)
-        coEvery { dao.find(any(), any()) } returns null
+        coEvery { dao.findPoiByPackage(any(), any()) } returns null
 
         mockkStatic(FirebaseCrashlytics::class)
         every { FirebaseCrashlytics.getInstance() } returns mockk(relaxed = true)
@@ -49,8 +50,12 @@ class DestinationAddressResolverTest {
 
         mockkObject(AppDatabase)
         val db = mockk<AppDatabase>()
-        every { db.destinationSendCacheDao() } returns dao
+        every { db.poiAddressDao() } returns dao
         every { AppDatabase.getInstance() } returns db
+
+        mockkObject(AppRepository)
+        repository = mockk(relaxed = true)
+        every { AppRepository.getInstance() } returns repository
 
         mockkObject(RemoteConfigUtil)
 
@@ -68,6 +73,30 @@ class DestinationAddressResolverTest {
     }
 
     @Test
+    fun `로컬 캐시 hit 이면 sentAddress 반환하고 Firestore 호출 안함`() =
+        runBlocking {
+            coEvery { dao.findPoiByPackage(poi.poiName!!, poi.packageName) } returns
+                PoiAddressEntity(
+                    poi = poi.poiName!!,
+                    packageName = poi.packageName,
+                    roadAddress = "도로명 캐시",
+                    jibunAddress = "지번 캐시",
+                    latitude = null,
+                    longitude = null,
+                    registered = null,
+                    isDuplicate = null,
+                    sentMode = PoiAddressEntity.SENT_MODE_JIBUN,
+                    created = java.util.Date(),
+                )
+
+            val result = DestinationAddressResolver.resolve(poi)
+
+            assertEquals("지번 캐시", result)
+            coVerify(exactly = 0) { fakeCacheClient.lookup(any()) }
+            coVerify(exactly = 0) { repository.markSent(any(), any()) }
+        }
+
+    @Test
     fun `lookup disabled 이면 도로명 반환하고 Firestore 조회 안함`() =
         runBlocking {
             every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED) } returns false
@@ -77,6 +106,7 @@ class DestinationAddressResolverTest {
 
             assertEquals(poi.getRoadAddress(), result)
             coVerify(exactly = 0) { fakeCacheClient.lookup(any()) }
+            coVerify(exactly = 1) { repository.markSent(poi, PoiAddressEntity.SENT_MODE_ROAD) }
         }
 
     @Test
@@ -91,6 +121,7 @@ class DestinationAddressResolverTest {
             assertEquals(poi.getRoadAddress(), result)
             coVerify(exactly = 0) { fakeMatcher.isMatch(any()) }
             coVerify(exactly = 0) { fakeCacheClient.cache(any(), any()) }
+            coVerify(exactly = 1) { repository.markSent(poi, PoiAddressEntity.SENT_MODE_ROAD) }
         }
 
     @Test
@@ -104,24 +135,7 @@ class DestinationAddressResolverTest {
 
             assertEquals(poi.getAddress(), result)
             coVerify(exactly = 0) { fakeMatcher.isMatch(any()) }
-        }
-
-    @Test
-    fun `로컬 캐시 hit 이면 그대로 반환하고 Firestore 호출 안함`() =
-        runBlocking {
-            coEvery { dao.find(poi.poiName!!, poi.packageName) } returns
-                DestinationSendCacheEntity(
-                    poi = poi.poiName!!,
-                    sentAddress = "캐시된 주소",
-                    sentAsJibun = true,
-                    packageName = poi.packageName,
-                    created = Date(),
-                )
-
-            val result = DestinationAddressResolver.resolve(poi)
-
-            assertEquals("캐시된 주소", result)
-            coVerify(exactly = 0) { fakeCacheClient.lookup(any()) }
+            coVerify(exactly = 1) { repository.markSent(poi, PoiAddressEntity.SENT_MODE_JIBUN) }
         }
 
     @Test
@@ -136,6 +150,7 @@ class DestinationAddressResolverTest {
 
             assertEquals(poi.getRoadAddress(), result)
             coVerify(exactly = 1) { fakeCacheClient.cache(poi.getRoadAddress(), true) }
+            coVerify(exactly = 1) { repository.markSent(poi, PoiAddressEntity.SENT_MODE_ROAD) }
         }
 
     @Test
@@ -150,6 +165,7 @@ class DestinationAddressResolverTest {
 
             assertEquals(poi.getAddress(), result)
             coVerify(exactly = 1) { fakeCacheClient.cache(poi.getRoadAddress(), false) }
+            coVerify(exactly = 1) { repository.markSent(poi, PoiAddressEntity.SENT_MODE_JIBUN) }
         }
 
     @Test
@@ -164,6 +180,7 @@ class DestinationAddressResolverTest {
 
             assertEquals(poi.getRoadAddress(), result)
             coVerify(exactly = 0) { fakeCacheClient.cache(any(), any()) }
+            coVerify(exactly = 0) { repository.markSent(any(), any()) }
         }
 
     @Test
@@ -178,5 +195,6 @@ class DestinationAddressResolverTest {
             assertEquals(poi.getRoadAddress(), result)
             coVerify(exactly = 0) { fakeMatcher.isMatch(any()) }
             coVerify(exactly = 0) { fakeCacheClient.cache(any(), any()) }
+            coVerify(exactly = 1) { repository.markSent(poi, PoiAddressEntity.SENT_MODE_ROAD) }
         }
 }
