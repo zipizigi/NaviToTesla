@@ -158,7 +158,8 @@ class AppRepository private constructor(
 
     suspend fun clearExpiredPoi() {
         // remove expire poi. (20% over)
-        val expireDate = (System.currentTimeMillis() - PoiAddressEntity.EXPIRE_DAY * 1000 * 60 * 60 * 24 * 1.2).toLong()
+        val ttlMs = PoiAddressEntity.EXPIRE_DAY.toLong() * 24L * 60L * 60L * 1000L
+        val expireDate = System.currentTimeMillis() - ttlMs * 12L / 10L
         database.poiAddressDao().findExpired(expireDate).forEach { entity ->
             database.withTransaction {
                 database.poiAddressDao().delete(entity)
