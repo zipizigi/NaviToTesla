@@ -147,7 +147,7 @@ class AppRepository private constructor(
                     jibunAddress = poi.getAddress(),
                     latitude = poi.latitude,
                     longitude = poi.longitude,
-                    registered = existing?.registered,
+                    registered = existing?.registered ?: false,
                     isDuplicate = poi.isDuplicate,
                     sentMode = sentMode,
                     created = Date(),

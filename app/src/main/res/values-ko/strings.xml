@@ -26,6 +26,7 @@
     <string name="requestSend">목적지 전송 요청</string>
     <string name="sendDestinationSuccess">목적지 전송 성공</string>
     <string name="duplicatedPoiName">목적지 중복</string>
+    <string name="emptyPoiName">즐겨찾기 이름을 입력해주세요</string>
     <string name="addressNotFound">주소를 찾을 수 없습니다</string>
     <string name="unsupportedNavi">미지원 내비</string>
     <string name="authFail">인증 실패</string>

@@ -129,7 +129,7 @@ class FavoriteDialogFragment :
     private fun saveFavorite() {
         val poiName = binding.txtDest.text.toString()
         if (poiName.isEmpty()) {
-            AnalysisUtil.makeToast(context, getString(R.string.duplicatedPoiName))
+            AnalysisUtil.makeToast(context, getString(R.string.emptyPoiName))
             return
         }
         val selected = favoriteDialogViewModel.selectedPoi.value
@@ -144,7 +144,7 @@ class FavoriteDialogFragment :
             if (selected != null) {
                 PoiAddressEntity(
                     poi = poiName,
-                    packageName = selected.packageName.takeIf { it.isNotEmpty() },
+                    packageName = selected.packageName,
                     roadAddress = selected.getRoadAddress(),
                     jibunAddress = selected.getAddress(),
                     latitude = selected.latitude,
@@ -156,6 +156,7 @@ class FavoriteDialogFragment :
             } else {
                 PoiAddressEntity(
                     poi = poiName,
+                    packageName = "",
                     roadAddress = binding.txtAddress.text.toString(),
                     registered = true,
                     sentMode = PoiAddressEntity.SENT_MODE_ROAD,

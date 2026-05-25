@@ -29,6 +29,7 @@
     <string name="requestSend">Request to send destination</string>
     <string name="sendDestinationSuccess">Success to send destination</string>
     <string name="duplicatedPoiName">Duplicated destination</string>
+    <string name="emptyPoiName">Please enter a favorite name</string>
     <string name="addressNotFound">Address not found</string>
     <string name="unsupportedNavi">Unsupported navigation</string>
     <string name="authFail">Authentication failed</string>
