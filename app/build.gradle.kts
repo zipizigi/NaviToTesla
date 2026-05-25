@@ -143,7 +143,7 @@ dependencies {
     androidTestImplementation(libs.room.testing)
 }
 ktlint {
-    version.set("1.7.1")
+    version.set(libs.versions.ktlint.cli.get())
     android.set(true)
     outputColorName.set("RED")
 }
