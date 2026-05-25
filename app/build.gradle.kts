@@ -17,7 +17,7 @@ android {
     defaultConfig {
         buildConfigField("String", "BUILD_MODE", "\"playstore\"")
         applicationId = "me.zipi.navitotesla"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
 
         versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1")
@@ -66,8 +66,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         viewBinding = true
@@ -91,7 +91,7 @@ androidComponents {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_1_8
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 
