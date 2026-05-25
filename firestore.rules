@@ -1,0 +1,22 @@
+// 배포: `firebase deploy --only firestore:rules`
+// 콘솔 운영:
+//   - App Check > APIs > Cloud Firestore enforce 활성 (토큰 검증 위임)
+//   - Time-to-live > 컬렉션 place_autocomplete_cache, 필드 expiresAt (Timestamp). 만료 시각 도래 시 자동 삭제.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /place_autocomplete_cache/{docId} {
+      allow read: if true;
+
+      allow create, update: if
+        request.resource.data.keys().hasOnly(['searchable', 'expiresAt', 'createdAt'])
+        && request.resource.data.searchable is bool
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt > request.time
+        && request.resource.data.createdAt == request.time;
+
+      allow delete: if false;
+    }
+  }
+}

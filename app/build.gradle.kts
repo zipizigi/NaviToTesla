@@ -91,6 +91,7 @@ kotlin {
 
 dependencies {
     implementation(libs.kotlin.coroutine)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -118,6 +119,9 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.bundles.firebase)
+    debugImplementation(libs.firebase.appcheck.debug)
+
+    implementation(libs.google.places)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.test.core)

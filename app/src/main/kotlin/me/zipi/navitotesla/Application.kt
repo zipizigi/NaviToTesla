@@ -2,15 +2,20 @@ package me.zipi.navitotesla
 
 import android.app.Application
 import android.os.Build
+import com.google.android.libraries.places.api.Places
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.db.AppDatabase
+import me.zipi.navitotesla.service.place.FirebaseAppCheckTokenProvider
+import me.zipi.navitotesla.service.place.PlacesAutocompleteClient
 import me.zipi.navitotesla.util.AnalysisUtil
+import me.zipi.navitotesla.util.AppCheckUtil
 import me.zipi.navitotesla.util.PreferencesUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
+import java.util.Locale
 
 class Application : Application() {
     override fun onCreate() {
@@ -19,6 +24,10 @@ class Application : Application() {
         AppDatabase.initialize(this.applicationContext)
         AppRepository.initialize(database)
         RemoteConfigUtil.initialize()
+        AppCheckUtil.initialize()
+        if (BuildConfig.DEBUG || BuildConfig.BUILD_MODE == "playstore") {
+            CoroutineScope(Dispatchers.IO).launch { initializePlacesSdk() }
+        }
         AnalysisUtil.initialize(this.applicationContext)
         AnalysisUtil.log(
             "App started: v${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_MODE}, " +
@@ -27,6 +36,18 @@ class Application : Application() {
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
         if (!BuildConfig.DEBUG) {
             CoroutineScope(Dispatchers.IO).launch { TokenWorker.startBackgroundWork(this@Application) }
+        }
+    }
+
+    private fun initializePlacesSdk() {
+        val placesKey = RemoteConfigUtil.getString(RemoteConfigUtil.KEY_GOOGLE_PLACES_API_KEY)
+        if (placesKey.isEmpty() || placesKey == "default") return
+        try {
+            Places.initializeWithNewPlacesApiEnabled(this.applicationContext, placesKey, Locale.KOREA)
+            Places.setPlacesAppCheckTokenProvider(FirebaseAppCheckTokenProvider())
+            PlacesAutocompleteClient.setClient(Places.createClient(this.applicationContext))
+        } catch (e: Exception) {
+            AnalysisUtil.recordException(e)
         }
     }
 

@@ -8,14 +8,15 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [PoiAddressEntity::class, ConditionEntity::class],
-    version = 6,
+    entities = [PoiAddressEntity::class, ConditionEntity::class, DestinationSendCacheEntity::class],
+    version = 7,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
     ],
 )
 @TypeConverters(DateConverter::class)
@@ -23,6 +24,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun poiAddressDao(): PoiAddressDao
 
     abstract fun conditionDao(): ConditionDao
+
+    abstract fun destinationSendCacheDao(): DestinationSendCacheDao
 
     companion object {
         private const val DATABASE_NAME = "data.sqlite"

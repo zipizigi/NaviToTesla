@@ -77,6 +77,9 @@ object AppUpdaterUtil {
             if (activity == null) {
                 return@withContext
             }
+            if (BuildConfig.DEBUG) {
+                return@withContext
+            }
 
             if (!isForce && (abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow())) {
                 return@withContext
@@ -321,7 +324,7 @@ object AppUpdaterUtil {
 
     @Suppress("KotlinConstantConditions")
     suspend fun notification(context: Context) {
-        if (BuildConfig.BUILD_MODE == "playstore") {
+        if (BuildConfig.BUILD_MODE == "playstore" || BuildConfig.DEBUG) {
             return
         }
         if (abs(System.currentTimeMillis() - notificationLastCheck) < 5 * 60 * 1000 || isDoNotShow()) {

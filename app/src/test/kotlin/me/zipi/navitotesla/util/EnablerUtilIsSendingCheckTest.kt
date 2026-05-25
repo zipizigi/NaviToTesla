@@ -64,59 +64,66 @@ class EnablerUtilIsSendingCheckTest {
     }
 
     @Test
-    fun `appEnabled=false 면 false`() = runTest {
-        coEvery { PreferencesUtil.getBoolean("appEnabled", true) } returns false
+    fun `appEnabled=false 면 false`() =
+        runTest {
+            coEvery { PreferencesUtil.getBoolean("appEnabled", true) } returns false
 
-        assertFalse(EnablerUtil.isSendingCheck())
-    }
-
-    @Test
-    fun `appEnabled=true, appCondition=false 면 true`() = runTest {
-        // 기본 setUp 그대로
-        assertTrue(EnablerUtil.isSendingCheck())
-    }
+            assertFalse(EnablerUtil.isSendingCheck())
+        }
 
     @Test
-    fun `appCondition=true 인데 wifi-bluetooth 조건이 모두 비어있으면 true`() = runTest {
-        coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
-
-        assertTrue(EnablerUtil.isSendingCheck())
-    }
-
-    @Test
-    fun `블루투스 조건과 일치하는 디바이스가 연결돼 있으면 true`() = runTest {
-        coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
-        coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
-        EnablerUtil.addConnectedBluetooth("MyCar")
-
-        assertTrue(EnablerUtil.isSendingCheck())
-    }
+    fun `appEnabled=true, appCondition=false 면 true`() =
+        runTest {
+            // 기본 setUp 그대로
+            assertTrue(EnablerUtil.isSendingCheck())
+        }
 
     @Test
-    fun `블루투스 조건은 있지만 연결된 디바이스가 다른 이름이면 false`() = runTest {
-        coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
-        coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
-        EnablerUtil.addConnectedBluetooth("OtherCar")
+    fun `appCondition=true 인데 wifi-bluetooth 조건이 모두 비어있으면 true`() =
+        runTest {
+            coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
 
-        assertFalse(EnablerUtil.isSendingCheck())
-    }
-
-    @Test
-    fun `블루투스 조건은 있지만 연결된 디바이스가 없으면 false`() = runTest {
-        coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
-        coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
-
-        assertFalse(EnablerUtil.isSendingCheck())
-    }
+            assertTrue(EnablerUtil.isSendingCheck())
+        }
 
     @Test
-    fun `블루투스 매칭은 대소문자를 무시한다`() = runTest {
-        coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
-        coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
-        EnablerUtil.addConnectedBluetooth("MYCAR")
+    fun `블루투스 조건과 일치하는 디바이스가 연결돼 있으면 true`() =
+        runTest {
+            coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
+            coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
+            EnablerUtil.addConnectedBluetooth("MyCar")
 
-        assertTrue(EnablerUtil.isSendingCheck())
-    }
+            assertTrue(EnablerUtil.isSendingCheck())
+        }
+
+    @Test
+    fun `블루투스 조건은 있지만 연결된 디바이스가 다른 이름이면 false`() =
+        runTest {
+            coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
+            coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
+            EnablerUtil.addConnectedBluetooth("OtherCar")
+
+            assertFalse(EnablerUtil.isSendingCheck())
+        }
+
+    @Test
+    fun `블루투스 조건은 있지만 연결된 디바이스가 없으면 false`() =
+        runTest {
+            coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
+            coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
+
+            assertFalse(EnablerUtil.isSendingCheck())
+        }
+
+    @Test
+    fun `블루투스 매칭은 대소문자를 무시한다`() =
+        runTest {
+            coEvery { PreferencesUtil.getBoolean("appCondition", false) } returns true
+            coEvery { dao.findCondition("bluetooth") } returns listOf(condition("MyCar"))
+            EnablerUtil.addConnectedBluetooth("MYCAR")
+
+            assertTrue(EnablerUtil.isSendingCheck())
+        }
 
     private fun condition(name: String) = ConditionEntity(name = name, type = "bluetooth", created = Date())
 

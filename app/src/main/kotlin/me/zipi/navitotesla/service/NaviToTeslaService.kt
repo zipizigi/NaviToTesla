@@ -17,6 +17,7 @@ import me.zipi.navitotesla.model.TeslaApiResponse
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
+import me.zipi.navitotesla.service.place.DestinationAddressResolver
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.service.share.TeslaShareByApi
 import me.zipi.navitotesla.service.share.TeslaShareByApp
@@ -89,6 +90,7 @@ class NaviToTeslaService(
                 AnalysisUtil.logEvent("previous_request_address", eventParam)
             }
             appRepository.clearExpiredPoi()
+            appRepository.clearExpiredDestinationSendCache()
         } catch (e: DuplicatePoiException) {
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)
@@ -130,6 +132,15 @@ class NaviToTeslaService(
 
     @Throws(IOException::class, ForbiddenException::class)
     suspend fun share(poi: Poi) {
+        val resolvedPoi =
+            if (poi.isAddressEmpty()) {
+                poi
+            } else {
+                val finalAddress = DestinationAddressResolver.resolve(poi)
+                poi.copy(roadAddress = finalAddress)
+            }
+        // 외부 share() 의 duplicate 가드는 navi 원본 도로명(`poi.getRoadAddress()`)을 비교한다.
+        // resolver 가 구주소로 바꿔 보냈더라도 lastAddress 에는 원본 도로명을 저장해 가드 정합성을 유지.
         PreferencesUtil.put(
             key = "lastAddress",
             value =
@@ -139,21 +150,21 @@ class NaviToTeslaService(
                     poi.getRoadAddress()
                 },
         )
-        if (!poi.isAddressEmpty()) {
+        if (!resolvedPoi.isAddressEmpty()) {
             lastShareAt = System.currentTimeMillis()
-            makeToast(context.getString(R.string.requestSend) + "\n" + poi.getRoadAddress())
+            makeToast(context.getString(R.string.requestSend) + "\n" + resolvedPoi.getRoadAddress())
             val shareMode = PreferencesUtil.getString("shareMode", "app")
             if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
                 if (refreshToken() == null) {
                     return
                 }
                 val id = loadVehicleId()
-                TeslaShareByApi(context, id).share(poi)
+                TeslaShareByApi(context, id).share(resolvedPoi)
             } else {
-                TeslaShareByApp(context).share(poi)
+                TeslaShareByApp(context).share(resolvedPoi)
             }
         } else {
-            AnalysisUtil.log("share skipped: empty poi name=${poi.poiName}, pkg=${poi.packageName}")
+            AnalysisUtil.log("share skipped: empty poi name=${resolvedPoi.poiName}, pkg=${resolvedPoi.packageName}")
             makeToast(
                 context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.addressNotFound),
             )
