@@ -52,11 +52,21 @@ class PoiAddressEntity(
     val sentAddress: String?
         get() =
             when (sentMode) {
-                SENT_MODE_ROAD -> roadAddress
-                SENT_MODE_JIBUN -> jibunAddress
-                SENT_MODE_GPS ->
+                SENT_MODE_ROAD -> {
+                    roadAddress
+                }
+
+                SENT_MODE_JIBUN -> {
+                    jibunAddress
+                }
+
+                SENT_MODE_GPS -> {
                     if (latitude != null && longitude != null) "$latitude,$longitude" else null
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
 
     companion object {
