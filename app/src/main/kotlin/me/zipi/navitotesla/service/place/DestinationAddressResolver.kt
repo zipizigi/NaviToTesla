@@ -1,5 +1,6 @@
 package me.zipi.navitotesla.service.place
 
+import android.os.Bundle
 import kotlinx.coroutines.CancellationException
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
@@ -20,6 +21,7 @@ object DestinationAddressResolver {
         val poiName = poi.poiName ?: return poi.getRoadAddress()
         val roadAddress = poi.getRoadAddress()
         val jibunAddress = poi.getAddress()
+        val eventParam = Bundle().apply { putString("package", poi.packageName) }
 
         val dao = AppDatabase.getInstance().poiAddressDao()
         val cached = dao.findPoiByPackage(poiName, poi.packageName)
@@ -39,13 +41,28 @@ object DestinationAddressResolver {
             return roadAddress
         }
 
+        AnalysisUtil.logEvent("firestore_get", eventParam)
         when (cacheClient.lookup(roadAddress)) {
             PlaceAutocompleteCacheEntry.Searchable -> {
+                AnalysisUtil.logEvent(
+                    "firestore_hit",
+                    Bundle().apply {
+                        putString("package", poi.packageName)
+                        putString("result", "searchable")
+                    },
+                )
                 AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
                 return roadAddress
             }
 
             PlaceAutocompleteCacheEntry.NotSearchable -> {
+                AnalysisUtil.logEvent(
+                    "firestore_hit",
+                    Bundle().apply {
+                        putString("package", poi.packageName)
+                        putString("result", "not_searchable")
+                    },
+                )
                 AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_JIBUN)
                 return jibunAddress
             }
@@ -63,6 +80,7 @@ object DestinationAddressResolver {
 
         val matched =
             try {
+                AnalysisUtil.logEvent("places_api_call", eventParam)
                 matcher.isMatch(roadAddress)
             } catch (e: CancellationException) {
                 throw e
@@ -74,10 +92,24 @@ object DestinationAddressResolver {
         return if (matched == null) {
             roadAddress
         } else if (matched) {
+            AnalysisUtil.logEvent(
+                "firestore_set",
+                Bundle().apply {
+                    putString("package", poi.packageName)
+                    putString("result", "searchable")
+                },
+            )
             cacheClient.cache(roadAddress, searchable = true)
             AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             roadAddress
         } else {
+            AnalysisUtil.logEvent(
+                "firestore_set",
+                Bundle().apply {
+                    putString("package", poi.packageName)
+                    putString("result", "not_searchable")
+                },
+            )
             cacheClient.cache(roadAddress, searchable = false)
             AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_JIBUN)
             jibunAddress
