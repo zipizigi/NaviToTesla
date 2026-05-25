@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -65,10 +63,6 @@ android {
 //            ext.enableCrashlytics = false
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -86,12 +80,6 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.androidTest?.sources?.assets?.addStaticSourceDirectory("$projectDir/schemas")
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
     }
 }
 
