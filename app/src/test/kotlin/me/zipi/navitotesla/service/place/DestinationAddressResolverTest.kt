@@ -22,6 +22,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.Date
 
 class DestinationAddressResolverTest {
     private val poi =
@@ -86,7 +87,7 @@ class DestinationAddressResolverTest {
                     registered = null,
                     isDuplicate = null,
                     sentMode = PoiAddressEntity.SENT_MODE_JIBUN,
-                    created = java.util.Date(),
+                    created = Date(),
                 )
 
             val result = DestinationAddressResolver.resolve(poi)
@@ -113,7 +114,6 @@ class DestinationAddressResolverTest {
     fun `Firestore Searchable hit 이면 도로명 반환하고 SDK 호출 안함`() =
         runBlocking {
             every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED) } returns true
-            every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED) } returns true
             coEvery { fakeCacheClient.lookup(any()) } returns PlaceAutocompleteCacheEntry.Searchable
 
             val result = DestinationAddressResolver.resolve(poi)
@@ -128,7 +128,6 @@ class DestinationAddressResolverTest {
     fun `Firestore NotSearchable hit 이면 구주소 반환하고 SDK 호출 안함`() =
         runBlocking {
             every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED) } returns true
-            every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED) } returns false
             coEvery { fakeCacheClient.lookup(any()) } returns PlaceAutocompleteCacheEntry.NotSearchable
 
             val result = DestinationAddressResolver.resolve(poi)
