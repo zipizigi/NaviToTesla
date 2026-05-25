@@ -4,6 +4,8 @@ room = "2.8.4"
 androidx-navigation = "2.9.8"
 androidx-lifecycle = "2.10.0"
 retrofit = "3.0.0"
+kotlinx-serialization = "1.8.1"
+kotlin-coroutines = "1.11.0"
 
 [plugins]
 android-application = "com.android.application:9.2.1"
@@ -15,8 +17,10 @@ firebase-perf = "com.google.firebase.firebase-perf:2.0.2"
 ktlint = "org.jlleitschuh.gradle.ktlint:14.2.0"
 
 [libraries]
-kotlin-coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0"
-kotlinx-coroutines-play-services = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0"
+kotlinx-coroutines-bom = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-bom", version.ref = "kotlin-coroutines" }
+kotlin-coroutine = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services" }
+kotlinx-serialization-bom = { module = "org.jetbrains.kotlinx:kotlinx-serialization-bom", version.ref = "kotlinx-serialization" }
 androidAppUpdateLibrary = "com.github.Piashsarker:AndroidAppUpdateLibrary:1.0.4"
 androidx-appcompat = "androidx.appcompat:appcompat:1.7.1"
 
@@ -60,7 +64,7 @@ androidx-test-junit = "androidx.test.ext:junit:1.3.0"
 androidx-test-espresso = "androidx.test.espresso:espresso-core:3.7.0"
 androidx-test-core = "androidx.test:core:1.7.0"
 androidx-work-testing = "androidx.work:work-testing:2.11.2"
-kotlinx-coroutines-test = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0"
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
 mockk = "io.mockk:mockk:1.14.9"
 robolectric = "org.robolectric:robolectric:4.16.1"
 

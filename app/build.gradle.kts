@@ -80,12 +80,13 @@ android {
             isReturnDefaultValues = true
         }
     }
-    sourceSets {
-        getByName("androidTest") {
-            assets.srcDirs("$projectDir/schemas")
-        }
-    }
     namespace = "me.zipi.navitotesla"
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.androidTest?.sources?.assets?.addStaticSourceDirectory("$projectDir/schemas")
+    }
 }
 
 kotlin {
@@ -94,22 +95,11 @@ kotlin {
     }
 }
 
-configurations.matching { it.name.contains("AndroidTest") }.all {
-    resolutionStrategy {
-        // Room 2.8.4 migration-bundle classes (used by MigrationTestHelper) require
-        // kotlinx-serialization 1.8.1+. Without this force, androidTest runtime
-        // resolves to 1.7.3 (via androidx.lifecycle transitive request + Gradle
-        // consistent resolution from main runtime), causing AbstractMethodError on
-        // GeneratedSerializer.typeParametersSerializers when loading schema JSON.
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.8.1")
-    }
-}
-
 dependencies {
+    implementation(platform(libs.kotlinx.serialization.bom))
+    implementation(platform(libs.kotlinx.coroutines.bom))
+    implementation(platform(libs.firebase.bom))
+
     implementation(libs.kotlin.coroutine)
     implementation(libs.kotlinx.coroutines.play.services)
 
@@ -137,7 +127,6 @@ dependencies {
 
     implementation(libs.bundles.retrofit)
 
-    implementation(platform(libs.firebase.bom))
     implementation(libs.bundles.firebase)
     debugImplementation(libs.firebase.appcheck.debug)
 
