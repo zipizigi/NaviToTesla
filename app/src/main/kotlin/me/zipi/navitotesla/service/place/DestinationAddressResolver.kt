@@ -1,13 +1,14 @@
 package me.zipi.navitotesla.service.place
 
+import android.os.Bundle
 import kotlinx.coroutines.CancellationException
+import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.db.AppDatabase
-import me.zipi.navitotesla.db.DestinationSendCacheEntity
+import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
-import java.util.Date
 
 object DestinationAddressResolver {
     @Volatile
@@ -20,34 +21,49 @@ object DestinationAddressResolver {
         val poiName = poi.poiName ?: return poi.getRoadAddress()
         val roadAddress = poi.getRoadAddress()
         val jibunAddress = poi.getAddress()
+        val eventParam = Bundle().apply { putString("package", poi.packageName) }
 
-        val dao = AppDatabase.getInstance().destinationSendCacheDao()
-        val cached = dao.find(poiName, poi.packageName)
+        val dao = AppDatabase.getInstance().poiAddressDao()
+        val cached = dao.findPoiByPackage(poiName, poi.packageName)
         if (cached != null && !cached.isExpire) {
-            return cached.sentAddress
+            cached.sentAddress?.let { return it }
         }
 
-        // nostore release 는 Firebase 비활성. debug 빌드는 flavor 무관 통과해 검증 가능.
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
         if (firebaseDisabledFlavor || jibunAddress.isEmpty() || jibunAddress == roadAddress) {
-            saveLocal(poiName, poi.packageName, roadAddress, sentAsJibun = false)
+            AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             return roadAddress
         }
 
         val lookupEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
         if (!lookupEnabled) {
-            saveLocal(poiName, poi.packageName, roadAddress, sentAsJibun = false)
+            AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             return roadAddress
         }
 
+        AnalysisUtil.logEvent("firestore_get", eventParam)
         when (cacheClient.lookup(roadAddress)) {
             PlaceAutocompleteCacheEntry.Searchable -> {
-                saveLocal(poiName, poi.packageName, roadAddress, sentAsJibun = false)
+                AnalysisUtil.logEvent(
+                    "firestore_hit",
+                    Bundle().apply {
+                        putString("package", poi.packageName)
+                        putString("result", "searchable")
+                    },
+                )
+                AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
                 return roadAddress
             }
 
             PlaceAutocompleteCacheEntry.NotSearchable -> {
-                saveLocal(poiName, poi.packageName, jibunAddress, sentAsJibun = true)
+                AnalysisUtil.logEvent(
+                    "firestore_hit",
+                    Bundle().apply {
+                        putString("package", poi.packageName)
+                        putString("result", "not_searchable")
+                    },
+                )
+                AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_JIBUN)
                 return jibunAddress
             }
 
@@ -58,12 +74,13 @@ object DestinationAddressResolver {
 
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
-            saveLocal(poiName, poi.packageName, roadAddress, sentAsJibun = false)
+            AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             return roadAddress
         }
 
         val matched =
             try {
+                AnalysisUtil.logEvent("places_api_call", eventParam)
                 matcher.isMatch(roadAddress)
             } catch (e: CancellationException) {
                 throw e
@@ -73,35 +90,29 @@ object DestinationAddressResolver {
             }
 
         return if (matched == null) {
-            // 일시 오류로 잘못된 negative 가 영구 기록되지 않도록 cache write skip.
-            saveLocal(poiName, poi.packageName, roadAddress, sentAsJibun = false)
             roadAddress
         } else if (matched) {
+            AnalysisUtil.logEvent(
+                "firestore_set",
+                Bundle().apply {
+                    putString("package", poi.packageName)
+                    putString("result", "searchable")
+                },
+            )
             cacheClient.cache(roadAddress, searchable = true)
-            saveLocal(poiName, poi.packageName, roadAddress, sentAsJibun = false)
+            AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             roadAddress
         } else {
+            AnalysisUtil.logEvent(
+                "firestore_set",
+                Bundle().apply {
+                    putString("package", poi.packageName)
+                    putString("result", "not_searchable")
+                },
+            )
             cacheClient.cache(roadAddress, searchable = false)
-            saveLocal(poiName, poi.packageName, jibunAddress, sentAsJibun = true)
+            AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_JIBUN)
             jibunAddress
         }
-    }
-
-    private suspend fun saveLocal(
-        poi: String,
-        packageName: String,
-        sentAddress: String,
-        sentAsJibun: Boolean,
-    ) {
-        val dao = AppDatabase.getInstance().destinationSendCacheDao()
-        dao.upsert(
-            DestinationSendCacheEntity(
-                poi = poi,
-                sentAddress = sentAddress,
-                sentAsJibun = sentAsJibun,
-                packageName = packageName,
-                created = Date(),
-            ),
-        )
     }
 }

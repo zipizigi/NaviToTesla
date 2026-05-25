@@ -120,7 +120,7 @@ class FavoriteFragment :
             .Builder(requireActivity())
             .setCancelable(true)
             .setTitle(getString(R.string.sendDestination))
-            .setMessage(getString(R.string.confirmSendDestination) + " \n - " + poiEntity.address)
+            .setMessage(getString(R.string.confirmSendDestination) + " \n - " + (poiEntity.roadAddress ?: ""))
             .setPositiveButton(getString(R.string.send)) { _: DialogInterface?, _: Int ->
                 viewLifecycleOwner.lifecycleScope.launch {
                     if (activity == null) {

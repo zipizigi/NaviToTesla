@@ -4,7 +4,6 @@ import androidx.room.withTransaction
 import me.zipi.navitotesla.api.TeslaApi
 import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
-import me.zipi.navitotesla.db.DestinationSendCacheEntity
 import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -113,13 +112,45 @@ class AppRepository private constructor(
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
                     poi = poi.poiName,
-                    address = poi.getRoadAddress(),
-                    registered = registered,
+                    packageName = poi.packageName,
+                    roadAddress = poi.getRoadAddress(),
+                    jibunAddress = poi.getAddress(),
                     latitude = poi.latitude,
                     longitude = poi.longitude,
-                    created = Date(),
-                    packageName = poi.packageName,
+                    registered = registered,
                     isDuplicate = poi.isDuplicate,
+                    sentMode = null,
+                    created = Date(),
+                ),
+            )
+        }
+    }
+
+    /**
+     * Resolver 가 전송 모드 결정 후 호출. 기존 row 가 있으면 id/registered 유지하면서
+     * sentMode/created 갱신. 없으면 신규 insert. isAddress 분기처럼 savePoi 가 선행
+     * 호출되지 않은 케이스에서도 row 를 만들 수 있도록 Poi 전체를 받는다.
+     */
+    suspend fun markSent(
+        poi: Poi,
+        sentMode: String,
+    ) {
+        val poiName = poi.poiName ?: return
+        database.withTransaction {
+            val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName)
+            database.poiAddressDao().insertPoi(
+                PoiAddressEntity(
+                    id = existing?.id,
+                    poi = poiName,
+                    packageName = poi.packageName,
+                    roadAddress = poi.getRoadAddress(),
+                    jibunAddress = poi.getAddress(),
+                    latitude = poi.latitude,
+                    longitude = poi.longitude,
+                    registered = existing?.registered ?: false,
+                    isDuplicate = poi.isDuplicate,
+                    sentMode = sentMode,
+                    created = Date(),
                 ),
             )
         }
@@ -127,18 +158,13 @@ class AppRepository private constructor(
 
     suspend fun clearExpiredPoi() {
         // remove expire poi. (20% over)
-        val expireDate = (System.currentTimeMillis() - PoiAddressEntity.EXPIRE_DAY * 1000 * 60 * 60 * 24 * 1.2).toLong()
+        val ttlMs = PoiAddressEntity.EXPIRE_DAY.toLong() * 24L * 60L * 60L * 1000L
+        val expireDate = System.currentTimeMillis() - ttlMs * 12L / 10L
         database.poiAddressDao().findExpired(expireDate).forEach { entity ->
             database.withTransaction {
                 database.poiAddressDao().delete(entity)
             }
         }
-    }
-
-    suspend fun clearExpiredDestinationSendCache() {
-        val ttlMs = DestinationSendCacheEntity.EXPIRE_DAY.toLong() * 1000L * 60L * 60L * 24L
-        val expireDate = (System.currentTimeMillis() - ttlMs * 12 / 10).toLong()
-        database.destinationSendCacheDao().deleteExpired(expireDate)
     }
 
     suspend fun clearAllPoi() {

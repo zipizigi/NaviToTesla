@@ -69,7 +69,7 @@ class PoiAddressRecyclerAdapter(
 
         fun onBind(item: PoiAddressEntity) {
             poiView.text = item.poi
-            addressView.text = item.address
+            addressView.text = item.roadAddress.orEmpty()
             isRegistered = item.isRegistered()
             if (!isRegistered) {
                 button.setBackgroundResource(R.drawable.ic_baseline_add_24)

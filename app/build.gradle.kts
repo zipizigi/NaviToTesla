@@ -83,6 +83,12 @@ android {
     namespace = "me.zipi.navitotesla"
 }
 
+androidComponents {
+    onVariants { variant ->
+        variant.androidTest?.sources?.assets?.addStaticSourceDirectory("$projectDir/schemas")
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8
@@ -90,6 +96,10 @@ kotlin {
 }
 
 dependencies {
+    implementation(platform(libs.kotlinx.serialization.bom))
+    implementation(platform(libs.kotlinx.coroutines.bom))
+    implementation(platform(libs.firebase.bom))
+
     implementation(libs.kotlin.coroutine)
     implementation(libs.kotlinx.coroutines.play.services)
 
@@ -117,7 +127,6 @@ dependencies {
 
     implementation(libs.bundles.retrofit)
 
-    implementation(platform(libs.firebase.bom))
     implementation(libs.bundles.firebase)
     debugImplementation(libs.firebase.appcheck.debug)
 
@@ -131,6 +140,7 @@ dependencies {
     testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)
+    androidTestImplementation(libs.room.testing)
 }
 ktlint {
     version.set("1.7.1")

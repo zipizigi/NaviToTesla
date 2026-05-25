@@ -90,7 +90,6 @@ class NaviToTeslaService(
                 AnalysisUtil.logEvent("previous_request_address", eventParam)
             }
             appRepository.clearExpiredPoi()
-            appRepository.clearExpiredDestinationSendCache()
         } catch (e: DuplicatePoiException) {
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)
