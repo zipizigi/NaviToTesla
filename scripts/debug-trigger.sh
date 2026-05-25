@@ -82,10 +82,10 @@ esac
 for DEST in "${DESTS[@]}"; do
     TEXT="${TEXT_PREFIX}${DEST}"
     echo ">> $NAVI -> $TARGET_PKG  [$TITLE] '$TEXT'"
-    adb shell am broadcast \
+    adb shell "am broadcast \
         -a me.zipi.navitotesla.DEBUG_TRIGGER \
-        --es pkg "$NAVI_PKG" \
-        --es title "$TITLE" \
-        --es text "$TEXT" \
-        -p "$TARGET_PKG"
+        --es pkg '$NAVI_PKG' \
+        --es title '$TITLE' \
+        --es text '$TEXT' \
+        -p '$TARGET_PKG'"
 done
