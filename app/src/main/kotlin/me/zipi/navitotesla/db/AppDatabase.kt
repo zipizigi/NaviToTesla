@@ -8,8 +8,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [PoiAddressEntity::class, ConditionEntity::class, DestinationSendCacheEntity::class],
-    version = 7,
+    entities = [PoiAddressEntity::class, ConditionEntity::class],
+    version = 9,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -17,6 +17,7 @@ import androidx.room.TypeConverters
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8, spec = AppDatabaseAutoMigration7To8::class),
     ],
 )
 @TypeConverters(DateConverter::class)
@@ -24,8 +25,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun poiAddressDao(): PoiAddressDao
 
     abstract fun conditionDao(): ConditionDao
-
-    abstract fun destinationSendCacheDao(): DestinationSendCacheDao
 
     companion object {
         private const val DATABASE_NAME = "data.sqlite"
@@ -41,14 +40,10 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun getInstance(): AppDatabase = instance
 
-        /**
-         * Build the database. [Builder.build] only sets up the database configuration and
-         * creates a new instance of the database.
-         * The SQLite database is only created when it's accessed for the first time.
-         */
         private fun buildDatabase(appContext: Context): AppDatabase =
             Room
                 .databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
+                .addMigrations(MIGRATION_8_9)
                 .build()
     }
 }
