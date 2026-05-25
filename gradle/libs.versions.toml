@@ -1,5 +1,6 @@
 [versions]
 kotlin = "2.3.21"
+ktlint-cli = "1.7.1"
 room = "2.8.4"
 androidx-navigation = "2.9.8"
 androidx-lifecycle = "2.10.0"
@@ -75,6 +76,7 @@ okhttp3-logging = "com.squareup.okhttp3:logging-interceptor:5.3.2"
 
 ted-permission = "io.github.ParkSangGwon:tedpermission-coroutine:3.4.2"
 google-places = "com.google.android.libraries.places:places:4.4.1"
+ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint-cli" }
 
 [bundles]
 room = ["room-runtime", "room-ktx", "androidx-sqlite"]
