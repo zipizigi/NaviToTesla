@@ -127,13 +127,41 @@ class FavoriteDialogFragment :
     override fun onNothingSelected(parent: AdapterView<*>?) {}
 
     private fun saveFavorite() {
+        val poiName = binding.txtDest.text.toString()
+        if (poiName.isEmpty()) {
+            AnalysisUtil.makeToast(context, getString(R.string.duplicatedPoiName))
+            return
+        }
+        val selected = favoriteDialogViewModel.selectedPoi.value
+        val sentMode =
+            when (binding.radioGroup.checkedRadioButtonId) {
+                binding.radioRoadAddress.id -> PoiAddressEntity.SENT_MODE_ROAD
+                binding.radioAddress.id -> PoiAddressEntity.SENT_MODE_JIBUN
+                binding.radioGps.id -> PoiAddressEntity.SENT_MODE_GPS
+                else -> PoiAddressEntity.SENT_MODE_ROAD
+            }
         val entity =
-            PoiAddressEntity(
-                poi = binding.txtDest.text.toString(),
-                address = binding.txtAddress.text.toString(),
-                registered = true,
-                created = Date(),
-            )
+            if (selected != null) {
+                PoiAddressEntity(
+                    poi = poiName,
+                    packageName = selected.packageName.takeIf { it.isNotEmpty() },
+                    roadAddress = selected.getRoadAddress(),
+                    jibunAddress = selected.getAddress(),
+                    latitude = selected.latitude,
+                    longitude = selected.longitude,
+                    registered = true,
+                    sentMode = sentMode,
+                    created = Date(),
+                )
+            } else {
+                PoiAddressEntity(
+                    poi = poiName,
+                    roadAddress = binding.txtAddress.text.toString(),
+                    registered = true,
+                    sentMode = PoiAddressEntity.SENT_MODE_ROAD,
+                    created = Date(),
+                )
+            }
         viewLifecycleOwner.lifecycleScope.launch {
             val dao = AppDatabase.getInstance().poiAddressDao()
             val existing = dao.findRegisteredByPoi(entity.poi)
