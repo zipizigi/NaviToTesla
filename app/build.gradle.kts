@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -17,7 +15,7 @@ android {
     defaultConfig {
         buildConfigField("String", "BUILD_MODE", "\"playstore\"")
         applicationId = "me.zipi.navitotesla"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
 
         versionCode = Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER") ?: "1")
@@ -65,10 +63,6 @@ android {
 //            ext.enableCrashlytics = false
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -86,12 +80,6 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.androidTest?.sources?.assets?.addStaticSourceDirectory("$projectDir/schemas")
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_1_8
     }
 }
 
