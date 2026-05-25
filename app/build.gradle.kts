@@ -80,12 +80,24 @@ android {
             isReturnDefaultValues = true
         }
     }
+    sourceSets {
+        getByName("androidTest") {
+            assets.srcDirs("$projectDir/schemas")
+        }
+    }
     namespace = "me.zipi.navitotesla"
 }
 
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
     }
 }
 
@@ -131,6 +143,7 @@ dependencies {
     testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.androidx.test.espresso)
+    androidTestImplementation(libs.room.testing)
 }
 ktlint {
     version.set("1.7.1")
