@@ -6,6 +6,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.db.AppDatabase
@@ -20,7 +22,6 @@ import java.util.Locale
 class Application : Application() {
     override fun onCreate() {
         super.onCreate()
-        PreferencesUtil.initialize(this.applicationContext)
         AppDatabase.initialize(this.applicationContext)
         AppRepository.initialize(database)
         AnalysisUtil.initialize(this.applicationContext)
@@ -30,9 +31,12 @@ class Application : Application() {
         )
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
 
-        CoroutineScope(Dispatchers.IO).launch {
-            RemoteConfigUtil.initialize()
-            AppCheckUtil.initialize()
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            listOf(
+                launch { PreferencesUtil.initialize(applicationContext) },
+                launch { RemoteConfigUtil.initialize() },
+                launch { AppCheckUtil.initialize() },
+            ).joinAll()
             if (BuildConfig.DEBUG || BuildConfig.BUILD_MODE == "playstore") {
                 initializePlacesSdk()
             }
