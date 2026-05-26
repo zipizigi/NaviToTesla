@@ -27,7 +27,6 @@ import me.zipi.navitotesla.model.Github.Release
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.Float.parseFloat
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -84,6 +83,7 @@ object AppUpdaterUtil {
             if (!isForce && (abs(System.currentTimeMillis() - dialogLastCheck) < 5 * 60 * 1000 || isDoNotShow())) {
                 return@withContext
             }
+            dialogLastCheck = System.currentTimeMillis()
             if (isUpdateAvailable(activity)) {
                 if (!permissionCheck(activity)) {
                     return@withContext
@@ -136,7 +136,6 @@ object AppUpdaterUtil {
                         .show()
 
                     permissionCheck(activity)
-                    dialogLastCheck = System.currentTimeMillis()
                     ResponseCloser.closeAll(response)
                 } catch (e: Exception) {
                     AnalysisUtil.warn("error update dialog show", e)
@@ -273,20 +272,27 @@ object AppUpdaterUtil {
     }
 
     suspend fun isUpdateAvailable(context: Context?): Boolean {
-        var latestVersionNumber = 1.0f
-        var currentVersionNumber = 1.0f
         val latestVersion = getLatestVersion()
+        if (latestVersion == "1.0") return false
         val currentVersion = getCurrentVersion(context)
-        if (latestVersion.contains(".")) {
-            latestVersionNumber =
-                parseFloat(latestVersion.split("[.-]".toRegex())[0] + "." + latestVersion.split("[.-]".toRegex())[1])
-        }
-        if (currentVersion.contains(".")) {
-            currentVersionNumber =
-                parseFloat(currentVersion.split("[.-]".toRegex())[0] + "." + currentVersion.split("[.-]".toRegex())[1])
-        }
-        return latestVersion != "1.0" && currentVersionNumber < latestVersionNumber
+        return compareVersion(currentVersion, latestVersion) < 0
     }
+
+    internal fun compareVersion(
+        a: String,
+        b: String,
+    ): Int {
+        val ap = parseVersion(a)
+        val bp = parseVersion(b)
+        for (i in 0 until maxOf(ap.size, bp.size)) {
+            val l = ap.getOrNull(i) ?: 0
+            val r = bp.getOrNull(i) ?: 0
+            if (l != r) return l.compareTo(r)
+        }
+        return 0
+    }
+
+    private fun parseVersion(v: String): List<Int> = v.split(Regex("[.-]")).mapNotNull { it.toIntOrNull() }
 
     private fun permissionCheck(activity: Activity): Boolean {
         // playstore 빌드는 자체 APK 다운로드 경로가 없어 외부 저장소 권한 자체가 불필요.
@@ -330,6 +336,7 @@ object AppUpdaterUtil {
         if (abs(System.currentTimeMillis() - notificationLastCheck) < 5 * 60 * 1000 || isDoNotShow()) {
             return
         }
+        notificationLastCheck = System.currentTimeMillis()
         if (isUpdateAvailable(context)) {
             val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -361,7 +368,6 @@ object AppUpdaterUtil {
                     .build()
             notificationManager.notify(0, notification)
         }
-        notificationLastCheck = System.currentTimeMillis()
     }
 
     private fun isPlayStoreInstalled(context: Context): Boolean =
