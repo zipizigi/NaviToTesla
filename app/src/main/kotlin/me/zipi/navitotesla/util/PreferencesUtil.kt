@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.model.Token
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 
 object PreferencesUtil {
     private const val PREFERENCES_FILE_NAME = "settings"
@@ -16,38 +17,38 @@ object PreferencesUtil {
     @Volatile
     private var instance: SharedPreferences? = null
     private val initLatch = CountDownLatch(1)
+    private val initStarted = AtomicBoolean(false)
 
-    @Volatile
-    private var initStarted = false
-
-    @Synchronized
-    fun initialize(applicationContext: Context) {
-        if (initStarted) return
-        initStarted = true
-        Thread(
-            {
-                try {
-                    val masterKey =
-                        MasterKey
-                            .Builder(applicationContext)
-                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                            .build()
-                    instance =
-                        EncryptedSharedPreferences.create(
-                            applicationContext,
-                            PREFERENCES_FILE_NAME,
-                            masterKey,
-                            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-                        )
-                } catch (e: Exception) {
-                    AnalysisUtil.recordException(e)
-                } finally {
-                    initLatch.countDown()
-                }
-            },
-            "PreferencesUtil-init",
-        ).start()
+    /**
+     * Heavy init (Keystore MasterKey + EncryptedSharedPreferences) 을 백그라운드로 옮기는 진입점.
+     * 호출 측이 코루틴 스코프에서 launch 하면 됨. sync 접근 (loadTokenSync 등) 은 latch 대기.
+     */
+    suspend fun initialize(applicationContext: Context) {
+        if (!initStarted.compareAndSet(false, true)) {
+            withContext(Dispatchers.IO) { initLatch.await() }
+            return
+        }
+        try {
+            withContext(Dispatchers.IO) {
+                val masterKey =
+                    MasterKey
+                        .Builder(applicationContext)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build()
+                instance =
+                    EncryptedSharedPreferences.create(
+                        applicationContext,
+                        PREFERENCES_FILE_NAME,
+                        masterKey,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                    )
+            }
+        } catch (e: Exception) {
+            AnalysisUtil.recordException(e)
+        } finally {
+            initLatch.countDown()
+        }
     }
 
     private fun prefs(): SharedPreferences {
