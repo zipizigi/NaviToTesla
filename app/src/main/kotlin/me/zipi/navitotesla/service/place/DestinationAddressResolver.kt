@@ -22,21 +22,33 @@ object DestinationAddressResolver {
         val roadAddress = poi.getRoadAddress()
         val jibunAddress = poi.getAddress()
         val eventParam = Bundle().apply { putString("package", poi.packageName) }
+        AnalysisUtil.debug("resolve start: poi='$poiName', pkg=${poi.packageName}")
 
         val dao = AppDatabase.getInstance().poiAddressDao()
         val cached = dao.findPoiByPackage(poiName, poi.packageName)
         if (cached != null && !cached.isExpire) {
-            cached.sentAddress?.let { return it }
+            cached.sentAddress?.let {
+                AnalysisUtil.debug("resolve: local cache hit, sentMode=${cached.sentMode}")
+                return it
+            }
         }
 
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
         if (firebaseDisabledFlavor || jibunAddress.isEmpty() || jibunAddress == roadAddress) {
+            val reason =
+                when {
+                    firebaseDisabledFlavor -> "flavor"
+                    jibunAddress.isEmpty() -> "no_jibun"
+                    else -> "jibun=road"
+                }
+            AnalysisUtil.debug("resolve: skip firestore/places ($reason), using road")
             AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             return roadAddress
         }
 
         val lookupEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
         if (!lookupEnabled) {
+            AnalysisUtil.debug("resolve: lookup disabled by RC, using road")
             AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             return roadAddress
         }
@@ -44,6 +56,7 @@ object DestinationAddressResolver {
         AnalysisUtil.logEvent("firestore_get", eventParam)
         when (cacheClient.lookup(roadAddress)) {
             PlaceAutocompleteCacheEntry.Searchable -> {
+                AnalysisUtil.debug("resolve: firestore hit=searchable, using road")
                 AnalysisUtil.logEvent(
                     "firestore_hit",
                     Bundle().apply {
@@ -56,6 +69,7 @@ object DestinationAddressResolver {
             }
 
             PlaceAutocompleteCacheEntry.NotSearchable -> {
+                AnalysisUtil.debug("resolve: firestore hit=not_searchable, using jibun")
                 AnalysisUtil.logEvent(
                     "firestore_hit",
                     Bundle().apply {
@@ -68,12 +82,13 @@ object DestinationAddressResolver {
             }
 
             null -> {
-                // miss → 다음 단계
+                AnalysisUtil.debug("resolve: firestore miss")
             }
         }
 
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
+            AnalysisUtil.debug("resolve: update disabled by RC, using road")
             AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             return roadAddress
         }
@@ -88,10 +103,13 @@ object DestinationAddressResolver {
                 AnalysisUtil.recordException(e)
                 null
             }
+        AnalysisUtil.debug("resolve: places_api match=$matched")
 
         return if (matched == null) {
+            AnalysisUtil.debug("resolve: places error, using road (no cache set)")
             roadAddress
         } else if (matched) {
+            AnalysisUtil.debug("resolve: cache set=searchable, using road")
             AnalysisUtil.logEvent(
                 "firestore_set",
                 Bundle().apply {
@@ -103,6 +121,7 @@ object DestinationAddressResolver {
             AppRepository.getInstance().markSent(poi, PoiAddressEntity.SENT_MODE_ROAD)
             roadAddress
         } else {
+            AnalysisUtil.debug("resolve: cache set=not_searchable, using jibun")
             AnalysisUtil.logEvent(
                 "firestore_set",
                 Bundle().apply {
