@@ -47,7 +47,7 @@ class AppRepository private constructor(
                         },
                     ).addInterceptor(
                         HttpLoggingInterceptor {
-                            AnalysisUtil.appendLog("DEBUG", it)
+                            AnalysisUtil.debug(it)
                         }.apply {
                             level = HttpLoggingInterceptor.Level.BASIC
                         },
@@ -78,7 +78,7 @@ class AppRepository private constructor(
                         },
                     ).addInterceptor(
                         HttpLoggingInterceptor {
-                            AnalysisUtil.appendLog("DEBUG", it)
+                            AnalysisUtil.debug(it)
                         }.apply {
                             level = HttpLoggingInterceptor.Level.BASIC
                         },

@@ -23,19 +23,22 @@ class Application : Application() {
         PreferencesUtil.initialize(this.applicationContext)
         AppDatabase.initialize(this.applicationContext)
         AppRepository.initialize(database)
-        RemoteConfigUtil.initialize()
-        AppCheckUtil.initialize()
-        if (BuildConfig.DEBUG || BuildConfig.BUILD_MODE == "playstore") {
-            CoroutineScope(Dispatchers.IO).launch { initializePlacesSdk() }
-        }
         AnalysisUtil.initialize(this.applicationContext)
         AnalysisUtil.log(
             "App started: v${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_MODE}, " +
                 "sdk=${Build.VERSION.SDK_INT}, device=${Build.MANUFACTURER} ${Build.MODEL})",
         )
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
-        if (!BuildConfig.DEBUG) {
-            CoroutineScope(Dispatchers.IO).launch { TokenWorker.startBackgroundWork(this@Application) }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            RemoteConfigUtil.initialize()
+            AppCheckUtil.initialize()
+            if (BuildConfig.DEBUG || BuildConfig.BUILD_MODE == "playstore") {
+                initializePlacesSdk()
+            }
+            if (!BuildConfig.DEBUG) {
+                TokenWorker.startBackgroundWork(this@Application)
+            }
         }
     }
 

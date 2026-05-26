@@ -17,7 +17,7 @@ data class ShareRequest(
         val text: String,
     )
 }
-/**
+/*
  * POST https://owner-api.teslamotors.com/api/1/vehicles/1493132499069707/command/share
  *
  * {
