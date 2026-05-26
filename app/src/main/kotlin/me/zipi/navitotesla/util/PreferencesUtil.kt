@@ -8,39 +8,58 @@ import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.model.Token
-import java.io.IOException
-import java.security.GeneralSecurityException
+import java.util.concurrent.CountDownLatch
 
 object PreferencesUtil {
-    private lateinit var instance: SharedPreferences
+    private const val PREFERENCES_FILE_NAME = "settings"
 
-    @Throws(GeneralSecurityException::class, IOException::class)
+    @Volatile
+    private var instance: SharedPreferences? = null
+    private val initLatch = CountDownLatch(1)
+
+    @Volatile
+    private var initStarted = false
+
+    @Synchronized
     fun initialize(applicationContext: Context) {
-        if (!this::instance.isInitialized) {
-            synchronized(PreferencesUtil::class) {
-                val masterKey =
-                    MasterKey
-                        .Builder(applicationContext)
-                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                        .build()
-                instance =
-                    EncryptedSharedPreferences.create(
-                        applicationContext,
-                        PREFERENCES_FILE_NAME,
-                        masterKey,
-                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-                    )
-            }
-        }
+        if (initStarted) return
+        initStarted = true
+        Thread(
+            {
+                try {
+                    val masterKey =
+                        MasterKey
+                            .Builder(applicationContext)
+                            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                            .build()
+                    instance =
+                        EncryptedSharedPreferences.create(
+                            applicationContext,
+                            PREFERENCES_FILE_NAME,
+                            masterKey,
+                            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+                        )
+                } catch (e: Exception) {
+                    AnalysisUtil.recordException(e)
+                } finally {
+                    initLatch.countDown()
+                }
+            },
+            "PreferencesUtil-init",
+        ).start()
     }
 
-    private const val PREFERENCES_FILE_NAME = "settings"
+    private fun prefs(): SharedPreferences {
+        instance?.let { return it }
+        initLatch.await()
+        return instance ?: error("PreferencesUtil initialization failed")
+    }
 
     suspend fun remove(key: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit { remove(key) }
+                prefs().edit { remove(key) }
                 true
             } catch (e: Exception) {
                 AnalysisUtil.warn("remove  error", e)
@@ -52,7 +71,7 @@ object PreferencesUtil {
     suspend fun clear() {
         withContext(Dispatchers.IO) {
             try {
-                instance.edit { clear() }
+                prefs().edit { clear() }
             } catch (e: Exception) {
                 AnalysisUtil.warn("clear error", e)
                 AnalysisUtil.recordException(e)
@@ -66,7 +85,7 @@ object PreferencesUtil {
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit { putBoolean(key, value) }
+                prefs().edit { putBoolean(key, value) }
                 true
             } catch (e: Exception) {
                 AnalysisUtil.warn("put boolean error", e)
@@ -81,7 +100,7 @@ object PreferencesUtil {
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit { putLong(key, value) }
+                prefs().edit { putLong(key, value) }
                 true
             } catch (e: Exception) {
                 AnalysisUtil.warn("put long error", e)
@@ -96,7 +115,7 @@ object PreferencesUtil {
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.edit { putString(key, value) }
+                prefs().edit { putString(key, value) }
                 true
             } catch (e: Exception) {
                 AnalysisUtil.warn("put string error", e)
@@ -111,7 +130,7 @@ object PreferencesUtil {
     ): String? =
         withContext(Dispatchers.IO) {
             try {
-                instance.getString(key, defaultValue)
+                prefs().getString(key, defaultValue)
             } catch (e: Exception) {
                 AnalysisUtil.warn("get string error", e)
                 AnalysisUtil.recordException(e)
@@ -124,7 +143,7 @@ object PreferencesUtil {
         defaultValue: String?,
     ): String? =
         try {
-            instance.getString(key, defaultValue)
+            prefs().getString(key, defaultValue)
         } catch (e: Exception) {
             AnalysisUtil.warn("get string error", e)
             AnalysisUtil.recordException(e)
@@ -133,17 +152,13 @@ object PreferencesUtil {
 
     suspend fun getString(key: String): String? = getString(key, null)
 
-//    fun getBoolean(context: Context?, key: String?): Boolean? {
-//        return getBoolean(context, key, null)
-//    }
-
     suspend fun getBoolean(
         key: String,
         defaultValue: Boolean,
     ): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                instance.getBoolean(key, defaultValue)
+                prefs().getBoolean(key, defaultValue)
             } catch (e: Exception) {
                 AnalysisUtil.warn("get boolean error", e)
                 AnalysisUtil.recordException(e)
@@ -154,7 +169,7 @@ object PreferencesUtil {
     suspend fun getLong(key: String): Long? =
         withContext(Dispatchers.IO) {
             try {
-                val result = instance.getLong(key, -1)
+                val result = prefs().getLong(key, -1)
                 if (result == -1L) null else result
             } catch (e: Exception) {
                 AnalysisUtil.warn("get long error", e)
@@ -165,7 +180,7 @@ object PreferencesUtil {
 
     fun getLongSync(key: String): Long? =
         try {
-            val result = instance.getLong(key, -1)
+            val result = prefs().getLong(key, -1)
             if (result == -1L) null else result
         } catch (e: Exception) {
             AnalysisUtil.warn("get long error", e)
@@ -179,7 +194,7 @@ object PreferencesUtil {
     ): Long =
         withContext(Dispatchers.IO) {
             try {
-                instance.getLong(key, defaultValue)
+                prefs().getLong(key, defaultValue)
             } catch (e: Exception) {
                 AnalysisUtil.warn("get long error", e)
                 AnalysisUtil.recordException(e)
