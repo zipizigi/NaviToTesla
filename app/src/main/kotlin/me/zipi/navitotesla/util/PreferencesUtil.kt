@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.model.Token
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicBoolean
 
 object PreferencesUtil {
     private const val PREFERENCES_FILE_NAME = "settings"
@@ -17,13 +16,9 @@ object PreferencesUtil {
     @Volatile
     private var instance: SharedPreferences? = null
     private val initLatch = CountDownLatch(1)
-    private val initStarted = AtomicBoolean(false)
 
     suspend fun initialize(applicationContext: Context) {
-        if (!initStarted.compareAndSet(false, true)) {
-            withContext(Dispatchers.IO) { initLatch.await() }
-            return
-        }
+        if (instance != null) return
         try {
             withContext(Dispatchers.IO) {
                 val masterKey =
