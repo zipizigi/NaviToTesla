@@ -102,8 +102,10 @@ class HomeFragment :
 
     override fun onResume() {
         super.onResume()
-        accessibilityGrantedCheck()
-        permissionNotificationListenerGrantedCheck()
+        lifecycleScope.launch {
+            accessibilityGrantedCheck()
+            permissionNotificationListenerGrantedCheck()
+        }
         lifecycleScope.launch(Dispatchers.Default) {
             launch { updateVersion() }
             launch { updateToken() }
@@ -147,31 +149,36 @@ class HomeFragment :
 
     private var permissionAlertDialog: AlertDialog? = null
 
-    private fun accessibilityGrantedCheck() {
+    private suspend fun accessibilityGrantedCheck() {
         if (nextAction == null) {
             return
         }
-        if (nextAction == "requireAccessibility") {
-            if (context == null) {
-                return
-            }
-            if (permissionAlertDialog != null && permissionAlertDialog!!.isShowing) {
-                return
-            }
-
-            // accessibility check
-            if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)) {
-                permissionAlertDialog =
-                    AlertDialog
-                        .Builder(requireContext())
-                        .setTitle(getString(R.string.requireAccessibility))
-                        .setMessage(getString(R.string.guideRequireAccessibility))
-                        .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                        .setCancelable(true)
-                        .show()
-                nextAction = null
-            }
+        if (nextAction != "requireAccessibility") {
+            return
         }
+        if (context == null) {
+            return
+        }
+        if (permissionAlertDialog != null && permissionAlertDialog!!.isShowing) {
+            return
+        }
+
+        val enabled =
+            withContext(Dispatchers.IO) {
+                NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
+            }
+        if (enabled) {
+            return
+        }
+        permissionAlertDialog =
+            AlertDialog
+                .Builder(requireContext())
+                .setTitle(getString(R.string.requireAccessibility))
+                .setMessage(getString(R.string.guideRequireAccessibility))
+                .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                .setCancelable(true)
+                .show()
+        nextAction = null
     }
 
     private suspend fun permissionGrantedCheck() {
@@ -217,7 +224,7 @@ class HomeFragment :
         }
     }
 
-    private fun permissionNotificationListenerGrantedCheck() {
+    private suspend fun permissionNotificationListenerGrantedCheck() {
         if (context == null) {
             return
         }
@@ -227,9 +234,9 @@ class HomeFragment :
 
         // notification listener
         val sets =
-            NotificationManagerCompat.getEnabledListenerPackages(
-                requireContext(),
-            )
+            withContext(Dispatchers.IO) {
+                NotificationManagerCompat.getEnabledListenerPackages(requireContext())
+            }
         if (!sets.contains(requireContext().packageName)) {
             permissionAlertDialog =
                 AlertDialog
