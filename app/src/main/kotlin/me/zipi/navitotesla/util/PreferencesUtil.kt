@@ -19,10 +19,6 @@ object PreferencesUtil {
     private val initLatch = CountDownLatch(1)
     private val initStarted = AtomicBoolean(false)
 
-    /**
-     * Heavy init (Keystore MasterKey + EncryptedSharedPreferences) 을 백그라운드로 옮기는 진입점.
-     * 호출 측이 코루틴 스코프에서 launch 하면 됨. sync 접근 (loadTokenSync 등) 은 latch 대기.
-     */
     suspend fun initialize(applicationContext: Context) {
         if (!initStarted.compareAndSet(false, true)) {
             withContext(Dispatchers.IO) { initLatch.await() }
