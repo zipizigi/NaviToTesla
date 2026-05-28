@@ -6,6 +6,7 @@ import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.service.place.Searchability
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -144,9 +145,15 @@ class AppRepository private constructor(
      */
     suspend fun markClassified(
         poi: Poi,
-        searchable: Boolean?,
+        searchability: Searchability,
     ) {
         val poiName = poi.poiName ?: return
+        val searchable: Boolean? =
+            when (searchability) {
+                Searchability.Searchable -> true
+                Searchability.NotSearchable -> false
+                Searchability.Unknown -> null
+            }
         database.withTransaction {
             val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName)
             database.poiAddressDao().insertPoi(
