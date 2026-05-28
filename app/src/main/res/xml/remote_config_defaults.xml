@@ -29,6 +29,10 @@
         <value>false</value>
     </entry>
     <entry>
+        <key>googlePlaceCheckUpdateRatio</key>
+        <value>100</value>
+    </entry>
+    <entry>
         <key>googlePlacesApiKey</key>
         <value>default</value>
     </entry>
