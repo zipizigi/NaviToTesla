@@ -22,11 +22,14 @@ import android.widget.ArrayAdapter
 import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.gun0912.tedpermission.coroutine.TedPermission
 import kotlinx.coroutines.Dispatchers
@@ -195,36 +198,51 @@ class HomeFragment :
         }
 
         //         file write permission
+        // 권한 이미 grant 되어 있으면 TedPermission 호출 자체 skip — TedPermissionActivity launch 안 됨 → 탭 전환 즉시.
         if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyFilePermission", false))) {
-            withContext(Dispatchers.Main) {
-                TedPermission
-                    .create()
-                    .setRationaleTitle(R.string.grantPermission)
-                    .setRationaleMessage(R.string.guideGrantStoragePermission)
-                    .setDeniedMessage(R.string.guidePermissionDeny)
-                    .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .check()
-                    .run {
-                        if (!isGranted) {
-                            PreferencesUtil.put("denyFilePermission", true)
+            val granted =
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                withContext(Dispatchers.Main) {
+                    TedPermission
+                        .create()
+                        .setRationaleTitle(R.string.grantPermission)
+                        .setRationaleMessage(R.string.guideGrantStoragePermission)
+                        .setDeniedMessage(R.string.guidePermissionDeny)
+                        .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        .check()
+                        .run {
+                            if (!isGranted) {
+                                PreferencesUtil.put("denyFilePermission", true)
+                            }
                         }
-                    }
+                }
             }
         }
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyNotificationPermission", false))) {
-            withContext(Dispatchers.Main) {
-                TedPermission
-                    .create()
-                    .setRationaleTitle(R.string.grantPermission)
-                    .setRationaleMessage(R.string.guideGrantNotificationPermission)
-                    .setDeniedMessage(R.string.guidePermissionDeny)
-                    .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
-                    .check()
-                    .run {
-                        if (!isGranted) {
-                            PreferencesUtil.put("denyNotificationPermission", true)
+            val granted =
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS,
+                ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                withContext(Dispatchers.Main) {
+                    TedPermission
+                        .create()
+                        .setRationaleTitle(R.string.grantPermission)
+                        .setRationaleMessage(R.string.guideGrantNotificationPermission)
+                        .setDeniedMessage(R.string.guidePermissionDeny)
+                        .setPermissions(Manifest.permission.POST_NOTIFICATIONS)
+                        .check()
+                        .run {
+                            if (!isGranted) {
+                                PreferencesUtil.put("denyNotificationPermission", true)
+                            }
                         }
-                    }
+                }
             }
         }
     }
@@ -554,10 +572,24 @@ class HomeFragment :
         }
     }
 
+    private var shareModeVisibilityApplied = false
+
     private fun applyShareModeVisibility(useApi: Boolean) {
         val visibility = if (useApi) View.VISIBLE else View.GONE
+        // cold start (첫 호출) 에는 animation 없이 즉시 적용 — XML 기본 GONE 과 일치하면 noop, Api 모드면 즉시 VISIBLE.
+        // 이후 사용자 토글 시 fade + slide bounds (AutoTransition) 으로 자연스럽게 전환.
+        if (shareModeVisibilityApplied) {
+            val parent = binding.cardToken.parent as? ViewGroup
+            if (parent != null) {
+                TransitionManager.beginDelayedTransition(
+                    parent,
+                    AutoTransition().apply { duration = 220 },
+                )
+            }
+        }
         binding.cardToken.visibility = visibility
         binding.cardVehicle.visibility = visibility
+        shareModeVisibilityApplied = true
     }
 
     private fun refreshTokenButtonEnabled() {

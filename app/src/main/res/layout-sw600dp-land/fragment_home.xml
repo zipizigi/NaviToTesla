@@ -81,7 +81,8 @@
                     style="@style/Widget.NaviToTesla.Card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_md">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -179,7 +180,8 @@
                     style="@style/Widget.NaviToTesla.Card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/space_md">
+                    android:layout_marginBottom="@dimen/space_md"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
