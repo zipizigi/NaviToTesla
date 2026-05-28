@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.launch
+import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentFavoriteBinding
 import me.zipi.navitotesla.db.AppDatabase
@@ -63,7 +64,7 @@ class FavoriteFragment :
         binding.recylerRegistered.adapter = poiRegisteredRecyclerAdapter
         binding.recylerRegistered.layoutManager = LinearLayoutManager(context)
         binding.btnFavoriteAdd.setOnClickListener(this)
-        binding.btnFavoriteHelp.setOnClickListener(this)
+        binding.btnRecentClear.setOnClickListener(this)
         favoriteViewModel.recentPoiAddress.observe(
             viewLifecycleOwner,
         ) { items -> poiHistoryRecyclerAdapter.setItems(items) }
@@ -157,17 +158,34 @@ class FavoriteFragment :
         if (activity == null || context == null) {
             return
         }
-        if (v.id == binding.btnFavoriteHelp.id) {
-            AlertDialog
-                .Builder(requireActivity())
-                .setTitle(getString(R.string.guide))
-                .setMessage(getString(R.string.guideFavorite))
-                .setCancelable(true)
-                .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                .create()
-                .show()
-        } else if (v.id == binding.btnFavoriteAdd.id) {
+        if (v.id == binding.btnFavoriteAdd.id) {
             addFavorite()
+        } else if (v.id == binding.btnRecentClear.id) {
+            onBtnRecentClearClick()
+        }
+    }
+
+    private fun onBtnRecentClearClick() {
+        if (activity == null) return
+        AlertDialog
+            .Builder(requireActivity())
+            .setTitle(getString(R.string.dialogClearRecentTitle))
+            .setMessage(getString(R.string.dialogClearRecentMessage))
+            .setCancelable(true)
+            .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
+                performRecentClear()
+            }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+            .show()
+    }
+
+    private fun performRecentClear() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                AppRepository.getInstance().clearAllPoi()
+            } catch (e: Exception) {
+                AnalysisUtil.recordException(e)
+            }
+            updatePoiAddress()
         }
     }
 }

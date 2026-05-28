@@ -19,6 +19,7 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.RadioGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
@@ -35,6 +36,7 @@ import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.databinding.FragmentHomeBinding
+import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
@@ -65,6 +67,12 @@ class HomeFragment :
         homeViewModel = ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
+
+        // 첫 프레임 깜빡임 방지: shareMode 를 동기로 읽어 cardToken/cardVehicle visibility 즉시 적용.
+        // LiveData observer 가 이후 같은 값으로 재호출해도 멱등.
+        val initialShareMode = PreferencesUtil.getStringSync("shareMode", "app") ?: "app"
+        applyShareModeVisibility(useApi = initialShareMode == "api")
+
         homeViewModel.vehicleListLiveData.distinctUntilChanged().observe(viewLifecycleOwner) { updateSpinner() }
         homeViewModel.tokenLiveData.distinctUntilChanged().observe(viewLifecycleOwner) { renderToken() }
         homeViewModel.appVersion.distinctUntilChanged().observe(viewLifecycleOwner) { renderVersion() }
@@ -89,10 +97,11 @@ class HomeFragment :
             },
         )
         binding.btnSave.setOnClickListener(this)
-        binding.btnPoiCacheClear.setOnClickListener(this)
         binding.btnPaste.setOnClickListener(this)
         binding.btnTokenClear.setOnClickListener(this)
         binding.txtVersion.setOnClickListener(this)
+        setupSendModeRadios()
+        loadSendModeRadios()
 
         lifecycleScope.launch(Dispatchers.Default) {
             permissionGrantedCheck()
@@ -127,10 +136,6 @@ class HomeFragment :
         when (view.id) {
             binding.txtVersion.id -> {
                 onTxtVersionClicked()
-            }
-
-            binding.btnPoiCacheClear.id -> {
-                onBtnPoiCacheClearClick()
             }
 
             binding.btnPaste.id -> {
@@ -274,34 +279,11 @@ class HomeFragment :
                 AnalysisUtil.log("skip refresh token fetch, token unchanged and vehicles loaded")
             }
         }
+        refreshTokenButtonEnabled()
     }
 
     private fun onTxtVersionClicked() {
         lifecycleScope.launch(Dispatchers.Default) { AppUpdaterUtil.dialog(activity, true) }
-    }
-
-    private fun onBtnPoiCacheClearClick() {
-        binding.btnPoiCacheClear.isEnabled = false
-        lifecycleScope.launch(Dispatchers.Default) {
-            if (context == null || activity == null) {
-                return@launch
-            }
-            try {
-                naviToTeslaService.clearPoiCache()
-                AppUpdaterUtil.clearDoNotShow()
-                PreferencesUtil.put("lastNotifyAppVersionForAccessibility", "")
-                PreferencesUtil.put("denyNotificationPermission", false)
-                PreferencesUtil.put("denyFilePermission", false)
-            } catch (e: Exception) {
-                AnalysisUtil.warn("clear poi cache error", e)
-                AnalysisUtil.recordException(e)
-            }
-            if (activity != null) {
-                withContext(Dispatchers.Main) {
-                    binding.btnPoiCacheClear.isEnabled = true
-                }
-            }
-        }
     }
 
     private fun onBtnPasteClick() {
@@ -318,13 +300,33 @@ class HomeFragment :
     }
 
     private fun onBtnTokenClearClick() {
+        if (activity == null) return
+        AlertDialog
+            .Builder(requireActivity())
+            .setTitle(getString(R.string.dialogClearTokenTitle))
+            .setMessage(getString(R.string.dialogClearTokenMessage))
+            .setCancelable(true)
+            .setPositiveButton(getString(R.string.delete)) { _: DialogInterface?, _: Int ->
+                performTokenClear()
+            }.setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+            .show()
+    }
+
+    private fun performTokenClear() {
         lifecycleScope.launch(Dispatchers.Default) {
             homeViewModel.vehicleListLiveData.postValue(mutableListOf())
             homeViewModel.refreshToken.postValue("")
             if (context != null) {
-                PreferencesUtil.clear()
+                // 다른 사용자 설정 (shareMode, defaultSendMode 등) 보존을 위해 토큰/차량 키만 삭제.
+                PreferencesUtil.remove("refreshToken")
+                PreferencesUtil.remove("accessToken")
+                PreferencesUtil.remove("tokenUpdated")
+                PreferencesUtil.remove("vehicleId")
                 homeViewModel.tokenLiveData.postValue(naviToTeslaService.getToken())
                 TokenWorker.cancelBackgroundWork(requireContext())
+                withContext(Dispatchers.Main) {
+                    refreshTokenButtonEnabled()
+                }
             }
         }
     }
@@ -540,15 +542,29 @@ class HomeFragment :
     }
 
     private fun onChangedTeslaShareMode(mode: String) {
-        val enableApiElement = mode != "app"
-        binding.txtRefreshToken.isEnabled = enableApiElement
-        binding.btnPaste.isEnabled = enableApiElement
-        binding.btnSave.isEnabled = enableApiElement
-        binding.vehicleSelector.isEnabled = enableApiElement
-        binding.btnTokenClear.isEnabled = enableApiElement
+        val useApi = mode != "app"
+        applyShareModeVisibility(useApi)
+        binding.txtRefreshToken.isEnabled = useApi
+        binding.btnPaste.isEnabled = useApi
+        binding.btnSave.isEnabled = useApi
+        binding.vehicleSelector.isEnabled = useApi
+        refreshTokenButtonEnabled()
         if (mode == "app") {
             overlayPermissionGrantedCheck()
         }
+    }
+
+    private fun applyShareModeVisibility(useApi: Boolean) {
+        val visibility = if (useApi) View.VISIBLE else View.GONE
+        binding.cardToken.visibility = visibility
+        binding.cardVehicle.visibility = visibility
+    }
+
+    private fun refreshTokenButtonEnabled() {
+        if (!isAdded || view == null) return
+        val useApi = binding.radioGroupShareMode.checkedButtonId == binding.radioUsingTeslaApi.id
+        val hasToken = PreferencesUtil.loadTokenSync() != null
+        binding.btnTokenClear.isEnabled = useApi && hasToken
     }
 
     private fun overlayPermissionGrantedCheck() {
@@ -580,6 +596,60 @@ class HomeFragment :
                         binding.radioGroupShareMode.check(binding.radioUsingTeslaApi.id)
                     }.setCancelable(false)
                     .show()
+        }
+    }
+
+    private fun setupSendModeRadios() {
+        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener { _: RadioGroup?, checkedId: Int ->
+            when (checkedId) {
+                R.id.radioDefaultSendModeRoad -> persistDefaultSendMode(SendMode.ROAD)
+                R.id.radioDefaultSendModeJibun -> persistDefaultSendMode(SendMode.JIBUN)
+                R.id.radioDefaultSendModeName -> persistDefaultSendMode(SendMode.NAME)
+            }
+        }
+        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener { _: RadioGroup?, checkedId: Int ->
+            when (checkedId) {
+                R.id.radioFallbackSendModeRoad -> persistFallbackSendMode(SendMode.ROAD)
+                R.id.radioFallbackSendModeJibun -> persistFallbackSendMode(SendMode.JIBUN)
+                R.id.radioFallbackSendModeName -> persistFallbackSendMode(SendMode.NAME)
+            }
+        }
+    }
+
+    private fun radioIdForDefaultMode(mode: SendMode): Int =
+        when (mode) {
+            SendMode.JIBUN -> binding.radioDefaultSendModeJibun.id
+            SendMode.NAME -> binding.radioDefaultSendModeName.id
+            else -> binding.radioDefaultSendModeRoad.id
+        }
+
+    private fun radioIdForFallbackMode(mode: SendMode): Int =
+        when (mode) {
+            SendMode.JIBUN -> binding.radioFallbackSendModeJibun.id
+            SendMode.NAME -> binding.radioFallbackSendModeName.id
+            else -> binding.radioFallbackSendModeRoad.id
+        }
+
+    private fun persistDefaultSendMode(mode: SendMode) {
+        lifecycleScope.launch { PreferencesUtil.setDefaultSendMode(mode) }
+    }
+
+    private fun persistFallbackSendMode(mode: SendMode) {
+        lifecycleScope.launch { PreferencesUtil.setFallbackSendMode(mode) }
+    }
+
+    private fun loadSendModeRadios() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val default = PreferencesUtil.getDefaultSendMode()
+            val fallback = PreferencesUtil.getFallbackSendMode()
+            withContext(Dispatchers.Main) {
+                if (!isAdded || view == null) return@withContext
+                binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(null)
+                binding.radioGroupDefaultSendMode.check(radioIdForDefaultMode(default))
+                binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(null)
+                binding.radioGroupFallbackSendMode.check(radioIdForFallbackMode(fallback))
+                setupSendModeRadios()
+            }
         }
     }
 

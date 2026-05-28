@@ -109,12 +109,17 @@
     <string name="helperRefreshToken">Tesla 계정에서 발급한 refresh token을 붙여넣으세요.</string>
     <string name="helperShareMode">API 모드는 차량과 직접 통신합니다. App 모드는 설치된 Tesla 앱을 통해 전달합니다.</string>
     <string name="emptyBluetoothList">등록된 블루투스가 없습니다.\n+ 버튼을 눌러 추가하세요.</string>
-    <string name="sectionSendMode">전송 방법</string>
-    <string name="defaultSendModeTitle">기본 전송 방법</string>
+    <string name="defaultSendModeTitle">기본</string>
     <string name="guideDefaultSendMode">목적지 전송시 해당하는 방법으로 차량에 전송합니다.</string>
-    <string name="fallbackSendModeTitle">목적지 검색 실패시 전송 방법</string>
+    <string name="fallbackSendModeTitle">검색 실패시</string>
     <string name="guideFallbackSendMode">차량이 인식하지 못할것으로 예상되는 목적지에 대해서 해당 방법으로 전송합니다.</string>
     <string name="sendModeRoad">도로명 주소</string>
     <string name="sendModeJibun">지번 주소</string>
     <string name="sendModeName">목적지명</string>
+    <string name="sectionAddressFormat">주소 형식</string>
+    <string name="guideRecentDestination">최근 차량으로 보낸 주소가 자동으로 보관됩니다. 우측 버튼으로 전체 삭제할 수 있습니다.</string>
+    <string name="dialogClearRecentTitle">최근 목적지 삭제</string>
+    <string name="dialogClearRecentMessage">최근 보낸 목적지 캐시를 모두 삭제합니다. 이 작업은 되돌릴 수 없습니다.</string>
+    <string name="dialogClearTokenTitle">토큰 삭제</string>
+    <string name="dialogClearTokenMessage">Tesla 토큰을 삭제합니다. API 모드를 다시 사용하려면 토큰을 재등록해야 합니다.</string>
 </resources>
