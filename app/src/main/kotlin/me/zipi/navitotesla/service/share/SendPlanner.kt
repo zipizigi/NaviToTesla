@@ -46,25 +46,23 @@ object SendPlanner {
             mode = SendMode.ROAD
         }
 
-        // GPS 좌표는 locale-neutral — wrap 없이 그대로 반환
-        if (mode == SendMode.GPS) {
-            val gps = "${poi.latitude},${poi.longitude}"
-            return SendPayload(gps, gps, SendMode.GPS, viaUrl = false)
-        }
-
         val rawByMode =
             when (mode) {
                 SendMode.ROAD -> poi.getRoadAddress()
                 SendMode.JIBUN -> jibunOrRoad(poi)
                 SendMode.NAME -> poi.poiName ?: poi.getRoadAddress()
-                SendMode.GPS -> error("unreachable — GPS handled above")
+                SendMode.GPS -> "${poi.latitude},${poi.longitude}"
             }
 
         val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
             settings.locale.language != "ko"
-        val viaUrl = mode == SendMode.NAME ||
-            effectiveSearchability is Searchability.NotSearchable ||
-            byAppNonKorean
+        // GPS 좌표는 locale-neutral 이고 그 자체가 destination 이라 wrap 하지 않는다.
+        val viaUrl = mode != SendMode.GPS &&
+            (
+                mode == SendMode.NAME ||
+                    effectiveSearchability is Searchability.NotSearchable ||
+                    byAppNonKorean
+            )
         val sendText =
             if (viaUrl) GOOGLE_MAPS_URL_PREFIX + URLEncoder.encode(rawByMode, "UTF-8") else rawByMode
         val displayText =
