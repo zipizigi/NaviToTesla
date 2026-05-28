@@ -32,9 +32,9 @@ class DestinationAddressResolverClassifyTest {
 
     private val poi =
         Poi(
-            poiName = "헬로방방 기흥구청점",
-            roadAddress = "경기도 용인시 기흥구 구갈로 55",
-            address = "경기도 용인시 기흥구 구갈동 123-4",
+            poiName = "서울특별시청",
+            roadAddress = "서울특별시 중구 세종대로 110",
+            address = "서울특별시 중구 태평로1가 31",
             latitude = null,
             longitude = null,
             packageName = "com.example",
@@ -124,10 +124,10 @@ class DestinationAddressResolverClassifyTest {
         registered: Boolean,
     ) = PoiAddressEntity(
         id = 1,
-        poi = "헬로방방 기흥구청점",
+        poi = "서울특별시청",
         packageName = "com.example",
-        roadAddress = "경기도 용인시 기흥구 구갈로 55",
-        jibunAddress = "경기도 용인시 기흥구 구갈동 123-4",
+        roadAddress = "서울특별시 중구 세종대로 110",
+        jibunAddress = "서울특별시 중구 태평로1가 31",
         latitude = null,
         longitude = null,
         registered = registered,

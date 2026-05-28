@@ -18,19 +18,19 @@ private fun urlOf(raw: String): String = GOOGLE_MAPS_URL_PREFIX + URLEncoder.enc
 class SendPlannerTest {
     private val poi =
         Poi(
-            poiName = "헬로방방 기흥구청점",
-            roadAddress = "경기도 용인시 기흥구 구갈로 55",
-            address = "경기도 용인시 기흥구 구갈동 123-4",
-            latitude = "37.279398",
-            longitude = "127.110960",
+            poiName = "서울특별시청",
+            roadAddress = "서울특별시 중구 세종대로 110",
+            address = "서울특별시 중구 태평로1가 31",
+            latitude = "37.566645",
+            longitude = "126.978256",
             packageName = "com.example",
         )
 
     private val addressOnlyPoi =
         Poi(
-            poiName = "경기도 용인시 기흥구 구갈로 55",
-            roadAddress = "경기도 용인시 기흥구 구갈로 55",
-            address = "경기도 용인시 기흥구 구갈로 55",
+            poiName = "서울특별시 중구 세종대로 110",
+            roadAddress = "서울특별시 중구 세종대로 110",
+            address = "서울특별시 중구 세종대로 110",
             latitude = null,
             longitude = null,
             packageName = "com.example",
@@ -54,8 +54,8 @@ class SendPlannerTest {
                 isDuplicateSelected = false,
                 settings = settings(SendMode.JIBUN), // 무시되어야
             )
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.sendText)
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.displayText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.displayText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertFalse(payload.viaUrl)
     }
@@ -70,7 +70,7 @@ class SendPlannerTest {
                 isDuplicateSelected = false,
                 settings = settings(SendMode.ROAD),
             )
-        assertEquals("경기도 용인시 기흥구 구갈동 123-4", payload.sendText)
+        assertEquals("서울특별시 중구 태평로1가 31", payload.sendText)
         assertEquals(SendMode.JIBUN, payload.mode)
         assertFalse(payload.viaUrl)
     }
@@ -85,8 +85,8 @@ class SendPlannerTest {
                 isDuplicateSelected = false,
                 settings = settings(SendMode.ROAD),
             )
-        assertEquals("37.279398,127.110960", payload.sendText)
-        assertEquals("37.279398,127.110960", payload.displayText)
+        assertEquals("37.566645,126.978256", payload.sendText)
+        assertEquals("37.566645,126.978256", payload.displayText)
         assertEquals(SendMode.GPS, payload.mode)
         assertFalse(payload.viaUrl)
     }
@@ -96,22 +96,22 @@ class SendPlannerTest {
     @Test
     fun `searchable + default ROAD sends road raw`() {
         val payload = SendPlanner.plan(poi, Searchability.Searchable, null, false, settings(SendMode.ROAD))
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `searchable + default JIBUN sends jibun raw`() {
         val payload = SendPlanner.plan(poi, Searchability.Searchable, null, false, settings(SendMode.JIBUN))
-        assertEquals("경기도 용인시 기흥구 구갈동 123-4", payload.sendText)
+        assertEquals("서울특별시 중구 태평로1가 31", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `searchable + default NAME wraps as google maps URL with name`() {
         val payload = SendPlanner.plan(poi, Searchability.Searchable, null, false, settings(SendMode.NAME))
-        assertEquals(urlOf("헬로방방 기흥구청점"), payload.sendText)
-        assertEquals("헬로방방 기흥구청점", payload.displayText)
+        assertEquals(urlOf("서울특별시청"), payload.sendText)
+        assertEquals("서울특별시청", payload.displayText)
         assertEquals(SendMode.NAME, payload.mode)
         assertTrue(payload.viaUrl)
     }
@@ -121,8 +121,8 @@ class SendPlannerTest {
     @Test
     fun `not_searchable + fallback ROAD wraps road as URL`() {
         val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.JIBUN, SendMode.ROAD))
-        assertEquals(urlOf("경기도 용인시 기흥구 구갈로 55"), payload.sendText)
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.displayText)
+        assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.displayText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertTrue(payload.viaUrl)
     }
@@ -130,16 +130,16 @@ class SendPlannerTest {
     @Test
     fun `not_searchable + fallback JIBUN wraps jibun as URL`() {
         val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD, SendMode.JIBUN))
-        assertEquals(urlOf("경기도 용인시 기흥구 구갈동 123-4"), payload.sendText)
-        assertEquals("경기도 용인시 기흥구 구갈동 123-4", payload.displayText)
+        assertEquals(urlOf("서울특별시 중구 태평로1가 31"), payload.sendText)
+        assertEquals("서울특별시 중구 태평로1가 31", payload.displayText)
         assertTrue(payload.viaUrl)
     }
 
     @Test
     fun `not_searchable + fallback NAME wraps name as URL`() {
         val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD, SendMode.NAME))
-        assertEquals(urlOf("헬로방방 기흥구청점"), payload.sendText)
-        assertEquals("헬로방방 기흥구청점", payload.displayText)
+        assertEquals(urlOf("서울특별시청"), payload.sendText)
+        assertEquals("서울특별시청", payload.displayText)
         assertEquals(SendMode.NAME, payload.mode)
         assertTrue(payload.viaUrl)
     }
@@ -149,15 +149,15 @@ class SendPlannerTest {
     @Test
     fun `unknown + RC false uses default mode without URL`() {
         val payload = SendPlanner.plan(poi, Searchability.Unknown, null, false, settings(SendMode.ROAD, SendMode.JIBUN, rc = false))
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `unknown + RC true falls back to fallbackMode with URL`() {
         val payload = SendPlanner.plan(poi, Searchability.Unknown, null, false, settings(SendMode.ROAD, SendMode.JIBUN, rc = true))
-        assertEquals(urlOf("경기도 용인시 기흥구 구갈동 123-4"), payload.sendText)
-        assertEquals("경기도 용인시 기흥구 구갈동 123-4", payload.displayText)
+        assertEquals(urlOf("서울특별시 중구 태평로1가 31"), payload.sendText)
+        assertEquals("서울특별시 중구 태평로1가 31", payload.displayText)
         assertEquals(SendMode.JIBUN, payload.mode)
         assertTrue(payload.viaUrl)
     }
@@ -167,15 +167,15 @@ class SendPlannerTest {
     @Test
     fun `address-only poi searchable sends raw`() {
         val payload = SendPlanner.plan(addressOnlyPoi, Searchability.Searchable, null, false, settings(SendMode.ROAD))
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `address-only poi not_searchable wraps as URL`() {
         val payload = SendPlanner.plan(addressOnlyPoi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD))
-        assertEquals(urlOf("경기도 용인시 기흥구 구갈로 55"), payload.sendText)
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.displayText)
+        assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.displayText)
         assertTrue(payload.viaUrl)
     }
 
@@ -184,7 +184,7 @@ class SendPlannerTest {
     @Test
     fun `duplicate-selected demotes NAME to ROAD`() {
         val payload = SendPlanner.plan(poi, Searchability.Searchable, null, isDuplicateSelected = true, settings(SendMode.NAME))
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertFalse(payload.viaUrl)
     }
@@ -192,7 +192,7 @@ class SendPlannerTest {
     @Test
     fun `duplicate-selected not_searchable still wraps road as URL`() {
         val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, isDuplicateSelected = true, settings(SendMode.ROAD))
-        assertEquals(urlOf("경기도 용인시 기흥구 구갈로 55"), payload.sendText)
+        assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertTrue(payload.viaUrl)
     }
@@ -201,10 +201,10 @@ class SendPlannerTest {
 
     @Test
     fun `URL wrap uses application-x-www-form-urlencoded UTF-8 for spaces and Korean`() {
-        // 헬로방방 기흥구청점 → 공백은 +, 한글은 %XX percent-encoded.
-        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD, SendMode.NAME))
+        // 서울특별시 중구 세종대로 110 → 공백은 +, 한글은 %XX percent-encoded.
+        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.JIBUN, SendMode.ROAD))
         assertEquals(
-            "https://maps.google.com/maps?q=%ED%97%AC%EB%A1%9C%EB%B0%A9%EB%B0%A9+%EA%B8%B0%ED%9D%A5%EA%B5%AC%EC%B2%AD%EC%A0%90",
+            "https://maps.google.com/maps?q=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C+%EC%A4%91%EA%B5%AC+%EC%84%B8%EC%A2%85%EB%8C%80%EB%A1%9C+110",
             payload.sendText,
         )
     }
@@ -215,15 +215,15 @@ class SendPlannerTest {
     fun `jibun mode falls back to road when jibun empty`() {
         val noJibunPoi =
             Poi(
-                poiName = "헬로방방 기흥구청점",
-                roadAddress = "경기도 용인시 기흥구 구갈로 55",
+                poiName = "서울특별시청",
+                roadAddress = "서울특별시 중구 세종대로 110",
                 address = "",
-                latitude = "37.279398",
-                longitude = "127.110960",
+                latitude = "37.566645",
+                longitude = "126.978256",
                 packageName = "com.example",
             )
         val payload = SendPlanner.plan(noJibunPoi, Searchability.Searchable, null, false, settings(SendMode.JIBUN))
-        assertEquals("경기도 용인시 기흥구 구갈로 55", payload.sendText)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertEquals(SendMode.JIBUN, payload.mode)
         assertFalse(payload.viaUrl)
     }
