@@ -8,6 +8,7 @@ import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
+import kotlin.random.Random
 
 object DestinationAddressResolver {
     @Volatile
@@ -77,6 +78,12 @@ object DestinationAddressResolver {
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
             AnalysisUtil.debug("classify: places update disabled by RC, unknown")
+            return Searchability.Unknown
+        }
+
+        val ratio = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO).coerceIn(0L, 100L).toInt()
+        if (Random.nextInt(100) >= ratio) {
+            AnalysisUtil.debug("classify: places update sampled out (ratio=$ratio), unknown")
             return Searchability.Unknown
         }
 
