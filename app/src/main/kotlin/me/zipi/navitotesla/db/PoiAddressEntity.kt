@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.model.SendMode
 import java.util.Date
 import kotlin.math.abs
 
@@ -46,9 +47,16 @@ class PoiAddressEntity(
             longitude = longitude,
             packageName = packageName ?: "",
             isDuplicate = isDuplicate == true,
-            // registered=true 인데 sentMode 가 null 인 corruption 케이스도 ROAD 로 안전 처리.
-            registeredSentMode = if (registered == true) sentMode ?: SENT_MODE_ROAD else null,
+            registeredSentMode = if (registered == true) toSendMode() else null,
         )
+
+    // registered=true 인데 sentMode 가 null/unknown 인 corruption 케이스는 ROAD 로 안전 폴백.
+    private fun toSendMode(): SendMode =
+        when (sentMode) {
+            SENT_MODE_JIBUN -> SendMode.JIBUN
+            SENT_MODE_GPS -> SendMode.GPS
+            else -> SendMode.ROAD
+        }
 
     companion object {
         const val EXPIRE_DAY = 30

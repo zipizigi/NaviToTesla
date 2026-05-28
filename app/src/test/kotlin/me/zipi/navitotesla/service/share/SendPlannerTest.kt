@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.service.share
 
-import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendSettings
@@ -60,7 +59,7 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi = poi,
                 searchability = Searchability.NotSearchable, // 무시되어야
-                registeredSentMode = PoiAddressEntity.SENT_MODE_ROAD,
+                registeredSentMode = SendMode.ROAD,
                 isDuplicateSelected = false,
                 settings = settings(SendMode.JIBUN), // 무시되어야
             )
@@ -76,7 +75,7 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi = poi,
                 searchability = Searchability.NotSearchable,
-                registeredSentMode = PoiAddressEntity.SENT_MODE_JIBUN,
+                registeredSentMode = SendMode.JIBUN,
                 isDuplicateSelected = false,
                 settings = settings(SendMode.ROAD),
             )
@@ -91,7 +90,7 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi = poi,
                 searchability = Searchability.Searchable,
-                registeredSentMode = PoiAddressEntity.SENT_MODE_GPS,
+                registeredSentMode = SendMode.GPS,
                 isDuplicateSelected = false,
                 settings = settings(SendMode.ROAD),
             )
@@ -298,7 +297,7 @@ class SendPlannerTest {
         // GPS via registered branch must stay raw coords regardless of locale/transport.
         val payload = SendPlanner.plan(
             poi, Searchability.Searchable,
-            registeredSentMode = PoiAddressEntity.SENT_MODE_GPS,
+            registeredSentMode = SendMode.GPS,
             isDuplicateSelected = false,
             settings = settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
         )

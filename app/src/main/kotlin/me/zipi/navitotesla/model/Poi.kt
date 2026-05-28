@@ -9,7 +9,7 @@ data class Poi(
     val packageName: String = "",
     val isDuplicate: Boolean = false,
     /** non-null = registered favorite 의 sentMode (ROAD/JIBUN/GPS). null = favorite 아님. */
-    val registeredSentMode: String? = null,
+    val registeredSentMode: SendMode? = null,
 ) {
     @Suppress("unused")
     fun isAddressEmpty(): Boolean = roadAddress.isNullOrEmpty() && address.isNullOrEmpty()

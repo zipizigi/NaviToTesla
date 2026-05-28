@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.service.share
 
-import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendPayload
@@ -16,7 +15,7 @@ object SendPlanner {
     fun plan(
         poi: Poi,
         searchability: Searchability,
-        registeredSentMode: String?,
+        registeredSentMode: SendMode?,
         isDuplicateSelected: Boolean,
         settings: SendSettings,
     ): SendPayload {
@@ -80,17 +79,17 @@ object SendPlanner {
 
     private fun planRegistered(
         poi: Poi,
-        sentMode: String,
+        sentMode: SendMode,
         settings: SendSettings,
     ): SendPayload {
         val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
             settings.locale.language != "ko"
         return when (sentMode) {
-            PoiAddressEntity.SENT_MODE_JIBUN -> {
+            SendMode.JIBUN -> {
                 val jibun = jibunOrRoad(poi)
                 wrapIfNeeded(jibun, jibun, SendMode.JIBUN, byAppNonKorean)
             }
-            PoiAddressEntity.SENT_MODE_GPS -> {
+            SendMode.GPS -> {
                 if (!poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()) {
                     val gps = "${poi.latitude},${poi.longitude}"
                     // GPS branch is locale-neutral — coordinates work regardless.
@@ -100,6 +99,7 @@ object SendPlanner {
                     wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
                 }
             }
+            // ROAD 또는 NAME (favorite UI 에는 NAME 옵션 없지만, 안전 폴백)
             else -> {
                 val road = poi.getRoadAddress()
                 wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
