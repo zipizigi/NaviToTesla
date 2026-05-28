@@ -27,6 +27,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,6 +52,8 @@ class SettingFragment :
     private var isDuplicatePoiRadioInitializing = false
     private var diagnosticsUserToggled = false
     private var diagnosticsExpanded = false
+    private var diagnosticsAnimReady = false
+    private var conditionAnimReady = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -156,9 +160,18 @@ class SettingFragment :
     }
 
     private fun applyDiagnosticsExpanded(expanded: Boolean) {
+        if (diagnosticsAnimReady) {
+            (binding.diagContent.parent as? android.view.ViewGroup)?.let { parent ->
+                TransitionManager.beginDelayedTransition(
+                    parent,
+                    AutoTransition().apply { duration = 220 },
+                )
+            }
+        }
         diagnosticsExpanded = expanded
         binding.diagContent.visibility = if (expanded) View.VISIBLE else View.GONE
         binding.diagExpandIcon.rotation = if (expanded) 180f else 0f
+        diagnosticsAnimReady = true
     }
 
     private fun bindLogRow() {
@@ -437,7 +450,16 @@ class SettingFragment :
     }
 
     private fun onChangedConditionEnabled(enabled: Boolean) {
+        if (conditionAnimReady) {
+            (binding.cardBluetooth.parent as? android.view.ViewGroup)?.let { parent ->
+                TransitionManager.beginDelayedTransition(
+                    parent,
+                    AutoTransition().apply { duration = 220 },
+                )
+            }
+        }
         binding.cardBluetooth.visibility = if (enabled) View.VISIBLE else View.GONE
+        conditionAnimReady = true
         lifecycleScope.launch {
             if (context != null) {
                 EnablerUtil.setConditionEnabled(enabled)
