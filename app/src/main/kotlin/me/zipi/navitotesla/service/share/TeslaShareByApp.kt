@@ -4,9 +4,25 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import java.net.URLEncoder
+import java.util.Locale
 import me.zipi.navitotesla.BuildConfig
+import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendPayload
 import me.zipi.navitotesla.util.AnalysisUtil
+
+// locale.language == "en" — only English; other locales (jp/zh/etc) leave raw text as-is
+// !payload.viaUrl — if SendPlanner already produced a URL (NOT_SEARCHABLE or NAME mode), don't double-wrap
+// payload.mode != SendMode.GPS — coordinates are locale-neutral and Tesla parses them fine; no wrap
+internal fun resolveShareIntentText(
+    payload: SendPayload,
+    locale: Locale,
+): String =
+    if (locale.language == "en" && !payload.viaUrl && payload.mode != SendMode.GPS) {
+        "https://maps.google.com/maps?q=" + URLEncoder.encode(payload.sendText, "UTF-8")
+    } else {
+        payload.sendText
+    }
 
 class TeslaShareByApp(
     context: Context,
@@ -19,7 +35,8 @@ class TeslaShareByApp(
         intent.action = "android.intent.action.SEND"
         intent.component = ComponentName("com.teslamotors.tesla", "com.tesla.share.ShareActivity")
         intent.type = "text/plain"
-        intent.putExtra("android.intent.extra.TEXT", payload.sendText)
+        val sendText = resolveShareIntentText(payload, Locale.getDefault())
+        intent.putExtra("android.intent.extra.TEXT", sendText)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
         if (BuildConfig.DEBUG) {
