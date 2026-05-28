@@ -32,7 +32,7 @@ class TeslaShareByApp(
         try {
             context.startActivity(intent)
             AnalysisUtil.logEvent("share_by_app_success", eventParam(packageName, payload))
-        } catch (e: ActivityNotFoundException) {
+        } catch (_: ActivityNotFoundException) {
             AnalysisUtil.log("Tesla app is not installed")
             AnalysisUtil.logEvent("share_by_app_fail", eventParam(packageName, payload))
         }

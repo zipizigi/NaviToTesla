@@ -281,7 +281,7 @@ class SettingFragment :
         val intent =
             Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:${requireContext().packageName}"),
+                "package:${requireContext().packageName}".toUri(),
             )
         runCatching { startActivity(intent) }
     }
@@ -547,7 +547,7 @@ class SettingFragment :
     private fun openAccessibilitySettings() {
         try {
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        } catch (e: ActivityNotFoundException) {
+        } catch (_: ActivityNotFoundException) {
             startActivity(Intent(Settings.ACTION_SETTINGS))
         }
     }
@@ -579,7 +579,7 @@ class SettingFragment :
                     startActivity(
                         Intent(
                             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:${requireContext().packageName}"),
+                            "package:${requireContext().packageName}".toUri(),
                         ),
                     )
                 } catch (_: ActivityNotFoundException) {

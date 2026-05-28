@@ -10,7 +10,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
@@ -195,13 +194,13 @@ object AppUpdaterUtil {
                         ].replace(".apk", ""),
                     )
                 } else {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(apkUrl)))
+                    context.startActivity(Intent(Intent.ACTION_VIEW, apkUrl.toUri()))
                 }
             } else {
                 val intent =
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=$appPackageName"),
+                        "https://play.google.com/store/apps/details?id=$appPackageName".toUri(),
                     )
                 context.startActivity(intent)
             }
@@ -245,7 +244,7 @@ object AppUpdaterUtil {
         }
 
     fun getLatestApkUrl(release: Release?): String {
-        var defaultApkUrl =
+        val defaultApkUrl =
             String.format(
                 "https://github.com/%s/%s/releases/latest",
                 RemoteConfigUtil.getString("repoOwner"),
@@ -374,7 +373,7 @@ object AppUpdaterUtil {
         try {
             context.packageManager.getPackageInfo("com.android.vending", 0)
             true
-        } catch (e: PackageManager.NameNotFoundException) {
+        } catch (_: PackageManager.NameNotFoundException) {
             false
         }
 
