@@ -46,6 +46,8 @@ class PoiAddressEntity(
             longitude = longitude,
             packageName = packageName ?: "",
             isDuplicate = isDuplicate == true,
+            // registered=true 인데 sentMode 가 null 인 corruption 케이스도 ROAD 로 안전 처리.
+            registeredSentMode = if (registered == true) sentMode ?: SENT_MODE_ROAD else null,
         )
 
     companion object {

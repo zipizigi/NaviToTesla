@@ -147,18 +147,12 @@ class NaviToTeslaService(
             return
         }
 
-        val registeredEntity =
-            poi.poiName?.let {
-                appRepository.findRegisteredEntityByPackage(it, poi.packageName)
-            }
-        // registered row 인데 sentMode 가 null (migration corruption 등) 이면 ROAD 로 취급.
-        val registeredSentMode =
-            registeredEntity?.let {
-                it.sentMode ?: PoiAddressEntity.SENT_MODE_ROAD
-            }
+        // Poi 가 이미 favorite 의 sentMode 정보를 들고 옴 (PoiAddressEntity.toPoi() 에서 채움).
+        // 추가 DB lookup 없이 바로 사용.
+        val registeredSentMode = poi.registeredSentMode
 
         val searchability =
-            if (registeredEntity != null) {
+            if (registeredSentMode != null) {
                 Searchability.Unknown // 어차피 SendPlanner 1번 분기에서 무시됨 — classify 호출 비용 절약
             } else {
                 DestinationAddressResolver.classify(poi)
