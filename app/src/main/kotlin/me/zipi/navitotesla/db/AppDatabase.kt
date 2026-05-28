@@ -18,6 +18,7 @@ import androidx.room.TypeConverters
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = AppDatabaseAutoMigration7To8::class),
+        AutoMigration(from = 10, to = 11),
     ],
 )
 @TypeConverters(DateConverter::class)
@@ -43,7 +44,7 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(appContext: Context): AppDatabase =
             Room
                 .databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
-                .addMigrations(MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
                 .build()
     }
 }

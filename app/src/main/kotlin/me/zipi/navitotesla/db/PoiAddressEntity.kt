@@ -26,8 +26,6 @@ class PoiAddressEntity(
     val sentMode: String? = null,
     val searchable: Boolean? = null,
     val created: Date? = null,
-    // 마지막 classify 시도 시각(epoch millis). searchable=null 로 끝난 경우에도 갱신되어
-    // 24h 쿨다운 동안 Places API/Firestore 재호출을 차단하는 anchor 로 쓰인다.
     val lastCheckedAt: Long? = null,
 ) {
     val isExpire: Boolean

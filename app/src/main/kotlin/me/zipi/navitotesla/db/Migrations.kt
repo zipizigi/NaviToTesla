@@ -18,10 +18,3 @@ val MIGRATION_9_10 =
             db.execSQL("UPDATE poi_address SET sentMode = NULL WHERE registered = 0")
         }
     }
-
-val MIGRATION_10_11 =
-    object : Migration(10, 11) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE poi_address ADD COLUMN lastCheckedAt INTEGER")
-        }
-    }
