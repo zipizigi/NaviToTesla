@@ -8,26 +8,33 @@ import android.widget.Toast
 import com.google.firebase.perf.metrics.AddTrace
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
+import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.exception.DuplicatePoiException
 import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.exception.IgnorePoiException
 import me.zipi.navitotesla.exception.NotSupportedNaviException
 import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.model.SendSettings
+import me.zipi.navitotesla.model.ShareTransport
 import me.zipi.navitotesla.model.TeslaApiResponse
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.place.DestinationAddressResolver
+import me.zipi.navitotesla.service.place.Searchability
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
+import me.zipi.navitotesla.service.share.SendPlanner
 import me.zipi.navitotesla.service.share.TeslaShareByApi
 import me.zipi.navitotesla.service.share.TeslaShareByApp
 import me.zipi.navitotesla.ui.poi.PoiSelectionOverlay
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.EnablerUtil
 import me.zipi.navitotesla.util.PreferencesUtil
+import me.zipi.navitotesla.util.RemoteConfigUtil
 import me.zipi.navitotesla.util.ResponseCloser
 import retrofit2.Response
 import java.io.IOException
+import java.util.Locale
 import java.util.regex.Pattern
 
 class NaviToTeslaService(
@@ -131,42 +138,63 @@ class NaviToTeslaService(
 
     @Throws(IOException::class, ForbiddenException::class)
     suspend fun share(poi: Poi) {
-        val resolvedPoi =
-            if (poi.isAddressEmpty()) {
-                poi
-            } else {
-                val finalAddress = DestinationAddressResolver.resolve(poi)
-                poi.copy(roadAddress = finalAddress)
-            }
-        // 외부 share() 의 duplicate 가드는 navi 원본 도로명(`poi.getRoadAddress()`)을 비교한다.
-        // resolver 가 구주소로 바꿔 보냈더라도 lastAddress 에는 원본 도로명을 저장해 가드 정합성을 유지.
-        PreferencesUtil.put(
-            key = "lastAddress",
-            value =
-                if (poi.isAddressEmpty()) {
-                    ""
-                } else {
-                    poi.getRoadAddress()
-                },
-        )
-        if (!resolvedPoi.isAddressEmpty()) {
-            lastShareAt = System.currentTimeMillis()
-            makeToast(context.getString(R.string.requestSend) + "\n" + resolvedPoi.getRoadAddress())
-            val shareMode = PreferencesUtil.getString("shareMode", "app")
-            if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
-                if (refreshToken() == null) {
-                    return
-                }
-                val id = loadVehicleId()
-                TeslaShareByApi(context, id).share(resolvedPoi)
-            } else {
-                TeslaShareByApp(context).share(resolvedPoi)
-            }
-        } else {
-            AnalysisUtil.log("share skipped: empty poi name=${resolvedPoi.poiName}, pkg=${resolvedPoi.packageName}")
+        if (poi.isAddressEmpty()) {
+            AnalysisUtil.log("share skipped: empty poi name=${poi.poiName}, pkg=${poi.packageName}")
+            PreferencesUtil.put(key = "lastAddress", value = "")
             makeToast(
                 context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.addressNotFound),
             )
+            return
+        }
+
+        // Poi 가 이미 favorite 의 sentMode 정보를 들고 옴 (PoiAddressEntity.toPoi() 에서 채움).
+        // 추가 DB lookup 없이 바로 사용.
+        val registeredSentMode = poi.registeredSentMode
+
+        val searchability =
+            if (registeredSentMode != null) {
+                Searchability.Unknown // 어차피 SendPlanner 1번 분기에서 무시됨 — classify 호출 비용 절약
+            } else {
+                DestinationAddressResolver.classify(poi)
+            }
+
+        val shareMode = PreferencesUtil.getString("shareMode", "app")
+        val transport =
+            if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
+                ShareTransport.API
+            } else {
+                ShareTransport.APP
+            }
+        val settings =
+            SendSettings(
+                defaultMode = PreferencesUtil.getDefaultSendMode(),
+                fallbackMode = PreferencesUtil.getFallbackSendMode(),
+                treatUnknownAsNotSearchable = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_SEND_UNKNOWN_AS_NOT_SEARCHABLE),
+                shareTransport = transport,
+                locale = Locale.getDefault(),
+            )
+
+        val payload =
+            SendPlanner.plan(
+                poi = poi,
+                searchability = searchability,
+                registeredSentMode = registeredSentMode,
+                isDuplicateSelected = poi.isDuplicate,
+                settings = settings,
+            )
+
+        PreferencesUtil.put(key = "lastAddress", value = poi.getRoadAddress())
+
+        lastShareAt = System.currentTimeMillis()
+        makeToast(context.getString(R.string.requestSend) + "\n" + payload.displayText)
+        if (transport == ShareTransport.API) {
+            if (refreshToken() == null) {
+                return
+            }
+            val id = loadVehicleId()
+            TeslaShareByApi(context, id, poi.packageName).share(payload)
+        } else {
+            TeslaShareByApp(context, poi.packageName).share(payload)
         }
     }
 

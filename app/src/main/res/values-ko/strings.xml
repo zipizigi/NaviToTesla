@@ -109,4 +109,12 @@
     <string name="helperRefreshToken">Tesla 계정에서 발급한 refresh token을 붙여넣으세요.</string>
     <string name="helperShareMode">API 모드는 차량과 직접 통신합니다. App 모드는 설치된 Tesla 앱을 통해 전달합니다.</string>
     <string name="emptyBluetoothList">등록된 블루투스가 없습니다.\n+ 버튼을 눌러 추가하세요.</string>
+    <string name="sectionSendMode">전송 방법</string>
+    <string name="defaultSendModeTitle">기본 전송 방법</string>
+    <string name="guideDefaultSendMode">목적지 전송시 해당하는 방법으로 차량에 전송합니다.</string>
+    <string name="fallbackSendModeTitle">목적지 검색 실패시 전송 방법</string>
+    <string name="guideFallbackSendMode">차량이 인식하지 못할것으로 예상되는 목적지에 대해서 해당 방법으로 전송합니다.</string>
+    <string name="sendModeRoad">도로명 주소</string>
+    <string name="sendModeJibun">지번 주소</string>
+    <string name="sendModeName">목적지명</string>
 </resources>

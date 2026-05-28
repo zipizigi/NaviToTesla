@@ -1,10 +1,10 @@
 package me.zipi.navitotesla.db
 
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.model.SendMode
 import java.util.Date
 import kotlin.math.abs
 
@@ -24,6 +24,7 @@ class PoiAddressEntity(
     val registered: Boolean? = null,
     val isDuplicate: Boolean? = null,
     val sentMode: String? = null,
+    val searchable: Boolean? = null,
     val created: Date? = null,
 ) {
     val isExpire: Boolean
@@ -46,28 +47,16 @@ class PoiAddressEntity(
             longitude = longitude,
             packageName = packageName ?: "",
             isDuplicate = isDuplicate == true,
+            registeredSentMode = if (registered == true) toSendMode() else null,
         )
 
-    @get:Ignore
-    val sentAddress: String?
-        get() =
-            when (sentMode) {
-                SENT_MODE_ROAD -> {
-                    roadAddress
-                }
-
-                SENT_MODE_JIBUN -> {
-                    jibunAddress
-                }
-
-                SENT_MODE_GPS -> {
-                    if (latitude != null && longitude != null) "$latitude,$longitude" else null
-                }
-
-                else -> {
-                    null
-                }
-            }
+    // registered=true 인데 sentMode 가 null/unknown 인 corruption 케이스는 ROAD 로 안전 폴백.
+    private fun toSendMode(): SendMode =
+        when (sentMode) {
+            SENT_MODE_JIBUN -> SendMode.JIBUN
+            SENT_MODE_GPS -> SendMode.GPS
+            else -> SendMode.ROAD
+        }
 
     companion object {
         const val EXPIRE_DAY = 30

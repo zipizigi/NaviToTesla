@@ -87,18 +87,29 @@ class AppRepository private constructor(
             ).build()
             .create()
 
+    /**
+     * 우선순위:
+     *   1) 같은 packageName 의 row (favorite 든 자동 저장 cache 든)
+     *   2) packageName="" 의 글로벌 favorite (사용자가 앱에서 직접 등록한 즐겨찾기)
+     * 다른 packageName 의 favorite/cache 는 매칭하지 않아 cross-navi hijack 을 방지.
+     */
     suspend fun getPoiSync(
         poiName: String,
         packageName: String = "",
     ): PoiAddressEntity? {
+        val dao = database.poiAddressDao()
         val byPackage =
             if (packageName.isNotEmpty()) {
-                database.poiAddressDao().findPoiByPackage(poiName, packageName)
+                dao.findPoiByPackage(poiName, packageName)
             } else {
-                database.poiAddressDao().findPoiLatest(poiName)
+                dao.findPoiLatest(poiName)
             }
         if (byPackage != null) return byPackage
-        return database.poiAddressDao().findRegisteredByPoi(poiName)
+        // cross-package fallback 은 packageName="" 의 글로벌 favorite 만 매칭.
+        if (packageName.isNotEmpty()) {
+            return dao.findPoiByPackage(poiName, "")?.takeIf { it.isRegistered() }
+        }
+        return null
     }
 
     suspend fun savePoi(
@@ -127,13 +138,13 @@ class AppRepository private constructor(
     }
 
     /**
-     * Resolver 가 전송 모드 결정 후 호출. 기존 row 가 있으면 id/registered 유지하면서
-     * sentMode/created 갱신. 없으면 신규 insert. isAddress 분기처럼 savePoi 가 선행
-     * 호출되지 않은 케이스에서도 row 를 만들 수 있도록 Poi 전체를 받는다.
+     * Resolver 가 검색 가능 여부 결정 후 호출. 기존 row 가 있으면 id/registered/sentMode/isDuplicate 유지하면서
+     * searchable 갱신. 없으면 신규 insert. 즐겨찾기(registered=true) row 의 sentMode 는 보존하고,
+     * 한번 isDuplicate=true 로 마킹된 row 는 stick (resolver 가 false 로 덮어쓰지 못함).
      */
-    suspend fun markSent(
+    suspend fun markClassified(
         poi: Poi,
-        sentMode: String,
+        searchable: Boolean?,
     ) {
         val poiName = poi.poiName ?: return
         database.withTransaction {
@@ -148,8 +159,9 @@ class AppRepository private constructor(
                     latitude = poi.latitude,
                     longitude = poi.longitude,
                     registered = existing?.registered ?: false,
-                    isDuplicate = poi.isDuplicate,
-                    sentMode = sentMode,
+                    isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
+                    sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
+                    searchable = searchable,
                     created = Date(),
                 ),
             )

@@ -7,11 +7,15 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.Token
+import java.util.Locale
 import java.util.concurrent.CountDownLatch
 
 object PreferencesUtil {
     private const val PREFERENCES_FILE_NAME = "settings"
+    private const val KEY_DEFAULT_SEND_MODE = "defaultSendMode"
+    private const val KEY_FALLBACK_SEND_MODE = "fallbackSendMode"
 
     @Volatile
     private var instance: SharedPreferences? = null
@@ -227,4 +231,22 @@ object PreferencesUtil {
         } else {
             null
         }
+
+    suspend fun getDefaultSendMode(): SendMode = getSendMode(KEY_DEFAULT_SEND_MODE)
+
+    suspend fun getFallbackSendMode(): SendMode = getSendMode(KEY_FALLBACK_SEND_MODE)
+
+    suspend fun setDefaultSendMode(mode: SendMode) {
+        put(KEY_DEFAULT_SEND_MODE, mode.name.lowercase(Locale.ROOT))
+    }
+
+    suspend fun setFallbackSendMode(mode: SendMode) {
+        put(KEY_FALLBACK_SEND_MODE, mode.name.lowercase(Locale.ROOT))
+    }
+
+    private suspend fun getSendMode(key: String): SendMode {
+        val raw = getString(key, SendMode.ROAD.name.lowercase(Locale.ROOT)) ?: return SendMode.ROAD
+        return runCatching { SendMode.valueOf(raw.uppercase(Locale.ROOT)) }
+            .getOrElse { SendMode.ROAD }
+    }
 }

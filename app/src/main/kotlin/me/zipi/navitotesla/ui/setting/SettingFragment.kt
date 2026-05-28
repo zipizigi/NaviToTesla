@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentSettingsBinding
+import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.ui.setting.ConditionRecyclerAdapter.OnDeleteButtonClicked
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -100,7 +101,37 @@ class SettingFragment :
                 binding.textBluetoothEmpty.visibility = if (items.isNullOrEmpty()) View.VISIBLE else View.GONE
             }
         binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
+        setupSendModeRadios()
         return root
+    }
+
+    private fun setupSendModeRadios() {
+        binding.btnDefaultSendModeHelp.setOnClickListener(this)
+        binding.btnFallbackSendModeHelp.setOnClickListener(this)
+        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(this)
+        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(this)
+    }
+
+    private fun radioIdForDefaultMode(mode: SendMode): Int =
+        when (mode) {
+            SendMode.JIBUN -> binding.radioDefaultSendModeJibun.id
+            SendMode.NAME -> binding.radioDefaultSendModeName.id
+            else -> binding.radioDefaultSendModeRoad.id
+        }
+
+    private fun radioIdForFallbackMode(mode: SendMode): Int =
+        when (mode) {
+            SendMode.JIBUN -> binding.radioFallbackSendModeJibun.id
+            SendMode.NAME -> binding.radioFallbackSendModeName.id
+            else -> binding.radioFallbackSendModeRoad.id
+        }
+
+    private fun persistDefaultSendMode(mode: SendMode) {
+        lifecycleScope.launch { PreferencesUtil.setDefaultSendMode(mode) }
+    }
+
+    private fun persistFallbackSendMode(mode: SendMode) {
+        lifecycleScope.launch { PreferencesUtil.setFallbackSendMode(mode) }
     }
 
     private fun removeBluetoothDevice(position: Int) {
@@ -277,7 +308,7 @@ class SettingFragment :
     }
 
     private fun updateConditions() =
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             if (context != null && activity != null) {
                 val appEnabled = context?.let { EnablerUtil.getAppEnabled() } ?: true
                 val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled() } ?: false
@@ -332,6 +363,28 @@ class SettingFragment :
                     }
                 }
             }
+            launch {
+                context?.run {
+                    val saved = PreferencesUtil.getDefaultSendMode()
+                    withContext(Dispatchers.Main) {
+                        if (!isAdded || view == null) return@withContext
+                        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(null)
+                        binding.radioGroupDefaultSendMode.check(radioIdForDefaultMode(saved))
+                        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(this@SettingFragment)
+                    }
+                }
+            }
+            launch {
+                context?.run {
+                    val saved = PreferencesUtil.getFallbackSendMode()
+                    withContext(Dispatchers.Main) {
+                        if (!isAdded || view == null) return@withContext
+                        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(null)
+                        binding.radioGroupFallbackSendMode.check(radioIdForFallbackMode(saved))
+                        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(this@SettingFragment)
+                    }
+                }
+            }
         }
 
     override fun onDestroyView() {
@@ -382,6 +435,28 @@ class SettingFragment :
                     .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.accessibility_description))
+                    .setCancelable(true)
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                    .create()
+                    .show()
+            }
+
+            binding.btnDefaultSendModeHelp.id -> {
+                AlertDialog
+                    .Builder(requireActivity())
+                    .setTitle(getString(R.string.guide))
+                    .setMessage(getString(R.string.guideDefaultSendMode))
+                    .setCancelable(true)
+                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                    .create()
+                    .show()
+            }
+
+            binding.btnFallbackSendModeHelp.id -> {
+                AlertDialog
+                    .Builder(requireActivity())
+                    .setTitle(getString(R.string.guide))
+                    .setMessage(getString(R.string.guideFallbackSendMode))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .create()
@@ -543,6 +618,18 @@ class SettingFragment :
                     }.create()
                     .show()
             }
+        } else if (checkedId == R.id.radioDefaultSendModeRoad) {
+            persistDefaultSendMode(SendMode.ROAD)
+        } else if (checkedId == R.id.radioDefaultSendModeJibun) {
+            persistDefaultSendMode(SendMode.JIBUN)
+        } else if (checkedId == R.id.radioDefaultSendModeName) {
+            persistDefaultSendMode(SendMode.NAME)
+        } else if (checkedId == R.id.radioFallbackSendModeRoad) {
+            persistFallbackSendMode(SendMode.ROAD)
+        } else if (checkedId == R.id.radioFallbackSendModeJibun) {
+            persistFallbackSendMode(SendMode.JIBUN)
+        } else if (checkedId == R.id.radioFallbackSendModeName) {
+            persistFallbackSendMode(SendMode.NAME)
         }
     }
 

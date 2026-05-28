@@ -44,16 +44,16 @@ class RoadNumberMatcherTest {
     @Test
     fun `description 에 번지가 없으면 no match`() {
         assertNoMatch(
-            input = "경기도 용인시 기흥구 구갈로 55",
-            description = "대한민국 경기도 용인시 기흥구 구갈로",
+            input = "서울특별시 중구 세종대로 110",
+            description = "대한민국 서울특별시 중구 세종대로",
         )
     }
 
     @Test
     fun `도로명+번지 정확히 일치하면 match`() {
         assertMatch(
-            input = "경기도 용인시 기흥구 구갈로 12",
-            description = "대한민국 경기도 용인시 기흥구 구갈로 12",
+            input = "서울특별시 중구 세종대로 31",
+            description = "대한민국 서울특별시 중구 세종대로 31",
         )
     }
 
@@ -65,8 +65,8 @@ class RoadNumberMatcherTest {
     @Test
     fun `시도명 한 토큰만 있으면 no match`() {
         assertNoMatch(
-            input = "경기도",
-            description = "대한민국 경기도 용인시 구갈로 12",
+            input = "서울특별시",
+            description = "대한민국 서울특별시 중구 세종대로 31",
         )
     }
 
@@ -191,19 +191,19 @@ class RoadNumberMatcherTest {
     // === 시군구 추가/제거 (token subset 으로 OK) ===
 
     @Test
-    fun `입력에 시군구 없고 응답에는 있어도 match (구갈로 51 케이스)`() {
-        // PoiFinder 가 도로명 끝에 (동이름) 부가 토큰 + 응답에 "기흥구" 추가 끼어 있는 실제 케이스.
+    fun `입력에 시군구 없고 응답에는 있어도 match (세종대로 109 케이스)`() {
+        // PoiFinder 가 도로명 끝에 (동이름) 부가 토큰 + 응답에 "중구" 추가 끼어 있는 실제 케이스.
         assertMatch(
-            input = "경기도 용인시 구갈로 51 (구갈동)",
-            description = "대한민국 경기도 용인시 기흥구 구갈로 51",
+            input = "서울특별시 세종대로 109 (태평로1가)",
+            description = "대한민국 서울특별시 중구 세종대로 109",
         )
     }
 
     @Test
     fun `응답에 부가 시군구 토큰이 끼어 있어도 token subset 으로 match`() {
         assertMatch(
-            input = "용인시 구갈로 51",
-            description = "대한민국 경기도 용인시 기흥구 구갈로 51",
+            input = "서울특별시 세종대로 109",
+            description = "대한민국 서울특별시 중구 세종대로 109",
         )
     }
 
@@ -212,16 +212,16 @@ class RoadNumberMatcherTest {
     @Test
     fun `괄호 동이름 부가 토큰은 정규화로 제거됨`() {
         assertMatch(
-            input = "경기도 용인시 기흥구 구갈로 12 (구갈동)",
-            description = "대한민국 경기도 용인시 기흥구 구갈로 12",
+            input = "서울특별시 중구 세종대로 31 (태평로1가)",
+            description = "대한민국 서울특별시 중구 세종대로 31",
         )
     }
 
     @Test
     fun `응답에 괄호 토큰이 있고 입력에는 없어도 정규화로 동일하게 처리`() {
         assertMatch(
-            input = "경기도 용인시 기흥구 구갈로 12",
-            description = "대한민국 경기도 용인시 기흥구 구갈로 12 (구갈동)",
+            input = "서울특별시 중구 세종대로 31",
+            description = "대한민국 서울특별시 중구 세종대로 31 (태평로1가)",
         )
     }
 
@@ -274,8 +274,8 @@ class RoadNumberMatcherTest {
     @Test
     fun `입력에 동 같은 상세주소가 있고 응답에도 같이 있으면 match`() {
         assertMatch(
-            input = "경기도 용인시 구갈로 12 상가동",
-            description = "대한민국 경기도 용인시 구갈로 12 상가동",
+            input = "서울특별시 세종대로 31 상가동",
+            description = "대한민국 서울특별시 세종대로 31 상가동",
         )
     }
 

@@ -9,7 +9,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [PoiAddressEntity::class, ConditionEntity::class],
-    version = 9,
+    version = 10,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -43,7 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
         private fun buildDatabase(appContext: Context): AppDatabase =
             Room
                 .databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME)
-                .addMigrations(MIGRATION_8_9)
+                .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
                 .build()
     }
 }
