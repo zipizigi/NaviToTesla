@@ -248,7 +248,5 @@ object PreferencesUtil {
         val raw = getString(key, SendMode.ROAD.name.lowercase(Locale.ROOT)) ?: return SendMode.ROAD
         return runCatching { SendMode.valueOf(raw.uppercase(Locale.ROOT)) }
             .getOrElse { SendMode.ROAD }
-            .takeIf { it != SendMode.GPS } // GPS 는 사용자 설정에 노출되지 않음
-            ?: SendMode.ROAD
     }
 }

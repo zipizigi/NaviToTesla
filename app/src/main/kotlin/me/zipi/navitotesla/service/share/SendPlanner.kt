@@ -6,7 +6,6 @@ import me.zipi.navitotesla.model.SendPayload
 import me.zipi.navitotesla.model.SendSettings
 import me.zipi.navitotesla.model.ShareTransport
 import me.zipi.navitotesla.service.place.Searchability
-import me.zipi.navitotesla.util.AnalysisUtil
 import java.net.URLEncoder
 
 object SendPlanner {
@@ -19,15 +18,14 @@ object SendPlanner {
         isDuplicateSelected: Boolean,
         settings: SendSettings,
     ): SendPayload {
-        val safeSettings = sanitizeSettings(settings)
         // 1. 즐겨찾기 explicit 선택 우선
         if (registeredSentMode != null) {
-            return planRegistered(poi, registeredSentMode, safeSettings)
+            return planRegistered(poi, registeredSentMode, settings)
         }
 
         // 2. UNKNOWN → RC 에 따라 NotSearchable 로 승격
         val effectiveSearchability =
-            if (safeSettings.treatUnknownAsNotSearchable && searchability is Searchability.Unknown) {
+            if (settings.treatUnknownAsNotSearchable && searchability is Searchability.Unknown) {
                 Searchability.NotSearchable
             } else {
                 searchability
@@ -36,12 +34,22 @@ object SendPlanner {
         // 3. 모드 결정
         var mode =
             if (effectiveSearchability is Searchability.NotSearchable) {
-                safeSettings.fallbackMode
+                settings.fallbackMode
             } else {
-                safeSettings.defaultMode
+                settings.defaultMode
             }
         if (isDuplicateSelected && mode == SendMode.NAME) {
             mode = SendMode.ROAD
+        }
+        // GPS 모드 이지만 좌표 없으면 ROAD 로 강등
+        if (mode == SendMode.GPS && !hasCoords(poi)) {
+            mode = SendMode.ROAD
+        }
+
+        // GPS 좌표는 locale-neutral — wrap 없이 그대로 반환
+        if (mode == SendMode.GPS) {
+            val gps = "${poi.latitude},${poi.longitude}"
+            return SendPayload(gps, gps, SendMode.GPS, viaUrl = false)
         }
 
         val rawByMode =
@@ -49,13 +57,11 @@ object SendPlanner {
                 SendMode.ROAD -> poi.getRoadAddress()
                 SendMode.JIBUN -> jibunOrRoad(poi)
                 SendMode.NAME -> poi.poiName ?: poi.getRoadAddress()
-                // sanitizeSettings 가 GPS 를 ROAD 로 강등하므로 정상 흐름에서는 도달하지 않음.
-                // 안전망으로 road 폴백을 둔다 (when 을 exhaustive 하게 유지).
-                SendMode.GPS -> poi.getRoadAddress()
+                SendMode.GPS -> error("unreachable — GPS handled above")
             }
 
-        val byAppNonKorean = safeSettings.shareTransport == ShareTransport.APP &&
-            safeSettings.locale.language != "ko"
+        val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
+            settings.locale.language != "ko"
         val viaUrl = mode == SendMode.NAME ||
             effectiveSearchability is Searchability.NotSearchable ||
             byAppNonKorean
@@ -67,16 +73,6 @@ object SendPlanner {
         return SendPayload(sendText = sendText, displayText = displayText, mode = mode, viaUrl = viaUrl)
     }
 
-    private fun sanitizeSettings(settings: SendSettings): SendSettings {
-        val needsFix = settings.defaultMode == SendMode.GPS || settings.fallbackMode == SendMode.GPS
-        if (!needsFix) return settings
-        AnalysisUtil.warn("GPS Mode not support. change to Road")
-        return settings.copy(
-            defaultMode = if (settings.defaultMode == SendMode.GPS) SendMode.ROAD else settings.defaultMode,
-            fallbackMode = if (settings.fallbackMode == SendMode.GPS) SendMode.ROAD else settings.fallbackMode,
-        )
-    }
-
     private fun planRegistered(
         poi: Poi,
         sentMode: SendMode,
@@ -85,27 +81,34 @@ object SendPlanner {
         val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
             settings.locale.language != "ko"
         return when (sentMode) {
+            SendMode.ROAD -> {
+                val road = poi.getRoadAddress()
+                wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
+            }
             SendMode.JIBUN -> {
                 val jibun = jibunOrRoad(poi)
                 wrapIfNeeded(jibun, jibun, SendMode.JIBUN, byAppNonKorean)
             }
+            SendMode.NAME -> {
+                // NAME 은 항상 URL wrap (Tesla 가 raw 명칭을 주소로 인식 못 함). locale 무관.
+                val name = poi.poiName ?: poi.getRoadAddress()
+                wrapIfNeeded(name, name, SendMode.NAME, wrap = true)
+            }
             SendMode.GPS -> {
-                if (!poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()) {
+                if (hasCoords(poi)) {
                     val gps = "${poi.latitude},${poi.longitude}"
-                    // GPS branch is locale-neutral — coordinates work regardless.
+                    // GPS 좌표는 locale-neutral — wrap 없이 그대로 전송
                     SendPayload(gps, gps, SendMode.GPS, viaUrl = false)
                 } else {
                     val road = poi.getRoadAddress()
                     wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
                 }
             }
-            // ROAD 또는 NAME (favorite UI 에는 NAME 옵션 없지만, 안전 폴백)
-            else -> {
-                val road = poi.getRoadAddress()
-                wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
-            }
         }
     }
+
+    private fun hasCoords(poi: Poi): Boolean =
+        !poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()
 
     private fun wrapIfNeeded(
         rawSend: String,
