@@ -55,6 +55,7 @@ object DestinationAddressResolver {
                 AppRepository.getInstance().markClassified(poi, true)
                 return Searchability.Searchable
             }
+
             PlaceAutocompleteCacheEntry.NotSearchable -> {
                 AnalysisUtil.debug("classify: firestore hit=not_searchable")
                 AnalysisUtil.logEvent(
@@ -67,7 +68,10 @@ object DestinationAddressResolver {
                 AppRepository.getInstance().markClassified(poi, false)
                 return Searchability.NotSearchable
             }
-            null -> AnalysisUtil.debug("classify: firestore miss")
+
+            null -> {
+                AnalysisUtil.debug("classify: firestore miss")
+            }
         }
 
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
@@ -101,6 +105,7 @@ object DestinationAddressResolver {
                 AppRepository.getInstance().markClassified(poi, true)
                 Searchability.Searchable
             }
+
             false -> {
                 AnalysisUtil.logEvent(
                     "firestore_set",
@@ -113,7 +118,10 @@ object DestinationAddressResolver {
                 AppRepository.getInstance().markClassified(poi, false)
                 Searchability.NotSearchable
             }
-            null -> Searchability.Unknown
+
+            null -> {
+                Searchability.Unknown
+            }
         }
     }
 }

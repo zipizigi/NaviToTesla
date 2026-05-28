@@ -54,15 +54,17 @@ object SendPlanner {
                 SendMode.GPS -> "${poi.latitude},${poi.longitude}"
             }
 
-        val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
-            settings.locale.language != "ko"
+        val byAppNonKorean =
+            settings.shareTransport == ShareTransport.APP &&
+                settings.locale.language != "ko"
         // GPS 좌표는 locale-neutral 이고 그 자체가 destination 이라 wrap 하지 않는다.
-        val viaUrl = mode != SendMode.GPS &&
-            (
-                mode == SendMode.NAME ||
-                    effectiveSearchability is Searchability.NotSearchable ||
-                    byAppNonKorean
-            )
+        val viaUrl =
+            mode != SendMode.GPS &&
+                (
+                    mode == SendMode.NAME ||
+                        effectiveSearchability is Searchability.NotSearchable ||
+                        byAppNonKorean
+                )
         val sendText =
             if (viaUrl) GOOGLE_MAPS_URL_PREFIX + URLEncoder.encode(rawByMode, "UTF-8") else rawByMode
         val displayText =
@@ -76,22 +78,26 @@ object SendPlanner {
         sentMode: SendMode,
         settings: SendSettings,
     ): SendPayload {
-        val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
-            settings.locale.language != "ko"
+        val byAppNonKorean =
+            settings.shareTransport == ShareTransport.APP &&
+                settings.locale.language != "ko"
         return when (sentMode) {
             SendMode.ROAD -> {
                 val road = poi.getRoadAddress()
                 wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
             }
+
             SendMode.JIBUN -> {
                 val jibun = jibunOrRoad(poi)
                 wrapIfNeeded(jibun, jibun, SendMode.JIBUN, byAppNonKorean)
             }
+
             SendMode.NAME -> {
                 // NAME 은 항상 URL wrap (Tesla 가 raw 명칭을 주소로 인식 못 함). locale 무관.
                 val name = poi.poiName ?: poi.getRoadAddress()
                 wrapIfNeeded(name, name, SendMode.NAME, wrap = true)
             }
+
             SendMode.GPS -> {
                 if (hasCoords(poi)) {
                     val gps = "${poi.latitude},${poi.longitude}"
@@ -105,8 +111,7 @@ object SendPlanner {
         }
     }
 
-    private fun hasCoords(poi: Poi): Boolean =
-        !poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()
+    private fun hasCoords(poi: Poi): Boolean = !poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()
 
     private fun wrapIfNeeded(
         rawSend: String,
@@ -125,9 +130,10 @@ object SendPlanner {
         // Poi.getAddress() falls back to getGpsAddress() — either "lat,lng" or the literal
         // "null,null" — when the underlying address field is empty. Both are unfit as jibun;
         // re-fall back to road.
-        val isAddressEmpty = jibun.isEmpty() ||
-            jibun == poi.getGpsAddress() ||
-            jibun == "null,null"
+        val isAddressEmpty =
+            jibun.isEmpty() ||
+                jibun == poi.getGpsAddress() ||
+                jibun == "null,null"
         return if (isAddressEmpty) poi.getRoadAddress() else jibun
     }
 }

@@ -241,10 +241,14 @@ class SendPlannerTest {
 
     @Test
     fun `byApp + english locale wraps raw road as URL`() {
-        val payload = SendPlanner.plan(
-            poi, Searchability.Searchable, null, false,
-            settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
-        )
+        val payload =
+            SendPlanner.plan(
+                poi,
+                Searchability.Searchable,
+                null,
+                false,
+                settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
+            )
         assertEquals(urlOf(poi.getRoadAddress()), payload.sendText)
         assertEquals(poi.getRoadAddress(), payload.displayText)
         assertTrue(payload.viaUrl)
@@ -252,30 +256,42 @@ class SendPlannerTest {
 
     @Test
     fun `byApp + japanese locale wraps raw road as URL`() {
-        val payload = SendPlanner.plan(
-            poi, Searchability.Searchable, null, false,
-            settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.JAPANESE),
-        )
+        val payload =
+            SendPlanner.plan(
+                poi,
+                Searchability.Searchable,
+                null,
+                false,
+                settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.JAPANESE),
+            )
         assertTrue(payload.viaUrl)
         assertTrue(payload.sendText.startsWith("https://maps.google.com/maps?q="))
     }
 
     @Test
     fun `byApp + korean locale does NOT wrap raw road`() {
-        val payload = SendPlanner.plan(
-            poi, Searchability.Searchable, null, false,
-            settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.KOREAN),
-        )
+        val payload =
+            SendPlanner.plan(
+                poi,
+                Searchability.Searchable,
+                null,
+                false,
+                settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.KOREAN),
+            )
         assertEquals(poi.getRoadAddress(), payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `byApi + english locale does NOT wrap (server gets ko-KR via ShareRequest)`() {
-        val payload = SendPlanner.plan(
-            poi, Searchability.Searchable, null, false,
-            settings(SendMode.ROAD, transport = ShareTransport.API, locale = Locale.ENGLISH),
-        )
+        val payload =
+            SendPlanner.plan(
+                poi,
+                Searchability.Searchable,
+                null,
+                false,
+                settings(SendMode.ROAD, transport = ShareTransport.API, locale = Locale.ENGLISH),
+            )
         assertEquals(poi.getRoadAddress(), payload.sendText)
         assertFalse(payload.viaUrl)
     }
@@ -284,10 +300,14 @@ class SendPlannerTest {
     fun `byApp + english locale + already URL-wrapped NAME mode stays single-wrapped`() {
         // NAME mode produces URL via SendPlanner's existing logic; the byAppNonKorean condition
         // should not double-wrap (sendText still starts with one https:// and contains one ?q=).
-        val payload = SendPlanner.plan(
-            poi, Searchability.Searchable, null, false,
-            settings(SendMode.NAME, transport = ShareTransport.APP, locale = Locale.ENGLISH),
-        )
+        val payload =
+            SendPlanner.plan(
+                poi,
+                Searchability.Searchable,
+                null,
+                false,
+                settings(SendMode.NAME, transport = ShareTransport.APP, locale = Locale.ENGLISH),
+            )
         assertEquals(urlOf(poi.poiName!!), payload.sendText)
         assertTrue(payload.viaUrl)
     }
@@ -295,12 +315,14 @@ class SendPlannerTest {
     @Test
     fun `byApp + english locale + GPS registered does NOT wrap coords`() {
         // GPS via registered branch must stay raw coords regardless of locale/transport.
-        val payload = SendPlanner.plan(
-            poi, Searchability.Searchable,
-            registeredSentMode = SendMode.GPS,
-            isDuplicateSelected = false,
-            settings = settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
-        )
+        val payload =
+            SendPlanner.plan(
+                poi,
+                Searchability.Searchable,
+                registeredSentMode = SendMode.GPS,
+                isDuplicateSelected = false,
+                settings = settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
+            )
         assertEquals("${poi.latitude},${poi.longitude}", payload.sendText)
         assertEquals(SendMode.GPS, payload.mode)
         assertFalse(payload.viaUrl)
