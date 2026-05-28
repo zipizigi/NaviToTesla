@@ -13,7 +13,6 @@ import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.exception.IgnorePoiException
 import me.zipi.navitotesla.exception.NotSupportedNaviException
 import me.zipi.navitotesla.model.Poi
-import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendSettings
 import me.zipi.navitotesla.model.ShareTransport
 import me.zipi.navitotesla.model.TeslaApiResponse
@@ -168,8 +167,8 @@ class NaviToTeslaService(
             }
         val settings =
             SendSettings(
-                defaultMode = PreferencesUtil.getSendMode("defaultSendMode", SendMode.ROAD),
-                fallbackMode = PreferencesUtil.getSendMode("fallbackSendMode", SendMode.ROAD),
+                defaultMode = PreferencesUtil.getDefaultSendMode(),
+                fallbackMode = PreferencesUtil.getFallbackSendMode(),
                 treatUnknownAsNotSearchable = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_SEND_UNKNOWN_AS_NOT_SEARCHABLE),
                 shareTransport = transport,
                 locale = Locale.getDefault(),

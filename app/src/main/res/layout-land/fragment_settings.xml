@@ -17,7 +17,7 @@
         android:paddingTop="@dimen/space_lg"
         android:paddingBottom="@dimen/bottomnav_safe_area">
 
-        <!-- LEFT column: Service + Behavior -->
+        <!-- LEFT column: Service + Behavior + Send mode + Diagnostics -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -129,81 +129,6 @@
                             android:layout_height="wrap_content"
                             android:text="@string/disable" />
                     </RadioGroup>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card: Diagnostics -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardDiagnostics"
-                style="@style/Widget.NaviToTesla.Card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_md">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:id="@+id/diagHeader"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingVertical="@dimen/space_xs">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/sectionDiagnostics"
-                            android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
-
-                        <ImageView
-                            android:id="@+id/diagExpandIcon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_expand_more_20"
-                            tools:ignore="ContentDescription" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/diagContent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:visibility="gone">
-
-                        <include
-                            android:id="@+id/diagRowNotification"
-                            layout="@layout/view_diagnostic_row"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/space_sm" />
-
-                        <include
-                            android:id="@+id/diagRowNotificationListener"
-                            layout="@layout/view_diagnostic_row"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <include
-                            android:id="@+id/diagRowOverlay"
-                            layout="@layout/view_diagnostic_row"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <include
-                            android:id="@+id/diagRowLogFile"
-                            layout="@layout/view_diagnostic_log_row"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -319,7 +244,8 @@
                 android:id="@+id/cardSendMode"
                 style="@style/Widget.NaviToTesla.Card"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_md">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -329,21 +255,55 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/defaultSendModeTitle"
+                        android:text="@string/sectionSendMode"
                         android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
 
-                    <TextView
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_md"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/defaultSendModeTitle"
+                            android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDefaultSendModeHelp"
+                            style="@style/Widget.NaviToTesla.HelpButton" />
+                    </LinearLayout>
+
+                    <RadioGroup
+                        android:id="@+id/radioGroupDefaultSendMode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_xs"
-                        android:text="@string/defaultSendModeSummary"
-                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+                        android:orientation="horizontal">
 
-                    <Spinner
-                        android:id="@+id/spinnerDefaultSendMode"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm" />
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioDefaultSendModeRoad"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/space_lg"
+                            android:text="@string/sendModeRoad" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioDefaultSendModeJibun"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/space_lg"
+                            android:text="@string/sendModeJibun" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioDefaultSendModeName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sendModeName" />
+                    </RadioGroup>
 
                     <View
                         android:layout_width="match_parent"
@@ -351,24 +311,125 @@
                         android:layout_marginVertical="@dimen/space_md"
                         android:background="?attr/colorOutlineVariant" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/fallbackSendModeTitle"
-                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <TextView
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/fallbackSendModeTitle"
+                            android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFallbackSendModeHelp"
+                            style="@style/Widget.NaviToTesla.HelpButton" />
+                    </LinearLayout>
+
+                    <RadioGroup
+                        android:id="@+id/radioGroupFallbackSendMode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_xs"
-                        android:text="@string/fallbackSendModeSummary"
-                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+                        android:orientation="horizontal">
 
-                    <Spinner
-                        android:id="@+id/spinnerFallbackSendMode"
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioFallbackSendModeRoad"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/space_lg"
+                            android:text="@string/sendModeRoad" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioFallbackSendModeJibun"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/space_lg"
+                            android:text="@string/sendModeJibun" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioFallbackSendModeName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sendModeName" />
+                    </RadioGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card: Diagnostics -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDiagnostics"
+                style="@style/Widget.NaviToTesla.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/diagHeader"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm" />
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingVertical="@dimen/space_xs">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/sectionDiagnostics"
+                            android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+                        <ImageView
+                            android:id="@+id/diagExpandIcon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_expand_more_20"
+                            tools:ignore="ContentDescription" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/diagContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <include
+                            android:id="@+id/diagRowNotification"
+                            layout="@layout/view_diagnostic_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_sm" />
+
+                        <include
+                            android:id="@+id/diagRowNotificationListener"
+                            layout="@layout/view_diagnostic_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <include
+                            android:id="@+id/diagRowOverlay"
+                            layout="@layout/view_diagnostic_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <include
+                            android:id="@+id/diagRowLogFile"
+                            layout="@layout/view_diagnostic_log_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

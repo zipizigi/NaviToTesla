@@ -13,6 +13,8 @@ import java.util.concurrent.CountDownLatch
 
 object PreferencesUtil {
     private const val PREFERENCES_FILE_NAME = "settings"
+    private const val KEY_DEFAULT_SEND_MODE = "defaultSendMode"
+    private const val KEY_FALLBACK_SEND_MODE = "fallbackSendMode"
 
     @Volatile
     private var instance: SharedPreferences? = null
@@ -229,14 +231,23 @@ object PreferencesUtil {
             null
         }
 
-    suspend fun getSendMode(
-        key: String,
-        defaultValue: SendMode,
-    ): SendMode {
-        val raw = getString(key, defaultValue.name.lowercase()) ?: return defaultValue
+    suspend fun getDefaultSendMode(): SendMode = getSendMode(KEY_DEFAULT_SEND_MODE)
+
+    suspend fun getFallbackSendMode(): SendMode = getSendMode(KEY_FALLBACK_SEND_MODE)
+
+    suspend fun setDefaultSendMode(mode: SendMode) {
+        put(KEY_DEFAULT_SEND_MODE, mode.name.lowercase())
+    }
+
+    suspend fun setFallbackSendMode(mode: SendMode) {
+        put(KEY_FALLBACK_SEND_MODE, mode.name.lowercase())
+    }
+
+    private suspend fun getSendMode(key: String): SendMode {
+        val raw = getString(key, SendMode.ROAD.name.lowercase()) ?: return SendMode.ROAD
         return runCatching { SendMode.valueOf(raw.uppercase()) }
-            .getOrElse { defaultValue }
+            .getOrElse { SendMode.ROAD }
             .takeIf { it != SendMode.GPS } // GPS 는 사용자 설정에 노출되지 않음
-            ?: defaultValue
+            ?: SendMode.ROAD
     }
 }

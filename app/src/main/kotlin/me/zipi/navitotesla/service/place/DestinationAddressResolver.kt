@@ -72,7 +72,7 @@ object DestinationAddressResolver {
 
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
-            AnalysisUtil.debug("classify: update disabled by RC, unknown")
+            AnalysisUtil.debug("classify: places update disabled by RC, unknown")
             return Searchability.Unknown
         }
 
