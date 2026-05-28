@@ -127,13 +127,12 @@ class AppRepository private constructor(
     }
 
     /**
-     * Resolver 가 전송 모드 결정 후 호출. 기존 row 가 있으면 id/registered 유지하면서
-     * sentMode/created 갱신. 없으면 신규 insert. isAddress 분기처럼 savePoi 가 선행
-     * 호출되지 않은 케이스에서도 row 를 만들 수 있도록 Poi 전체를 받는다.
+     * Resolver 가 검색 가능 여부 결정 후 호출. 기존 row 가 있으면 id/registered/sentMode 유지하면서
+     * searchable 갱신. 없으면 신규 insert. 즐겨찾기(registered=true) row 의 sentMode 는 보존.
      */
-    suspend fun markSent(
+    suspend fun markClassified(
         poi: Poi,
-        sentMode: String,
+        searchable: Boolean?,
     ) {
         val poiName = poi.poiName ?: return
         database.withTransaction {
@@ -149,7 +148,8 @@ class AppRepository private constructor(
                     longitude = poi.longitude,
                     registered = existing?.registered ?: false,
                     isDuplicate = poi.isDuplicate,
-                    sentMode = sentMode,
+                    sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
+                    searchable = searchable,
                     created = Date(),
                 ),
             )

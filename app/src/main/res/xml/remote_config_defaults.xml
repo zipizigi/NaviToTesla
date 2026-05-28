@@ -36,4 +36,8 @@
         <key>googlePlaceCheckTtlDays</key>
         <value>30</value>
     </entry>
+    <entry>
+        <key>sendUnknownAsNotSearchable</key>
+        <value>false</value>
+    </entry>
 </defaultsMap><!-- END xml_defaults -->

@@ -7,6 +7,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.Token
 import java.util.concurrent.CountDownLatch
 
@@ -227,4 +228,15 @@ object PreferencesUtil {
         } else {
             null
         }
+
+    suspend fun getSendMode(
+        key: String,
+        defaultValue: SendMode,
+    ): SendMode {
+        val raw = getString(key, defaultValue.name.lowercase()) ?: return defaultValue
+        return runCatching { SendMode.valueOf(raw.uppercase()) }
+            .getOrElse { defaultValue }
+            .takeIf { it != SendMode.GPS } // GPS 는 사용자 설정에 노출되지 않음
+            ?: defaultValue
+    }
 }

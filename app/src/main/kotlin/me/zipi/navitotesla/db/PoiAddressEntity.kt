@@ -1,7 +1,6 @@
 package me.zipi.navitotesla.db
 
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import me.zipi.navitotesla.model.Poi
@@ -24,6 +23,7 @@ class PoiAddressEntity(
     val registered: Boolean? = null,
     val isDuplicate: Boolean? = null,
     val sentMode: String? = null,
+    val searchable: Boolean? = null,
     val created: Date? = null,
 ) {
     val isExpire: Boolean
@@ -47,27 +47,6 @@ class PoiAddressEntity(
             packageName = packageName ?: "",
             isDuplicate = isDuplicate == true,
         )
-
-    @get:Ignore
-    val sentAddress: String?
-        get() =
-            when (sentMode) {
-                SENT_MODE_ROAD -> {
-                    roadAddress
-                }
-
-                SENT_MODE_JIBUN -> {
-                    jibunAddress
-                }
-
-                SENT_MODE_GPS -> {
-                    if (latitude != null && longitude != null) "$latitude,$longitude" else null
-                }
-
-                else -> {
-                    null
-                }
-            }
 
     companion object {
         const val EXPIRE_DAY = 30

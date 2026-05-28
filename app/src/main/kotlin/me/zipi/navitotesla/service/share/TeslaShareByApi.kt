@@ -6,10 +6,9 @@ import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.exception.ForbiddenException
-import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.model.SendPayload
 import me.zipi.navitotesla.model.ShareRequest
 import me.zipi.navitotesla.model.TeslaApiResponse
-import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.ResponseCloser
 import retrofit2.Response
@@ -18,13 +17,13 @@ import java.io.IOException
 class TeslaShareByApi(
     context: Context,
     private val vehicleId: Long,
+    private val packageName: String?,
 ) : TeslaShareBase(context),
     TeslaShare {
     @Throws(IOException::class)
-    override suspend fun share(poi: Poi) {
-        val address = poi.getRoadAddress()
+    override suspend fun share(payload: SendPayload) {
         if (BuildConfig.DEBUG) {
-            AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 By api Skip\n$address")
+            AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 By api Skip\n${payload.displayText}")
             delay(500)
             return
         }
@@ -32,13 +31,13 @@ class TeslaShareByApi(
         val appRepository = AppRepository.getInstance()
 
         val response: Response<TeslaApiResponse.ObjectType<TeslaApiResponse.Result>> =
-            appRepository.teslaApi.share(vehicleId, ShareRequest(address))
+            appRepository.teslaApi.share(vehicleId, ShareRequest(payload.sendText))
 
         val result = response.body().takeIf { response.isSuccessful }
         if (result != null && result.error == null && (result.response?.result == true)) {
-            AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationSuccess) + "\n" + address)
+            AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationSuccess) + "\n" + payload.displayText)
             AnalysisUtil.log("send_success")
-            AnalysisUtil.logEvent("share_by_api_success", eventParam(poi))
+            AnalysisUtil.logEvent("share_by_api_success", eventParam(packageName, payload))
         } else {
             AnalysisUtil.warn(response.toString())
             AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: ""))
@@ -57,7 +56,7 @@ class TeslaShareByApi(
                 } else {
                     RuntimeException("Send address fail")
                 }
-            AnalysisUtil.logEvent("share_by_api_fail", eventParam(poi))
+            AnalysisUtil.logEvent("share_by_api_fail", eventParam(packageName, payload))
             AnalysisUtil.recordException(exception)
             throw exception
         }
