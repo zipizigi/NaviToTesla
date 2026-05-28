@@ -17,7 +17,6 @@
     <string name="searchResult">Search Result</string>
     <string name="favorite">Favorite</string>
     <string name="recentDestination">Recent destination</string>
-    <string name="clearAddressCache">Clear address cache</string>
     <string name="paste">Paste</string>
     <string name="clearToken">Clear token</string>
     <string name="refreshToken" translatable="false">Refresh Token</string>
@@ -100,7 +99,6 @@
     <string name="overlayCloseWithTimer">Close (%d sec)</string>
     <string name="guideGrantOverlayPermissionForSelection">To display the destination selection popup, the \"Display over other apps\" permission is required.\nPlease grant the permission.</string>
     <string name="sectionToken">Tesla Token</string>
-    <string name="sectionMaintenance">Maintenance</string>
     <string name="sectionService">Service</string>
     <string name="sectionDiagnostics">Diagnostics</string>
     <string name="diagPermNotification">Notification</string>
