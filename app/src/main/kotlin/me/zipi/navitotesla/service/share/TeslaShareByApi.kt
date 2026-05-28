@@ -23,7 +23,13 @@ class TeslaShareByApi(
     @Throws(IOException::class)
     override suspend fun share(payload: SendPayload) {
         if (BuildConfig.DEBUG) {
-            AnalysisUtil.makeToast(context, "[DEBUG] 목적지 전송 By api Skip\n${payload.displayText}")
+            AnalysisUtil.makeToast(
+                context,
+                "[DEBUG] 목적지 전송 By api Skip\n" +
+                    "mode=${payload.mode} viaUrl=${payload.viaUrl}\n" +
+                    "send=${payload.sendText}\n" +
+                    "display=${payload.displayText}",
+            )
             delay(500)
             return
         }

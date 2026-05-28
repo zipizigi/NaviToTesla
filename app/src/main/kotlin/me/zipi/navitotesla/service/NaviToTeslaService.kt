@@ -15,6 +15,7 @@ import me.zipi.navitotesla.exception.NotSupportedNaviException
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendSettings
+import me.zipi.navitotesla.model.ShareTransport
 import me.zipi.navitotesla.model.TeslaApiResponse
 import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
@@ -33,6 +34,7 @@ import me.zipi.navitotesla.util.RemoteConfigUtil
 import me.zipi.navitotesla.util.ResponseCloser
 import retrofit2.Response
 import java.io.IOException
+import java.util.Locale
 import java.util.regex.Pattern
 
 class NaviToTeslaService(
@@ -157,11 +159,20 @@ class NaviToTeslaService(
                 DestinationAddressResolver.classify(poi)
             }
 
+        val shareMode = PreferencesUtil.getString("shareMode", "app")
+        val transport =
+            if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
+                ShareTransport.API
+            } else {
+                ShareTransport.APP
+            }
         val settings =
             SendSettings(
                 defaultMode = PreferencesUtil.getSendMode("defaultSendMode", SendMode.ROAD),
                 fallbackMode = PreferencesUtil.getSendMode("fallbackSendMode", SendMode.ROAD),
                 treatUnknownAsNotSearchable = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_SEND_UNKNOWN_AS_NOT_SEARCHABLE),
+                shareTransport = transport,
+                locale = Locale.getDefault(),
             )
 
         val payload =
@@ -177,8 +188,7 @@ class NaviToTeslaService(
 
         lastShareAt = System.currentTimeMillis()
         makeToast(context.getString(R.string.requestSend) + "\n" + payload.displayText)
-        val shareMode = PreferencesUtil.getString("shareMode", "app")
-        if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
+        if (transport == ShareTransport.API) {
             if (refreshToken() == null) {
                 return
             }

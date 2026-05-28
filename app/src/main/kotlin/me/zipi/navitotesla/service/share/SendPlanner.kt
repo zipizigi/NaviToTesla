@@ -5,6 +5,7 @@ import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendPayload
 import me.zipi.navitotesla.model.SendSettings
+import me.zipi.navitotesla.model.ShareTransport
 import me.zipi.navitotesla.service.place.Searchability
 import java.net.URLEncoder
 
@@ -50,7 +51,11 @@ object SendPlanner {
                 SendMode.GPS -> error("GPS is registered-only and must not appear in settings")
             }
 
-        val viaUrl = mode == SendMode.NAME || effectiveSearchability is Searchability.NotSearchable
+        val byAppNonKorean = settings.shareTransport == ShareTransport.APP &&
+            settings.locale.language != "ko"
+        val viaUrl = mode == SendMode.NAME ||
+            effectiveSearchability is Searchability.NotSearchable ||
+            byAppNonKorean
         val sendText =
             if (viaUrl) GOOGLE_MAPS_URL_PREFIX + URLEncoder.encode(rawByMode, "UTF-8") else rawByMode
         val displayText =
