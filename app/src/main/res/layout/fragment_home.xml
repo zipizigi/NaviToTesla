@@ -63,10 +63,12 @@
 
         <!-- Card: Tesla token (Refresh + Access) -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardToken"
             style="@style/Widget.NaviToTesla.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_md">
+            android:layout_marginBottom="@dimen/space_md"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -119,9 +121,19 @@
                         style="@style/Widget.Material3.Button.Icon"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/space_sm"
                         android:layout_weight="1"
                         android:text="@string/save"
                         app:icon="@drawable/ic_baseline_save_24" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTokenClear"
+                        style="@style/Widget.Material3.Button.OutlinedButton.Icon"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/clearToken"
+                        app:icon="@drawable/ic_baseline_clear_24" />
                 </LinearLayout>
 
                 <TextView
@@ -150,10 +162,12 @@
 
         <!-- Card: Vehicle -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardVehicle"
             style="@style/Widget.NaviToTesla.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_md">
+            android:layout_marginBottom="@dimen/space_md"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -175,11 +189,13 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card: Maintenance -->
+        <!-- Card: Address format -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAddressFormat"
             style="@style/Widget.NaviToTesla.Card"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_md">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -189,34 +205,99 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/sectionMaintenance"
+                    android:text="@string/sectionAddressFormat"
                     android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
 
-                <LinearLayout
+                <!-- Default -->
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_md"
+                    android:text="@string/defaultSendModeTitle"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideDefaultSendMode"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupDefaultSendMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTokenClear"
-                        style="@style/Widget.Material3.Button.OutlinedButton.Icon"
-                        android:layout_width="0dp"
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioDefaultSendModeRoad"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/space_sm"
-                        android:layout_weight="1"
-                        android:text="@string/clearToken"
-                        app:icon="@drawable/ic_baseline_clear_24" />
+                        android:layout_marginEnd="@dimen/space_lg"
+                        android:text="@string/sendModeRoad" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnPoiCacheClear"
-                        style="@style/Widget.Material3.Button.OutlinedButton.Icon"
-                        android:layout_width="0dp"
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioDefaultSendModeJibun"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/clearAddressCache"
-                        app:icon="@drawable/ic_baseline_clear_24" />
-                </LinearLayout>
+                        android:layout_marginEnd="@dimen/space_lg"
+                        android:text="@string/sendModeJibun" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioDefaultSendModeName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sendModeName" />
+                </RadioGroup>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/space_md"
+                    android:background="?attr/colorOutlineVariant" />
+
+                <!-- Fallback -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fallbackSendModeTitle"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideFallbackSendMode"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroupFallbackSendMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioFallbackSendModeRoad"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/space_lg"
+                        android:text="@string/sendModeRoad" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioFallbackSendModeJibun"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/space_lg"
+                        android:text="@string/sendModeJibun" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radioFallbackSendModeName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sendModeName" />
+                </RadioGroup>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

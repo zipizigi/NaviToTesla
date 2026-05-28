@@ -17,7 +17,6 @@
     <string name="searchResult">Search Result</string>
     <string name="favorite">Favorite</string>
     <string name="recentDestination">Recent destination</string>
-    <string name="clearAddressCache">Clear address cache</string>
     <string name="paste">Paste</string>
     <string name="clearToken">Clear token</string>
     <string name="refreshToken" translatable="false">Refresh Token</string>
@@ -100,7 +99,6 @@
     <string name="overlayCloseWithTimer">Close (%d sec)</string>
     <string name="guideGrantOverlayPermissionForSelection">To display the destination selection popup, the \"Display over other apps\" permission is required.\nPlease grant the permission.</string>
     <string name="sectionToken">Tesla Token</string>
-    <string name="sectionMaintenance">Maintenance</string>
     <string name="sectionService">Service</string>
     <string name="sectionDiagnostics">Diagnostics</string>
     <string name="diagPermNotification">Notification</string>
@@ -114,12 +112,17 @@
     <string name="helperRefreshToken">Paste the refresh token issued from your Tesla account.</string>
     <string name="helperShareMode">API mode talks to the vehicle directly. App mode forwards via the installed Tesla app.</string>
     <string name="emptyBluetoothList">No Bluetooth devices added.\nTap + to add a device.</string>
-    <string name="sectionSendMode">Send method</string>
-    <string name="defaultSendModeTitle">Default send method</string>
+    <string name="defaultSendModeTitle">Default</string>
     <string name="guideDefaultSendMode">Sends the destination to the vehicle using the selected method.</string>
-    <string name="fallbackSendModeTitle">Fallback send method (when not searchable)</string>
+    <string name="fallbackSendModeTitle">When not searchable</string>
     <string name="guideFallbackSendMode">Used for destinations the vehicle is expected not to recognize.</string>
     <string name="sendModeRoad">Road address</string>
     <string name="sendModeJibun">Lot address</string>
     <string name="sendModeName">Destination name</string>
+    <string name="sectionAddressFormat">Address format</string>
+    <string name="guideRecentDestination">Recent destinations sent to the vehicle are kept here. Use the button on the right to clear them.</string>
+    <string name="dialogClearRecentTitle">Clear recent destinations</string>
+    <string name="dialogClearRecentMessage">Clear all recent destination cache. This cannot be undone.</string>
+    <string name="dialogClearTokenTitle">Clear Tesla token</string>
+    <string name="dialogClearTokenMessage">Clear the Tesla token. To use API mode again you must register the token.</string>
 </resources>

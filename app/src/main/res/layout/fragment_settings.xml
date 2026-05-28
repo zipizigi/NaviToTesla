@@ -83,24 +83,19 @@
                     android:background="?attr/colorOutlineVariant" />
 
                 <!-- App enable row -->
-                <LinearLayout
+                <TextView
+                    android:id="@+id/textAppEnable"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:text="@string/appActive"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-                    <TextView
-                        android:id="@+id/textAppEnable"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/appActive"
-                        android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAppEnableHelp"
-                        style="@style/Widget.NaviToTesla.HelpButton" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideAppEnable"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
                 <RadioGroup
                     android:id="@+id/radioGroupAppEnable"
@@ -144,25 +139,20 @@
                     android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
 
                 <!-- Duplicate POI row -->
-                <LinearLayout
+                <TextView
+                    android:id="@+id/textDuplicatePoiSelection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_md"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:text="@string/duplicatePoiSelection"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-                    <TextView
-                        android:id="@+id/textDuplicatePoiSelection"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/duplicatePoiSelection"
-                        android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDuplicatePoiHelp"
-                        style="@style/Widget.NaviToTesla.HelpButton" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideDuplicatePoiSelection"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
                 <RadioGroup
                     android:id="@+id/radioGroupDuplicatePoiSelection"
@@ -192,24 +182,19 @@
                     android:background="?attr/colorOutlineVariant" />
 
                 <!-- Condition row -->
-                <LinearLayout
+                <TextView
+                    android:id="@+id/textCondition"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:text="@string/condition"
+                    android:textAppearance="?attr/textAppearanceTitleSmall" />
 
-                    <TextView
-                        android:id="@+id/textCondition"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/condition"
-                        android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnConditionHelp"
-                        style="@style/Widget.NaviToTesla.HelpButton" />
-                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideCondition"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
                 <RadioGroup
                     android:id="@+id/radioGroupConditionEnable"
@@ -289,128 +274,6 @@
                         android:textAlignment="center"
                         android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
                 </FrameLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Card: Send mode (default + fallback) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardSendMode"
-            style="@style/Widget.NaviToTesla.Card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/space_md">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sectionSendMode"
-                    android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
-
-                <!-- Default send mode row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/defaultSendModeTitle"
-                        android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDefaultSendModeHelp"
-                        style="@style/Widget.NaviToTesla.HelpButton" />
-                </LinearLayout>
-
-                <RadioGroup
-                    android:id="@+id/radioGroupDefaultSendMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioDefaultSendModeRoad"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/space_lg"
-                        android:text="@string/sendModeRoad" />
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioDefaultSendModeJibun"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/space_lg"
-                        android:text="@string/sendModeJibun" />
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioDefaultSendModeName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/sendModeName" />
-                </RadioGroup>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/space_md"
-                    android:background="?attr/colorOutlineVariant" />
-
-                <!-- Fallback send mode row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/fallbackSendModeTitle"
-                        android:textAppearance="?attr/textAppearanceTitleSmall" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnFallbackSendModeHelp"
-                        style="@style/Widget.NaviToTesla.HelpButton" />
-                </LinearLayout>
-
-                <RadioGroup
-                    android:id="@+id/radioGroupFallbackSendMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioFallbackSendModeRoad"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/space_lg"
-                        android:text="@string/sendModeRoad" />
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioFallbackSendModeJibun"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/space_lg"
-                        android:text="@string/sendModeJibun" />
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioFallbackSendModeName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/sendModeName" />
-                </RadioGroup>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

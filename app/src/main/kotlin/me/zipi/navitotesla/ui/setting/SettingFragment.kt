@@ -27,13 +27,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentSettingsBinding
-import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.ui.setting.ConditionRecyclerAdapter.OnDeleteButtonClicked
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -51,6 +52,8 @@ class SettingFragment :
     private var isDuplicatePoiRadioInitializing = false
     private var diagnosticsUserToggled = false
     private var diagnosticsExpanded = false
+    private var diagnosticsAnimReady = false
+    private var conditionAnimReady = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,10 +64,7 @@ class SettingFragment :
         binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
         binding.btnBluetoothAdd.setOnClickListener(this)
-        binding.btnConditionHelp.setOnClickListener(this)
-        binding.btnAppEnableHelp.setOnClickListener(this)
         binding.btnAccEnableHelp.setOnClickListener(this)
-        binding.btnDuplicatePoiHelp.setOnClickListener(this)
         binding.radioGroupAppEnable.setOnCheckedChangeListener(this)
         binding.radioGroupConditionEnable.setOnCheckedChangeListener(this)
         binding.radioGroupAccEnable.setOnCheckedChangeListener(this)
@@ -101,37 +101,7 @@ class SettingFragment :
                 binding.textBluetoothEmpty.visibility = if (items.isNullOrEmpty()) View.VISIBLE else View.GONE
             }
         binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
-        setupSendModeRadios()
         return root
-    }
-
-    private fun setupSendModeRadios() {
-        binding.btnDefaultSendModeHelp.setOnClickListener(this)
-        binding.btnFallbackSendModeHelp.setOnClickListener(this)
-        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(this)
-        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(this)
-    }
-
-    private fun radioIdForDefaultMode(mode: SendMode): Int =
-        when (mode) {
-            SendMode.JIBUN -> binding.radioDefaultSendModeJibun.id
-            SendMode.NAME -> binding.radioDefaultSendModeName.id
-            else -> binding.radioDefaultSendModeRoad.id
-        }
-
-    private fun radioIdForFallbackMode(mode: SendMode): Int =
-        when (mode) {
-            SendMode.JIBUN -> binding.radioFallbackSendModeJibun.id
-            SendMode.NAME -> binding.radioFallbackSendModeName.id
-            else -> binding.radioFallbackSendModeRoad.id
-        }
-
-    private fun persistDefaultSendMode(mode: SendMode) {
-        lifecycleScope.launch { PreferencesUtil.setDefaultSendMode(mode) }
-    }
-
-    private fun persistFallbackSendMode(mode: SendMode) {
-        lifecycleScope.launch { PreferencesUtil.setFallbackSendMode(mode) }
     }
 
     private fun removeBluetoothDevice(position: Int) {
@@ -190,9 +160,18 @@ class SettingFragment :
     }
 
     private fun applyDiagnosticsExpanded(expanded: Boolean) {
+        if (diagnosticsAnimReady) {
+            (binding.diagContent.parent as? android.view.ViewGroup)?.let { parent ->
+                TransitionManager.beginDelayedTransition(
+                    parent,
+                    AutoTransition().apply { duration = 220 },
+                )
+            }
+        }
         diagnosticsExpanded = expanded
         binding.diagContent.visibility = if (expanded) View.VISIBLE else View.GONE
         binding.diagExpandIcon.rotation = if (expanded) 180f else 0f
+        diagnosticsAnimReady = true
     }
 
     private fun bindLogRow() {
@@ -363,28 +342,6 @@ class SettingFragment :
                     }
                 }
             }
-            launch {
-                context?.run {
-                    val saved = PreferencesUtil.getDefaultSendMode()
-                    withContext(Dispatchers.Main) {
-                        if (!isAdded || view == null) return@withContext
-                        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(null)
-                        binding.radioGroupDefaultSendMode.check(radioIdForDefaultMode(saved))
-                        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(this@SettingFragment)
-                    }
-                }
-            }
-            launch {
-                context?.run {
-                    val saved = PreferencesUtil.getFallbackSendMode()
-                    withContext(Dispatchers.Main) {
-                        if (!isAdded || view == null) return@withContext
-                        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(null)
-                        binding.radioGroupFallbackSendMode.check(radioIdForFallbackMode(saved))
-                        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(this@SettingFragment)
-                    }
-                }
-            }
         }
 
     override fun onDestroyView() {
@@ -397,66 +354,11 @@ class SettingFragment :
             return
         }
         when (v.id) {
-            binding.btnAppEnableHelp.id -> {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.guideAppEnable))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create()
-                    .show()
-            }
-
-            binding.btnDuplicatePoiHelp.id -> {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.guideDuplicatePoiSelection))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create()
-                    .show()
-            }
-
-            binding.btnConditionHelp.id -> {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.guideCondition))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create()
-                    .show()
-            }
-
             binding.btnAccEnableHelp.id -> {
                 AlertDialog
                     .Builder(requireActivity())
                     .setTitle(getString(R.string.guide))
                     .setMessage(getString(R.string.accessibility_description))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create()
-                    .show()
-            }
-
-            binding.btnDefaultSendModeHelp.id -> {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.guideDefaultSendMode))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                    .create()
-                    .show()
-            }
-
-            binding.btnFallbackSendModeHelp.id -> {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.guideFallbackSendMode))
                     .setCancelable(true)
                     .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
                     .create()
@@ -548,7 +450,16 @@ class SettingFragment :
     }
 
     private fun onChangedConditionEnabled(enabled: Boolean) {
+        if (conditionAnimReady) {
+            (binding.cardBluetooth.parent as? android.view.ViewGroup)?.let { parent ->
+                TransitionManager.beginDelayedTransition(
+                    parent,
+                    AutoTransition().apply { duration = 220 },
+                )
+            }
+        }
         binding.cardBluetooth.visibility = if (enabled) View.VISIBLE else View.GONE
+        conditionAnimReady = true
         lifecycleScope.launch {
             if (context != null) {
                 EnablerUtil.setConditionEnabled(enabled)
@@ -618,18 +529,6 @@ class SettingFragment :
                     }.create()
                     .show()
             }
-        } else if (checkedId == R.id.radioDefaultSendModeRoad) {
-            persistDefaultSendMode(SendMode.ROAD)
-        } else if (checkedId == R.id.radioDefaultSendModeJibun) {
-            persistDefaultSendMode(SendMode.JIBUN)
-        } else if (checkedId == R.id.radioDefaultSendModeName) {
-            persistDefaultSendMode(SendMode.NAME)
-        } else if (checkedId == R.id.radioFallbackSendModeRoad) {
-            persistFallbackSendMode(SendMode.ROAD)
-        } else if (checkedId == R.id.radioFallbackSendModeJibun) {
-            persistFallbackSendMode(SendMode.JIBUN)
-        } else if (checkedId == R.id.radioFallbackSendModeName) {
-            persistFallbackSendMode(SendMode.NAME)
         }
     }
 

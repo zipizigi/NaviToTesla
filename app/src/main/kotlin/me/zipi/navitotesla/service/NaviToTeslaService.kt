@@ -348,10 +348,6 @@ class NaviToTeslaService(
 
     suspend fun loadVehicleId(): Long = PreferencesUtil.getLong("vehicleId", 0L)
 
-    suspend fun clearPoiCache() {
-        appRepository.clearAllPoi()
-    }
-
     companion object {
         private val ADDRESS_PATTERN = Pattern.compile("^(?:[가-힣]+\\s[가-힣]+[시군구]|(?:세종시|세종특별시|세종특별자치시)\\s[가-힣\\d]+[읍면동로])\\s")
 
