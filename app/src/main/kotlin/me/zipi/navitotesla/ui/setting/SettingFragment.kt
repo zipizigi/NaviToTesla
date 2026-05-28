@@ -311,7 +311,7 @@ class SettingFragment :
     }
 
     private fun updateConditions() =
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             if (context != null && activity != null) {
                 val appEnabled = context?.let { EnablerUtil.getAppEnabled() } ?: true
                 val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled() } ?: false

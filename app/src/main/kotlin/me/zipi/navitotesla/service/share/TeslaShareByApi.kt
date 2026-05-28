@@ -25,9 +25,7 @@ class TeslaShareByApi(
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(
                 context,
-                "[DEBUG] 목적지 전송 By api Skip\n" +
-                    "display=${payload.displayText}\n" +
-                    "send=${payload.sendText}",
+                "[DEBUG] 목적지 전송 By api Skip\n${payload.sendText}",
             )
             delay(500)
             return

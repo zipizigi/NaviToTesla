@@ -25,9 +25,7 @@ class TeslaShareByApp(
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(
                 context,
-                "[DEBUG] 목적지 전송 By App Skip\n" +
-                    "display=${payload.displayText}\n" +
-                    "send=${payload.sendText}",
+                "[DEBUG] 목적지 전송 By App Skip\n${payload.sendText}",
             )
             return
         }
