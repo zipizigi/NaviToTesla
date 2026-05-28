@@ -28,7 +28,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
-import androidx.transition.Slide
+import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.gun0912.tedpermission.coroutine.TedPermission
@@ -583,7 +583,7 @@ class HomeFragment :
             if (parent != null) {
                 TransitionManager.beginDelayedTransition(
                     parent,
-                    Slide(android.view.Gravity.TOP).apply { duration = 220 },
+                    AutoTransition().apply { duration = 220 },
                 )
             }
         }
