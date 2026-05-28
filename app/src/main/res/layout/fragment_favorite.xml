@@ -97,7 +97,7 @@
                         android:id="@+id/btnRecentClear"
                         style="@style/Widget.NaviToTesla.HelpButton"
                         android:contentDescription="@string/dialogClearRecentTitle"
-                        app:icon="@drawable/ic_baseline_delete_sweep_24" />
+                        app:icon="@drawable/ic_outline_delete_sweep_24" />
                 </LinearLayout>
 
                 <TextView
