@@ -26,9 +26,8 @@ class TeslaShareByApp(
             AnalysisUtil.makeToast(
                 context,
                 "[DEBUG] 목적지 전송 By App Skip\n" +
-                    "mode=${payload.mode} viaUrl=${payload.viaUrl}\n" +
-                    "send=${payload.sendText}\n" +
-                    "display=${payload.displayText}",
+                    "display=${payload.displayText}\n" +
+                    "send=${payload.sendText}",
             )
             return
         }
