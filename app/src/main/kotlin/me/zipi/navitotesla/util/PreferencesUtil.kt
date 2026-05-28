@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.Token
+import java.util.Locale
 import java.util.concurrent.CountDownLatch
 
 object PreferencesUtil {
@@ -236,16 +237,16 @@ object PreferencesUtil {
     suspend fun getFallbackSendMode(): SendMode = getSendMode(KEY_FALLBACK_SEND_MODE)
 
     suspend fun setDefaultSendMode(mode: SendMode) {
-        put(KEY_DEFAULT_SEND_MODE, mode.name.lowercase())
+        put(KEY_DEFAULT_SEND_MODE, mode.name.lowercase(Locale.ROOT))
     }
 
     suspend fun setFallbackSendMode(mode: SendMode) {
-        put(KEY_FALLBACK_SEND_MODE, mode.name.lowercase())
+        put(KEY_FALLBACK_SEND_MODE, mode.name.lowercase(Locale.ROOT))
     }
 
     private suspend fun getSendMode(key: String): SendMode {
-        val raw = getString(key, SendMode.ROAD.name.lowercase()) ?: return SendMode.ROAD
-        return runCatching { SendMode.valueOf(raw.uppercase()) }
+        val raw = getString(key, SendMode.ROAD.name.lowercase(Locale.ROOT)) ?: return SendMode.ROAD
+        return runCatching { SendMode.valueOf(raw.uppercase(Locale.ROOT)) }
             .getOrElse { SendMode.ROAD }
             .takeIf { it != SendMode.GPS } // GPS 는 사용자 설정에 노출되지 않음
             ?: SendMode.ROAD

@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.google.firebase.perf.metrics.AddTrace
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
+import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.exception.DuplicatePoiException
 import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.exception.IgnorePoiException
@@ -148,7 +149,12 @@ class NaviToTeslaService(
 
         val registeredEntity =
             poi.poiName?.let {
-                appRepository.getPoiSync(it, poi.packageName)?.takeIf { e -> e.isRegistered() }
+                appRepository.findRegisteredEntityByPackage(it, poi.packageName)
+            }
+        // registered row 인데 sentMode 가 null (migration corruption 등) 이면 ROAD 로 취급.
+        val registeredSentMode =
+            registeredEntity?.let {
+                it.sentMode ?: PoiAddressEntity.SENT_MODE_ROAD
             }
 
         val searchability =
@@ -178,7 +184,7 @@ class NaviToTeslaService(
             SendPlanner.plan(
                 poi = poi,
                 searchability = searchability,
-                registeredSentMode = registeredEntity?.sentMode,
+                registeredSentMode = registeredSentMode,
                 isDuplicateSelected = poi.isDuplicate,
                 settings = settings,
             )

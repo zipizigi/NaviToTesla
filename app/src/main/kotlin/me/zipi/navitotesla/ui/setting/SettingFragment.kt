@@ -49,7 +49,6 @@ class SettingFragment :
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
     private var isDuplicatePoiRadioInitializing = false
-    private var isSendModeRadioInitializing = false
     private var diagnosticsUserToggled = false
     private var diagnosticsExpanded = false
 
@@ -128,12 +127,10 @@ class SettingFragment :
         }
 
     private fun persistDefaultSendMode(mode: SendMode) {
-        if (isSendModeRadioInitializing) return
         lifecycleScope.launch { PreferencesUtil.setDefaultSendMode(mode) }
     }
 
     private fun persistFallbackSendMode(mode: SendMode) {
-        if (isSendModeRadioInitializing) return
         lifecycleScope.launch { PreferencesUtil.setFallbackSendMode(mode) }
     }
 
@@ -371,9 +368,9 @@ class SettingFragment :
                     val saved = PreferencesUtil.getDefaultSendMode()
                     withContext(Dispatchers.Main) {
                         if (!isAdded || view == null) return@withContext
-                        isSendModeRadioInitializing = true
+                        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(null)
                         binding.radioGroupDefaultSendMode.check(radioIdForDefaultMode(saved))
-                        isSendModeRadioInitializing = false
+                        binding.radioGroupDefaultSendMode.setOnCheckedChangeListener(this@SettingFragment)
                     }
                 }
             }
@@ -382,9 +379,9 @@ class SettingFragment :
                     val saved = PreferencesUtil.getFallbackSendMode()
                     withContext(Dispatchers.Main) {
                         if (!isAdded || view == null) return@withContext
-                        isSendModeRadioInitializing = true
+                        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(null)
                         binding.radioGroupFallbackSendMode.check(radioIdForFallbackMode(saved))
-                        isSendModeRadioInitializing = false
+                        binding.radioGroupFallbackSendMode.setOnCheckedChangeListener(this@SettingFragment)
                     }
                 }
             }

@@ -101,6 +101,18 @@ class AppRepository private constructor(
         return database.poiAddressDao().findRegisteredByPoi(poiName)
     }
 
+    /**
+     * 같은 packageName 범위 내에서 registered=true 인 favorite row 만 반환.
+     * `getPoiSync` 의 cross-package fallback 을 우회한다.
+     */
+    suspend fun findRegisteredEntityByPackage(
+        poiName: String,
+        packageName: String,
+    ): PoiAddressEntity? =
+        database.poiAddressDao()
+            .findPoiByPackage(poiName, packageName)
+            ?.takeIf { it.isRegistered() }
+
     suspend fun savePoi(
         poi: Poi,
         registered: Boolean,
@@ -127,8 +139,9 @@ class AppRepository private constructor(
     }
 
     /**
-     * Resolver 가 검색 가능 여부 결정 후 호출. 기존 row 가 있으면 id/registered/sentMode 유지하면서
-     * searchable 갱신. 없으면 신규 insert. 즐겨찾기(registered=true) row 의 sentMode 는 보존.
+     * Resolver 가 검색 가능 여부 결정 후 호출. 기존 row 가 있으면 id/registered/sentMode/isDuplicate 유지하면서
+     * searchable 갱신. 없으면 신규 insert. 즐겨찾기(registered=true) row 의 sentMode 는 보존하고,
+     * 한번 isDuplicate=true 로 마킹된 row 는 stick (resolver 가 false 로 덮어쓰지 못함).
      */
     suspend fun markClassified(
         poi: Poi,
@@ -147,7 +160,7 @@ class AppRepository private constructor(
                     latitude = poi.latitude,
                     longitude = poi.longitude,
                     registered = existing?.registered ?: false,
-                    isDuplicate = poi.isDuplicate,
+                    isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
                     sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
                     searchable = searchable,
                     created = Date(),
