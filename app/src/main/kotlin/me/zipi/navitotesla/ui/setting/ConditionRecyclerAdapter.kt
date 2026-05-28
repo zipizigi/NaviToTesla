@@ -66,7 +66,7 @@ class ConditionRecyclerAdapter(
         }
 
         override fun onClick(view: View) {
-            listenerRef.get()?.onClick(adapterPosition)
+            listenerRef.get()?.onClick(bindingAdapterPosition)
         }
     }
 }
