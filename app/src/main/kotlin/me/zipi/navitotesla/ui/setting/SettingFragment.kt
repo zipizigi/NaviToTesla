@@ -124,25 +124,33 @@ class SettingFragment :
                     android.R.layout.simple_spinner_item,
                 ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
         spinner.adapter = adapter
+        // 0번 인덱스를 기본값으로 미리 선택. 비동기 로드 완료 후 실제 저장값으로 교체된다.
+        // listener 는 setSelection 이후 attach 하므로 이 시점 callback 은 발생하지 않는다.
+        spinner.setSelection(0, false)
 
-        val saved = PreferencesUtil.getStringSync(prefKey, "road") ?: "road"
-        val idx = sendModeValues.indexOf(saved).takeIf { it >= 0 } ?: 0
-        spinner.setSelection(idx, false)
+        lifecycleScope.launch {
+            val saved = PreferencesUtil.getString(prefKey, "road") ?: "road"
+            val idx = sendModeValues.indexOf(saved).takeIf { it >= 0 } ?: 0
+            withContext(Dispatchers.Main) {
+                if (!isAdded || view == null) return@withContext
+                spinner.setSelection(idx, false)
+                // setSelection 이후 listener attach: programmatic selection 으로 인한 write-back race 방지
+                spinner.onItemSelectedListener =
+                    object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(
+                            parent: AdapterView<*>?,
+                            view: View?,
+                            position: Int,
+                            id: Long,
+                        ) {
+                            val value = sendModeValues.getOrNull(position) ?: return
+                            lifecycleScope.launch { PreferencesUtil.put(prefKey, value) }
+                        }
 
-        spinner.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long,
-                ) {
-                    val value = sendModeValues.getOrNull(position) ?: return
-                    lifecycleScope.launch { PreferencesUtil.put(prefKey, value) }
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                        override fun onNothingSelected(parent: AdapterView<*>?) {}
+                    }
             }
+        }
     }
 
     private fun removeBluetoothDevice(position: Int) {
