@@ -109,4 +109,11 @@
     <string name="helperRefreshToken">Paste the refresh token issued from your Tesla account.</string>
     <string name="helperShareMode">API mode talks to the vehicle directly. App mode forwards via the installed Tesla app.</string>
     <string name="emptyBluetoothList">No Bluetooth devices added.\nTap + to add a device.</string>
+    <string name="defaultSendModeTitle">Default send method</string>
+    <string name="defaultSendModeSummary">Sends the destination to the vehicle using the selected method.</string>
+    <string name="fallbackSendModeTitle">Fallback send method (when not searchable)</string>
+    <string name="fallbackSendModeSummary">Used for destinations the vehicle is expected not to recognize.</string>
+    <string name="sendModeRoad">Road address</string>
+    <string name="sendModeJibun">Lot address</string>
+    <string name="sendModeName">Destination name</string>
 </resources>

@@ -211,7 +211,8 @@
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.NaviToTesla.Card"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_md">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -310,6 +311,64 @@
                             android:layout_height="wrap_content"
                             android:text="@string/disable" />
                     </RadioGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Card: Send mode (default + fallback) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSendMode"
+                style="@style/Widget.NaviToTesla.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/defaultSendModeTitle"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/defaultSendModeSummary"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+
+                    <Spinner
+                        android:id="@+id/spinnerDefaultSendMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="@dimen/space_md"
+                        android:background="?attr/colorOutlineVariant" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/fallbackSendModeTitle"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_xs"
+                        android:text="@string/fallbackSendModeSummary"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+
+                    <Spinner
+                        android:id="@+id/spinnerFallbackSendMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_sm" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

@@ -15,6 +15,7 @@ import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.RadioGroup
 import android.widget.Spinner
@@ -50,6 +51,8 @@ class SettingFragment :
     private var isDuplicatePoiRadioInitializing = false
     private var diagnosticsUserToggled = false
     private var diagnosticsExpanded = false
+
+    private val sendModeValues = listOf("road", "jibun", "name")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -100,7 +103,46 @@ class SettingFragment :
                 binding.textBluetoothEmpty.visibility = if (items.isNullOrEmpty()) View.VISIBLE else View.GONE
             }
         binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
+        setupSendModeSpinners()
         return root
+    }
+
+    private fun setupSendModeSpinners() {
+        bindSendModeSpinner(binding.spinnerDefaultSendMode, "defaultSendMode")
+        bindSendModeSpinner(binding.spinnerFallbackSendMode, "fallbackSendMode")
+    }
+
+    private fun bindSendModeSpinner(
+        spinner: Spinner,
+        prefKey: String,
+    ) {
+        val adapter =
+            ArrayAdapter
+                .createFromResource(
+                    requireContext(),
+                    R.array.sendModeEntries,
+                    android.R.layout.simple_spinner_item,
+                ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+        spinner.adapter = adapter
+
+        val saved = PreferencesUtil.getStringSync(prefKey, "road") ?: "road"
+        val idx = sendModeValues.indexOf(saved).takeIf { it >= 0 } ?: 0
+        spinner.setSelection(idx, false)
+
+        spinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long,
+                ) {
+                    val value = sendModeValues.getOrNull(position) ?: return
+                    lifecycleScope.launch { PreferencesUtil.put(prefKey, value) }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
     }
 
     private fun removeBluetoothDevice(position: Int) {

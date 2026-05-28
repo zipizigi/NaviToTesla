@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sendModeEntries">
+        <item>@string/sendModeRoad</item>
+        <item>@string/sendModeJibun</item>
+        <item>@string/sendModeName</item>
+    </string-array>
+    <string-array name="sendModeValues">
+        <item>road</item>
+        <item>jibun</item>
+        <item>name</item>
+    </string-array>
+</resources>
