@@ -85,11 +85,19 @@
                             android:text="@string/disable" />
                     </RadioGroup>
 
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_lg" />
+
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="@dimen/space_md"
                         android:background="?attr/colorOutlineVariant" />
+
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/space_lg" />
 
                     <!-- App enable row -->
                     <TextView
