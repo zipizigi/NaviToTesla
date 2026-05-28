@@ -24,18 +24,25 @@ object DestinationAddressResolver {
         AnalysisUtil.debug("classify start: poi='$poiName', pkg=${poi.packageName}")
 
         val dao = AppDatabase.getInstance().poiAddressDao()
-        val cached = dao.findPoiByPackage(poiName, poi.packageName)
-        if (cached != null && !cached.isExpire && cached.searchable != null) {
-            AnalysisUtil.debug("classify: local cache hit, searchable=${cached.searchable}")
-            return if (cached.searchable) Searchability.Searchable else Searchability.NotSearchable
-        }
-
-        // Firestore 미스 후 Unknown 으로 끝났던 시도는 lastCheckedAt 로 기록된다.
-        // 쿨다운(default 24h) 동안은 동일 POI 에 대해 Firestore/Places API 호출을 둘 다 건너뛴다.
-        if (cached != null && cached.searchable == null && isWithinCooldown(cached.lastCheckedAt)) {
-            AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
-            AnalysisUtil.logEvent("place_check_cooldown_skip", eventParam)
-            return Searchability.Unknown
+        val cached = dao.findPoiByPackage(poiName, poi.packageName)?.takeUnless { it.isExpire }
+        when (cached?.searchability) {
+            Searchability.Searchable -> {
+                AnalysisUtil.debug("classify: local cache hit, searchable")
+                return Searchability.Searchable
+            }
+            Searchability.NotSearchable -> {
+                AnalysisUtil.debug("classify: local cache hit, not_searchable")
+                return Searchability.NotSearchable
+            }
+            // 쿨다운(default 24h) 동안은 동일 POI 에 대해 Firestore/Places API Skip
+            Searchability.Unknown -> {
+                if (isWithinCooldown(cached.lastCheckedAt)) {
+                    AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
+                    AnalysisUtil.logEvent("place_check_cooldown_skip", eventParam)
+                    return Searchability.Unknown
+                }
+            }
+            null -> Unit
         }
 
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
