@@ -29,8 +29,7 @@
             <com.google.android.material.card.MaterialCardView
                 style="@style/Widget.NaviToTesla.Card"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginBottom="@dimen/space_md">
+                android:layout_height="match_parent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
