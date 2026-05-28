@@ -5,7 +5,7 @@
 # 사용법:
 #   scripts/debug-trigger.sh <목적지> [목적지 ...]
 #   scripts/debug-trigger.sh --navi tmap <목적지>
-#   APP_PACKAGE=me.zipi.navitotesla.debug scripts/debug-trigger.sh 보정로
+#   APP_PACKAGE=me.zipi.navitotesla.debug scripts/debug-trigger.sh 서울특별시청
 #
 # 옵션:
 #   --navi {kakao|tmap}    어느 내비 알림으로 위장할지 (default: tmap)
@@ -14,9 +14,9 @@
 #                          playstore debug 는 me.zipi.navitotesla.debug
 #
 # 예:
-#   scripts/debug-trigger.sh 보정로
+#   scripts/debug-trigger.sh 서울특별시청
 #   scripts/debug-trigger.sh 코엑스
-#   scripts/debug-trigger.sh 보정로 코엑스 강남역
+#   scripts/debug-trigger.sh 서울특별시청 코엑스 강남역
 #   scripts/debug-trigger.sh --navi kakao 강남역
 #   APP_PACKAGE=me.zipi.navitotesla.debug scripts/debug-trigger.sh 코엑스
 
@@ -58,7 +58,7 @@ done
 
 if [[ ${#DESTS[@]} -eq 0 ]]; then
     echo "목적지를 하나 이상 지정." >&2
-    echo "예: $0 보정로 코엑스" >&2
+    echo "예: $0 서울특별시청 코엑스" >&2
     exit 1
 fi
 
