@@ -41,6 +41,10 @@
         <value>30</value>
     </entry>
     <entry>
+        <key>googlePlaceCheckCooldownHours</key>
+        <value>24</value>
+    </entry>
+    <entry>
         <key>sendUnknownAsNotSearchable</key>
         <value>false</value>
     </entry>

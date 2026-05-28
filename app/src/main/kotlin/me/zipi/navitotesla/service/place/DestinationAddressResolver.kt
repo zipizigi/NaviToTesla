@@ -30,6 +30,14 @@ object DestinationAddressResolver {
             return if (cached.searchable) Searchability.Searchable else Searchability.NotSearchable
         }
 
+        // Firestore 미스 후 Unknown 으로 끝났던 시도는 lastCheckedAt 로 기록된다.
+        // 쿨다운(default 24h) 동안은 동일 POI 에 대해 Firestore/Places API 호출을 둘 다 건너뛴다.
+        if (cached != null && cached.searchable == null && isWithinCooldown(cached.lastCheckedAt)) {
+            AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
+            AnalysisUtil.logEvent("place_check_cooldown_skip", eventParam)
+            return Searchability.Unknown
+        }
+
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
         if (firebaseDisabledFlavor) {
             AnalysisUtil.debug("classify: firebase-disabled flavor, unknown")
@@ -78,12 +86,14 @@ object DestinationAddressResolver {
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
             AnalysisUtil.debug("classify: places update disabled by RC, unknown")
+            AppRepository.getInstance().markClassified(poi, null)
             return Searchability.Unknown
         }
 
         val ratio = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO).coerceIn(0L, 100L).toInt()
         if (Random.nextInt(100) >= ratio) {
             AnalysisUtil.debug("classify: places update sampled out (ratio=$ratio), unknown")
+            AppRepository.getInstance().markClassified(poi, null)
             return Searchability.Unknown
         }
 
@@ -127,8 +137,18 @@ object DestinationAddressResolver {
             }
 
             null -> {
+                // Places API 예외(레이트 리밋 등). 다음 호출 때 24h 쿨다운으로 재시도를 막는다.
+                AppRepository.getInstance().markClassified(poi, null)
                 Searchability.Unknown
             }
         }
+    }
+
+    private fun isWithinCooldown(lastCheckedAt: Long?): Boolean {
+        if (lastCheckedAt == null) return false
+        val cooldownHours = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS)
+        if (cooldownHours <= 0L) return false
+        val cooldownMs = cooldownHours * 60L * 60L * 1000L
+        return System.currentTimeMillis() - lastCheckedAt < cooldownMs
     }
 }
