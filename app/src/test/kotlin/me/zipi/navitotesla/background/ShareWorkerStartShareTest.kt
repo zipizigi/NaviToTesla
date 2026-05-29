@@ -60,9 +60,10 @@ class ShareWorkerStartShareTest {
         )
 
         val captured = slot<OneTimeWorkRequest>()
+        val expectedKey = "share_${("com.skt.tmap.ku" + "경로주행" + "내 위치 > 강남역").hashCode()}"
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
-                "share_com.skt.tmap.ku",
+                expectedKey,
                 ExistingWorkPolicy.KEEP,
                 capture(captured),
             )
@@ -85,9 +86,10 @@ class ShareWorkerStartShareTest {
         )
 
         val captured = slot<OneTimeWorkRequest>()
+        val expectedKey = "share_${("com.locnall.KimGiSa" + "길안내 주행 중" + "목적지 : 송파구청").hashCode()}"
         verify(exactly = 1) {
             workManager.enqueueUniqueWork(
-                "share_com.locnall.KimGiSa",
+                expectedKey,
                 ExistingWorkPolicy.KEEP,
                 capture(captured),
             )

@@ -130,9 +130,11 @@ class ShareWorker(
                     .setConstraints(
                         Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
                     ).build()
-            // 동일 navi 의 알림 update 가 짧게 두 번 발생하면 ShareWorker 가 race 로 중복 수행 → unique work 로 1개만.
+            // destination 별 unique key — 동일 알림 update 는 dedup, destination 변경 시엔 새 work enqueue.
+            val uniqueKey =
+                "share_${(packageName + (notificationTitle ?: "") + (notificationText ?: "")).hashCode()}"
             WorkManager.getInstance(context).enqueueUniqueWork(
-                "share_$packageName",
+                uniqueKey,
                 ExistingWorkPolicy.KEEP,
                 workRequest,
             )
