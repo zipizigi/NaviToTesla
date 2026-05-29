@@ -17,6 +17,12 @@ object SendPlanner {
         isDuplicateSelected: Boolean,
         settings: SendSettings,
     ): SendPayload {
+        // 좌표 형식이면 raw GPS payload — URL wrap 없이 Tesla 에 좌표 직접 전달.
+        if (poi.isCoordsAddress()) {
+            val coords = poi.getRoadAddress()
+            return SendPayload(sendText = coords, displayText = coords, mode = SendMode.GPS, viaUrl = false)
+        }
+
         // 1. UNKNOWN → RC 에 따라 NotSearchable 로 승격
         val effectiveSearchability =
             if (settings.treatUnknownAsNotSearchable && searchability is Searchability.Unknown) {

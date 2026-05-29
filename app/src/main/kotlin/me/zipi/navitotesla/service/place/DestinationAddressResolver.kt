@@ -20,6 +20,11 @@ object DestinationAddressResolver {
     suspend fun classify(poi: Poi): Searchability {
         val poiName = poi.poiName ?: return Searchability.Unknown
         val roadAddress = poi.getRoadAddress()
+        
+        if (poi.isCoordsAddress()) {
+            AnalysisUtil.debug("classify: coords detected ($roadAddress), not_searchable")
+            return Searchability.NotSearchable
+        }
         val eventParam = Bundle().apply { putString("package", poi.packageName) }
         AnalysisUtil.debug("classify start: poi='$poiName', pkg=${poi.packageName}")
 

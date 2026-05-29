@@ -51,6 +51,34 @@ class SendPlannerTest {
         locale = locale,
     )
 
+    // --- 좌표 형식 (raw GPS payload, classify 결과 무관) ---
+
+    @Test
+    fun `coords roadAddress sends raw lat,lng without URL wrap`() {
+        val coordsPoi = Poi(poiName = "집", roadAddress = "37.5,127.0", isFavorite = true)
+        val payload = SendPlanner.plan(coordsPoi, Searchability.NotSearchable, false, settings(SendMode.NAME))
+        assertEquals("37.5,127.0", payload.sendText)
+        assertEquals("37.5,127.0", payload.displayText)
+        assertEquals(SendMode.GPS, payload.mode)
+        assertFalse(payload.viaUrl)
+    }
+
+    @Test
+    fun `coords roadAddress ignores default mode and locale settings`() {
+        val coordsPoi = Poi(roadAddress = "37.5, 127.0")
+        val payload =
+            SendPlanner.plan(
+                coordsPoi,
+                Searchability.Searchable,
+                false,
+                settings(SendMode.JIBUN, transport = ShareTransport.APP, locale = Locale.ENGLISH),
+            )
+        // 좌표는 정책 분기 무관하게 raw 로 — JIBUN 모드, English locale 무시.
+        assertEquals("37.5, 127.0", payload.sendText)
+        assertEquals(SendMode.GPS, payload.mode)
+        assertFalse(payload.viaUrl)
+    }
+
     // --- 즐겨찾기 (isFavorite=true) ---
     // 정책: favorite 은 roadAddress 컬럼이 곧 사용자 의도. NAME 모드만 ROAD 로 강등, 나머지 모드 분기는 일반 flow 와 동일.
 
