@@ -33,10 +33,12 @@ object DestinationAddressResolver {
                 AnalysisUtil.debug("classify: local cache hit, searchable")
                 return Searchability.Searchable
             }
+
             Searchability.NotSearchable -> {
                 AnalysisUtil.debug("classify: local cache hit, not_searchable")
                 return Searchability.NotSearchable
             }
+
             Searchability.Unknown -> {
                 if (isWithinCooldown(cached.lastCheckedAt)) {
                     AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
@@ -44,7 +46,9 @@ object DestinationAddressResolver {
                     return Searchability.Unknown
                 }
             }
-            null -> Unit
+
+            null -> {
+            }
         }
 
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
