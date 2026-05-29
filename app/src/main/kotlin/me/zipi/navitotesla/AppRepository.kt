@@ -118,11 +118,12 @@ class AppRepository private constructor(
 
         val road = poi.getRoadAddress().sanitizeAddressOrNull()
         val jibun = poi.getAddress().sanitizeAddressOrNull()
+        val pkg = poi.packageName.ifBlank { "" }
         database.withTransaction {
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
                     poi = poi.poiName,
-                    packageName = poi.packageName,
+                    packageName = pkg,
                     roadAddress = road,
                     jibunAddress = jibun,
                     latitude = poi.latitude?.takeUnless { it.isBlank() },
@@ -135,8 +136,6 @@ class AppRepository private constructor(
         }
     }
 
-    // 분류 결과 mark 전용 — cache row 생성은 savePoi 책임. (poi, packageName) UNIQUE 라
-    // 단일 UPDATE 로 match-or-no-op. cross-package favorite share 처럼 매치 row 없으면 0 affected.
     suspend fun markClassified(
         poi: Poi,
         searchability: Searchability,
@@ -150,12 +149,11 @@ class AppRepository private constructor(
             }
         database.poiAddressDao().updateClassification(
             poi = poiName,
-            packageName = poi.packageName,
+            packageName = matchPackageName(poi),
             searchable = searchable,
             now = System.currentTimeMillis(),
         )
     }
-
 
     private fun String.sanitizeAddressOrNull(): String? {
         val t = trim()
@@ -166,8 +164,10 @@ class AppRepository private constructor(
 
     suspend fun touchLastUsed(poi: Poi) {
         val poiName = poi.poiName ?: return
-        database.poiAddressDao().updateLastUsedAt(poiName, poi.packageName, System.currentTimeMillis())
+        database.poiAddressDao().updateLastUsedAt(poiName, matchPackageName(poi), System.currentTimeMillis())
     }
+
+    private fun matchPackageName(poi: Poi): String = if (poi.isFavorite) "" else poi.packageName
 
     suspend fun clearExpiredPoi() {
         val ttlMs = PoiAddressEntity.EXPIRE_DAY.toLong() * 24L * 60L * 60L * 1000L

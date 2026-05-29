@@ -150,7 +150,6 @@ class FavoriteDialogFragment :
             return
         }
         val address = binding.txtAddress.text.toString().trim()
-        // "null,null" / 빈 주소는 Tesla 에 그대로 전송되면 navigation 실패 — 저장 전 거부.
         if (address.isEmpty() || address == "null,null") {
             AnalysisUtil.makeToast(
                 context = context,
@@ -213,8 +212,6 @@ class FavoriteDialogFragment :
         checkedId: Int,
     ) {
         val poi = favoriteDialogViewModel.selectedPoi.value ?: return
-        // 채울 값이 없거나 "null,null" 같은 fallback junk 면 textfield 변경 안 함 —
-        // 사용자가 라디오 클릭 한 번으로 잘못된 favorite 저장하는 것 방지.
         valueForRadio(poi, group.checkedRadioButtonId)?.let { binding.txtAddress.setText(it) }
     }
 
