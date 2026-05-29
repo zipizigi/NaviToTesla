@@ -66,7 +66,7 @@ androidx-test-espresso = "androidx.test.espresso:espresso-core:3.7.0"
 androidx-test-core = "androidx.test:core:1.7.0"
 androidx-work-testing = "androidx.work:work-testing:2.11.2"
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test" }
-mockk = "io.mockk:mockk:1.14.9"
+mockk = "io.mockk:mockk:1.14.11"
 robolectric = "org.robolectric:robolectric:4.16.1"
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
