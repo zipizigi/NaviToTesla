@@ -18,12 +18,16 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
+import java.util.concurrent.ConcurrentHashMap
 
 class NotificationListener : NotificationListenerService() {
     private lateinit var naviToTeslaService: NaviToTeslaService
 
     @VisibleForTesting
     internal var serviceScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    // 같은 title 의 반복 update 로그 폭주 방지 — title 변경 시에만 로깅.
+    private val lastTitleByPackage = ConcurrentHashMap<String, String>()
 
     override fun onCreate() {
         super.onCreate()
@@ -39,6 +43,7 @@ class NotificationListener : NotificationListenerService() {
         super.onNotificationRemoved(sbn)
         if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
             AnalysisUtil.log("onNotificationRemoved ~ packageName: ${sbn.packageName}")
+            lastTitleByPackage.remove(sbn.packageName)
             serviceScope.launch { naviToTeslaService.notificationClear() }
             val param = Bundle()
             param.putString("package", sbn.packageName)
@@ -56,11 +61,14 @@ class NotificationListener : NotificationListenerService() {
                 val subText = extras.getString(Notification.EXTRA_SUB_TEXT) ?: ""
                 val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
 
-                AnalysisUtil.log(
-                    "onNotificationPosted ~ packageName: ${sbn.packageName} " +
-                        "id: ${sbn.id} postTime: ${sbn.postTime} title: $title " +
-                        "text: $text subText: $subText bigText: $bigText",
-                )
+                val titleChanged = lastTitleByPackage.put(sbn.packageName, title) != title
+                if (titleChanged) {
+                    AnalysisUtil.log(
+                        "onNotificationPosted ~ packageName: ${sbn.packageName} " +
+                            "id: ${sbn.id} postTime: ${sbn.postTime} title: $title " +
+                            "text: $text subText: $subText bigText: $bigText",
+                    )
+                }
 
                 val bundle = Bundle()
                 bundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, "NotificationListener")
