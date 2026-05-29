@@ -270,7 +270,6 @@ class DestinationAddressResolverClassifyTest {
         longitude = null,
         registered = registered,
         isDuplicate = false,
-        sentMode = null,
         searchable = searchable,
         created = created,
         lastCheckedAt = lastCheckedAt,

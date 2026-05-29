@@ -51,74 +51,74 @@ class SendPlannerTest {
         locale = locale,
     )
 
-    // --- 즐겨찾기 explicit (registered 우선) ---
+    // --- 좌표 형식 (raw GPS payload, classify 결과 무관) ---
 
     @Test
-    fun `registered ROAD ignores settings and uses road raw`() {
+    fun `coords roadAddress sends raw lat,lng without URL wrap`() {
+        val coordsPoi = Poi(poiName = "집", roadAddress = "37.5,127.0", isFavorite = true)
+        val payload = SendPlanner.plan(coordsPoi, Searchability.NotSearchable, false, settings(SendMode.NAME))
+        assertEquals("37.5,127.0", payload.sendText)
+        assertEquals("37.5,127.0", payload.displayText)
+        assertEquals(SendMode.GPS, payload.mode)
+        assertFalse(payload.viaUrl)
+    }
+
+    @Test
+    fun `coords roadAddress ignores default mode and locale settings`() {
+        val coordsPoi = Poi(roadAddress = "37.5, 127.0")
         val payload =
             SendPlanner.plan(
-                poi = poi,
-                searchability = Searchability.NotSearchable, // 무시되어야
-                registeredSentMode = SendMode.ROAD,
-                isDuplicateSelected = false,
-                settings = settings(SendMode.JIBUN), // 무시되어야
+                coordsPoi,
+                Searchability.Searchable,
+                false,
+                settings(SendMode.JIBUN, transport = ShareTransport.APP, locale = Locale.ENGLISH),
             )
+        // 좌표는 정책 분기 무관하게 raw 로 — JIBUN 모드, English locale 무시.
+        assertEquals("37.5, 127.0", payload.sendText)
+        assertEquals(SendMode.GPS, payload.mode)
+        assertFalse(payload.viaUrl)
+    }
+
+    // --- 즐겨찾기 (isFavorite=true) ---
+    // 정책: favorite 은 roadAddress 컬럼이 곧 사용자 의도. NAME 모드만 ROAD 로 강등, 나머지 모드 분기는 일반 flow 와 동일.
+
+    @Test
+    fun `favorite + NAME mode demotes to ROAD (favorite uses roadAddress text directly)`() {
+        val favPoi = poi.copy(isFavorite = true)
+        val payload = SendPlanner.plan(favPoi, Searchability.Searchable, false, settings(SendMode.NAME))
         assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
-        assertEquals("서울특별시 중구 세종대로 110", payload.displayText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertFalse(payload.viaUrl)
     }
 
     @Test
-    fun `registered JIBUN uses jibun raw`() {
-        val payload =
-            SendPlanner.plan(
-                poi = poi,
-                searchability = Searchability.NotSearchable,
-                registeredSentMode = SendMode.JIBUN,
-                isDuplicateSelected = false,
-                settings = settings(SendMode.ROAD),
-            )
-        assertEquals("서울특별시 중구 태평로1가 31", payload.sendText)
-        assertEquals(SendMode.JIBUN, payload.mode)
-        assertFalse(payload.viaUrl)
-    }
-
-    @Test
-    fun `registered GPS uses lat,lng raw`() {
-        val payload =
-            SendPlanner.plan(
-                poi = poi,
-                searchability = Searchability.Searchable,
-                registeredSentMode = SendMode.GPS,
-                isDuplicateSelected = false,
-                settings = settings(SendMode.ROAD),
-            )
-        assertEquals("37.566645,126.978256", payload.sendText)
-        assertEquals("37.566645,126.978256", payload.displayText)
-        assertEquals(SendMode.GPS, payload.mode)
-        assertFalse(payload.viaUrl)
+    fun `favorite + not_searchable still wraps roadAddress as URL`() {
+        val favPoi = poi.copy(isFavorite = true)
+        val payload = SendPlanner.plan(favPoi, Searchability.NotSearchable, false, settings(SendMode.ROAD))
+        assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
+        assertEquals(SendMode.ROAD, payload.mode)
+        assertTrue(payload.viaUrl)
     }
 
     // --- 일반 PoI SEARCHABLE ---
 
     @Test
     fun `searchable + default ROAD sends road raw`() {
-        val payload = SendPlanner.plan(poi, Searchability.Searchable, null, false, settings(SendMode.ROAD))
+        val payload = SendPlanner.plan(poi, Searchability.Searchable, false, settings(SendMode.ROAD))
         assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `searchable + default JIBUN sends jibun raw`() {
-        val payload = SendPlanner.plan(poi, Searchability.Searchable, null, false, settings(SendMode.JIBUN))
+        val payload = SendPlanner.plan(poi, Searchability.Searchable, false, settings(SendMode.JIBUN))
         assertEquals("서울특별시 중구 태평로1가 31", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `searchable + default NAME wraps as google maps URL with name`() {
-        val payload = SendPlanner.plan(poi, Searchability.Searchable, null, false, settings(SendMode.NAME))
+        val payload = SendPlanner.plan(poi, Searchability.Searchable, false, settings(SendMode.NAME))
         assertEquals(urlOf("서울특별시청"), payload.sendText)
         assertEquals("서울특별시청", payload.displayText)
         assertEquals(SendMode.NAME, payload.mode)
@@ -129,7 +129,7 @@ class SendPlannerTest {
 
     @Test
     fun `not_searchable + fallback ROAD wraps road as URL`() {
-        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.JIBUN, SendMode.ROAD))
+        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, false, settings(SendMode.JIBUN, SendMode.ROAD))
         assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
         assertEquals("서울특별시 중구 세종대로 110", payload.displayText)
         assertEquals(SendMode.ROAD, payload.mode)
@@ -138,7 +138,7 @@ class SendPlannerTest {
 
     @Test
     fun `not_searchable + fallback JIBUN wraps jibun as URL`() {
-        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD, SendMode.JIBUN))
+        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, false, settings(SendMode.ROAD, SendMode.JIBUN))
         assertEquals(urlOf("서울특별시 중구 태평로1가 31"), payload.sendText)
         assertEquals("서울특별시 중구 태평로1가 31", payload.displayText)
         assertTrue(payload.viaUrl)
@@ -146,7 +146,7 @@ class SendPlannerTest {
 
     @Test
     fun `not_searchable + fallback NAME wraps name as URL`() {
-        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD, SendMode.NAME))
+        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, false, settings(SendMode.ROAD, SendMode.NAME))
         assertEquals(urlOf("서울특별시청"), payload.sendText)
         assertEquals("서울특별시청", payload.displayText)
         assertEquals(SendMode.NAME, payload.mode)
@@ -157,14 +157,14 @@ class SendPlannerTest {
 
     @Test
     fun `unknown + RC false uses default mode without URL`() {
-        val payload = SendPlanner.plan(poi, Searchability.Unknown, null, false, settings(SendMode.ROAD, SendMode.JIBUN, rc = false))
+        val payload = SendPlanner.plan(poi, Searchability.Unknown, false, settings(SendMode.ROAD, SendMode.JIBUN, rc = false))
         assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `unknown + RC true falls back to fallbackMode with URL`() {
-        val payload = SendPlanner.plan(poi, Searchability.Unknown, null, false, settings(SendMode.ROAD, SendMode.JIBUN, rc = true))
+        val payload = SendPlanner.plan(poi, Searchability.Unknown, false, settings(SendMode.ROAD, SendMode.JIBUN, rc = true))
         assertEquals(urlOf("서울특별시 중구 태평로1가 31"), payload.sendText)
         assertEquals("서울특별시 중구 태평로1가 31", payload.displayText)
         assertEquals(SendMode.JIBUN, payload.mode)
@@ -175,14 +175,14 @@ class SendPlannerTest {
 
     @Test
     fun `address-only poi searchable sends raw`() {
-        val payload = SendPlanner.plan(addressOnlyPoi, Searchability.Searchable, null, false, settings(SendMode.ROAD))
+        val payload = SendPlanner.plan(addressOnlyPoi, Searchability.Searchable, false, settings(SendMode.ROAD))
         assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertFalse(payload.viaUrl)
     }
 
     @Test
     fun `address-only poi not_searchable wraps as URL`() {
-        val payload = SendPlanner.plan(addressOnlyPoi, Searchability.NotSearchable, null, false, settings(SendMode.ROAD))
+        val payload = SendPlanner.plan(addressOnlyPoi, Searchability.NotSearchable, false, settings(SendMode.ROAD))
         assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
         assertEquals("서울특별시 중구 세종대로 110", payload.displayText)
         assertTrue(payload.viaUrl)
@@ -192,7 +192,7 @@ class SendPlannerTest {
 
     @Test
     fun `duplicate-selected demotes NAME to ROAD`() {
-        val payload = SendPlanner.plan(poi, Searchability.Searchable, null, isDuplicateSelected = true, settings(SendMode.NAME))
+        val payload = SendPlanner.plan(poi, Searchability.Searchable, isDuplicateSelected = true, settings(SendMode.NAME))
         assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertFalse(payload.viaUrl)
@@ -200,7 +200,7 @@ class SendPlannerTest {
 
     @Test
     fun `duplicate-selected not_searchable still wraps road as URL`() {
-        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, isDuplicateSelected = true, settings(SendMode.ROAD))
+        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, isDuplicateSelected = true, settings(SendMode.ROAD))
         assertEquals(urlOf("서울특별시 중구 세종대로 110"), payload.sendText)
         assertEquals(SendMode.ROAD, payload.mode)
         assertTrue(payload.viaUrl)
@@ -211,7 +211,7 @@ class SendPlannerTest {
     @Test
     fun `URL wrap uses application-x-www-form-urlencoded UTF-8 for spaces and Korean`() {
         // 서울특별시 중구 세종대로 110 → 공백은 +, 한글은 %XX percent-encoded.
-        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, null, false, settings(SendMode.JIBUN, SendMode.ROAD))
+        val payload = SendPlanner.plan(poi, Searchability.NotSearchable, false, settings(SendMode.JIBUN, SendMode.ROAD))
         assertEquals(
             "https://maps.google.com/maps?q=%EC%84%9C%EC%9A%B8%ED%8A%B9%EB%B3%84%EC%8B%9C+%EC%A4%91%EA%B5%AC+%EC%84%B8%EC%A2%85%EB%8C%80%EB%A1%9C+110",
             payload.sendText,
@@ -231,7 +231,7 @@ class SendPlannerTest {
                 longitude = "126.978256",
                 packageName = "com.example",
             )
-        val payload = SendPlanner.plan(noJibunPoi, Searchability.Searchable, null, false, settings(SendMode.JIBUN))
+        val payload = SendPlanner.plan(noJibunPoi, Searchability.Searchable, false, settings(SendMode.JIBUN))
         assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
         assertEquals(SendMode.JIBUN, payload.mode)
         assertFalse(payload.viaUrl)
@@ -245,7 +245,6 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi,
                 Searchability.Searchable,
-                null,
                 false,
                 settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
             )
@@ -260,7 +259,6 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi,
                 Searchability.Searchable,
-                null,
                 false,
                 settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.JAPANESE),
             )
@@ -274,7 +272,6 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi,
                 Searchability.Searchable,
-                null,
                 false,
                 settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.KOREAN),
             )
@@ -288,7 +285,6 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi,
                 Searchability.Searchable,
-                null,
                 false,
                 settings(SendMode.ROAD, transport = ShareTransport.API, locale = Locale.ENGLISH),
             )
@@ -304,27 +300,10 @@ class SendPlannerTest {
             SendPlanner.plan(
                 poi,
                 Searchability.Searchable,
-                null,
                 false,
                 settings(SendMode.NAME, transport = ShareTransport.APP, locale = Locale.ENGLISH),
             )
         assertEquals(urlOf(poi.poiName!!), payload.sendText)
         assertTrue(payload.viaUrl)
-    }
-
-    @Test
-    fun `byApp + english locale + GPS registered does NOT wrap coords`() {
-        // GPS via registered branch must stay raw coords regardless of locale/transport.
-        val payload =
-            SendPlanner.plan(
-                poi,
-                Searchability.Searchable,
-                registeredSentMode = SendMode.GPS,
-                isDuplicateSelected = false,
-                settings = settings(SendMode.ROAD, transport = ShareTransport.APP, locale = Locale.ENGLISH),
-            )
-        assertEquals("${poi.latitude},${poi.longitude}", payload.sendText)
-        assertEquals(SendMode.GPS, payload.mode)
-        assertFalse(payload.viaUrl)
     }
 }

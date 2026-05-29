@@ -18,7 +18,6 @@ import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.place.DestinationAddressResolver
-import me.zipi.navitotesla.service.place.Searchability
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.service.share.SendPlanner
 import me.zipi.navitotesla.service.share.TeslaShareByApi
@@ -150,16 +149,8 @@ class NaviToTeslaService(
             return
         }
 
-        // Poi 가 이미 favorite 의 sentMode 정보를 들고 옴 (PoiAddressEntity.toPoi() 에서 채움).
-        // 추가 DB lookup 없이 바로 사용.
-        val registeredSentMode = poi.registeredSentMode
-
-        val searchability =
-            if (registeredSentMode != null) {
-                Searchability.Unknown // 어차피 SendPlanner 1번 분기에서 무시됨 — classify 호출 비용 절약
-            } else {
-                DestinationAddressResolver.classify(poi)
-            }
+        // favorite/cache/좌표 무관 — classify 와 plan 이 각자 책임 안에서 처리.
+        val searchability = DestinationAddressResolver.classify(poi)
 
         val shareMode = PreferencesUtil.getString("shareMode", "app")
         val transport =
@@ -181,7 +172,6 @@ class NaviToTeslaService(
             SendPlanner.plan(
                 poi = poi,
                 searchability = searchability,
-                registeredSentMode = registeredSentMode,
                 isDuplicateSelected = poi.isDuplicate,
                 settings = settings,
             )
@@ -239,11 +229,12 @@ class NaviToTeslaService(
                 Poi(
                     poiName = poiName,
                     roadAddress = poiName,
-                    address = poiName,
+                    address = null,
                     longitude = null,
                     latitude = null,
                     packageName = packageName,
                 )
+            appRepository.savePoi(poi, false)
             AnalysisUtil.logEvent("address_direct", eventParam)
         } else {
             poi = poiFinder.findPoi(poiName, packageName)

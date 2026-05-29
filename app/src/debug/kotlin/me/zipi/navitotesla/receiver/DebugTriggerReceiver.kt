@@ -3,7 +3,11 @@ package me.zipi.navitotesla.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.ShareWorker
+import me.zipi.navitotesla.util.PreferencesUtil
 
 /**
  * ADB 로 알림을 시뮬레이션하는 debug 전용 receiver. release 빌드에는 포함되지 않음.
@@ -21,6 +25,10 @@ class DebugTriggerReceiver : BroadcastReceiver() {
         val title = intent.getStringExtra("title")
         val text = intent.getStringExtra("text")
         if (pkg.isNullOrEmpty() || text.isNullOrEmpty()) return
+        // 매 broadcast 마다 lastAddress 초기화 — share() 의 중복 dest skip 방지(테스트 재시도용).
+        CoroutineScope(Dispatchers.IO).launch {
+            PreferencesUtil.put("lastAddress", "")
+        }
         ShareWorker.startShare(context.applicationContext, pkg, title, text)
     }
 }

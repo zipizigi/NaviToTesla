@@ -115,18 +115,21 @@ class AppRepository private constructor(
         if (poi.poiName == null) {
             return
         }
+
+        val road = poi.getRoadAddress().sanitizeAddressOrNull()
+        val jibun = poi.getAddress().sanitizeAddressOrNull()
+        val pkg = poi.packageName.ifBlank { "" }
         database.withTransaction {
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
                     poi = poi.poiName,
-                    packageName = poi.packageName,
-                    roadAddress = poi.getRoadAddress(),
-                    jibunAddress = poi.getAddress(),
-                    latitude = poi.latitude,
-                    longitude = poi.longitude,
+                    packageName = pkg,
+                    roadAddress = road,
+                    jibunAddress = jibun,
+                    latitude = poi.latitude?.takeUnless { it.isBlank() },
+                    longitude = poi.longitude?.takeUnless { it.isBlank() },
                     registered = registered,
                     isDuplicate = poi.isDuplicate,
-                    sentMode = null,
                     created = Date(),
                 ),
             )
@@ -144,34 +147,27 @@ class AppRepository private constructor(
                 Searchability.NotSearchable -> false
                 Searchability.Unknown -> null
             }
-        val now = System.currentTimeMillis()
-        database.withTransaction {
-            val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName)
-            database.poiAddressDao().insertPoi(
-                PoiAddressEntity(
-                    id = existing?.id,
-                    poi = poiName,
-                    packageName = poi.packageName,
-                    roadAddress = poi.getRoadAddress(),
-                    jibunAddress = poi.getAddress(),
-                    latitude = poi.latitude,
-                    longitude = poi.longitude,
-                    registered = existing?.registered ?: false,
-                    isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
-                    sentMode = existing?.sentMode,
-                    searchable = searchable,
-                    created = existing?.created ?: Date(),
-                    lastCheckedAt = now,
-                    lastUsedAt = now,
-                ),
-            )
-        }
+        database.poiAddressDao().updateClassification(
+            poi = poiName,
+            packageName = matchPackageName(poi),
+            searchable = searchable,
+            now = System.currentTimeMillis(),
+        )
+    }
+
+    private fun String.sanitizeAddressOrNull(): String? {
+        val t = trim()
+        if (t.isEmpty()) return null
+        if (t == "null,null") return null
+        return t
     }
 
     suspend fun touchLastUsed(poi: Poi) {
         val poiName = poi.poiName ?: return
-        database.poiAddressDao().updateLastUsedAt(poiName, poi.packageName, System.currentTimeMillis())
+        database.poiAddressDao().updateLastUsedAt(poiName, matchPackageName(poi), System.currentTimeMillis())
     }
+
+    private fun matchPackageName(poi: Poi): String = if (poi.isFavorite) "" else poi.packageName
 
     suspend fun clearExpiredPoi() {
         val ttlMs = PoiAddressEntity.EXPIRE_DAY.toLong() * 24L * 60L * 60L * 1000L

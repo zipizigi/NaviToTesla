@@ -43,6 +43,14 @@ interface PoiAddressDao {
         now: Long,
     ): Int
 
+    @Query("UPDATE poi_address SET searchable = :searchable, lastCheckedAt = :now WHERE poi = :poi AND packageName = :packageName")
+    suspend fun updateClassification(
+        poi: String,
+        packageName: String,
+        searchable: Boolean?,
+        now: Long,
+    ): Int
+
     @Query(
         "SELECT * FROM poi_address WHERE registered IS NULL OR registered = 0 " +
             "ORDER BY COALESCE(lastUsedAt, lastCheckedAt, created) DESC LIMIT :limit",
