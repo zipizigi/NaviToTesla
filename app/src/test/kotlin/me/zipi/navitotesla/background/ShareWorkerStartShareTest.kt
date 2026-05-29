@@ -2,8 +2,9 @@ package me.zipi.navitotesla.background
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import androidx.work.WorkRequest
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.mockk.every
 import io.mockk.mockk
@@ -58,8 +59,14 @@ class ShareWorkerStartShareTest {
             notificationText = "내 위치 > 강남역",
         )
 
-        val captured = slot<WorkRequest>()
-        verify(exactly = 1) { workManager.enqueue(capture(captured)) }
+        val captured = slot<OneTimeWorkRequest>()
+        verify(exactly = 1) {
+            workManager.enqueueUniqueWork(
+                "share_com.skt.tmap.ku",
+                ExistingWorkPolicy.KEEP,
+                capture(captured),
+            )
+        }
 
         val spec = captured.captured.workSpec
         assertEquals(ShareWorker::class.java.name, spec.workerClassName)
@@ -77,8 +84,14 @@ class ShareWorkerStartShareTest {
             notificationText = "목적지 : 송파구청",
         )
 
-        val captured = slot<WorkRequest>()
-        verify(exactly = 1) { workManager.enqueue(capture(captured)) }
+        val captured = slot<OneTimeWorkRequest>()
+        verify(exactly = 1) {
+            workManager.enqueueUniqueWork(
+                "share_com.locnall.KimGiSa",
+                ExistingWorkPolicy.KEEP,
+                capture(captured),
+            )
+        }
 
         val spec = captured.captured.workSpec
         assertEquals(ShareWorker::class.java.name, spec.workerClassName)
