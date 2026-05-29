@@ -1,139 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:clipToPadding="false"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/space_lg"
+    android:paddingTop="@dimen/space_lg"
+    android:paddingBottom="@dimen/bottomnav_safe_area"
     tools:context=".ui.favorite.FavoriteFragment">
 
+    <!-- Left column -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:baselineAligned="false"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/space_lg"
-        android:paddingTop="@dimen/space_lg"
-        android:paddingBottom="@dimen/bottomnav_safe_area">
+        android:layout_weight="1"
+        android:layout_marginEnd="@dimen/space_md"
+        android:orientation="vertical">
 
-        <!-- Left column -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginEnd="@dimen/space_md"
-            android:orientation="vertical">
+        <!-- Card: Favorites -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.NaviToTesla.Card"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <!-- Card: Favorites -->
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Widget.NaviToTesla.Card"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/txtFavorite"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/favorite"
-                            android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnFavoriteAdd"
-                            style="@style/Widget.NaviToTesla.AddButton"
-                            android:contentDescription="@string/favoriteName"
-                            app:icon="@drawable/ic_baseline_add_24"
-                            tools:ignore="SpeakableTextPresentCheck" />
-                    </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <TextView
-                        android:layout_width="match_parent"
+                        android:id="@+id/txtFavorite"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_xs"
-                        android:text="@string/guideFavorite"
-                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+                        android:layout_weight="1"
+                        android:text="@string/favorite"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recylerRegistered"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm"
-                        android:minHeight="@dimen/favorite_list_min_height"
-                        android:nestedScrollingEnabled="false"
-                        android:overScrollMode="never" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFavoriteAdd"
+                        style="@style/Widget.NaviToTesla.AddButton"
+                        android:contentDescription="@string/favoriteName"
+                        app:icon="@drawable/ic_baseline_add_24"
+                        tools:ignore="SpeakableTextPresentCheck" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
 
-        <!-- Right column -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <!-- Card: Recent destinations -->
-            <com.google.android.material.card.MaterialCardView
-                style="@style/Widget.NaviToTesla.Card"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <LinearLayout
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideFavorite"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/txtRecent"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/recentDestination"
-                            android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnRecentClear"
-                            style="@style/Widget.NaviToTesla.HelpButton"
-                            android:contentDescription="@string/dialogClearRecentTitle"
-                            app:icon="@drawable/ic_outline_delete_sweep_24" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_xs"
-                        android:text="@string/guideRecentDestination"
-                        android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recylerHistory"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_sm"
-                        android:minHeight="@dimen/favorite_list_min_height"
-                        android:nestedScrollingEnabled="false"
-                        android:overScrollMode="never" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
-
+                <me.zipi.navitotesla.ui.BoundedRecyclerView
+                    android:id="@+id/recylerRegistered"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:minHeight="@dimen/favorite_list_min_height"
+                    android:nestedScrollingEnabled="true"
+                    android:overScrollMode="never" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+
+    <!-- Right column -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Card: Recent destinations -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.NaviToTesla.Card"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/txtRecent"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/recentDestination"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRecentClear"
+                        style="@style/Widget.NaviToTesla.HelpButton"
+                        android:contentDescription="@string/dialogClearRecentTitle"
+                        app:icon="@drawable/ic_outline_delete_sweep_24" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/guideRecentDestination"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+
+                <me.zipi.navitotesla.ui.BoundedRecyclerView
+                    android:id="@+id/recylerHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:minHeight="@dimen/favorite_list_min_height"
+                    android:nestedScrollingEnabled="true"
+                    android:overScrollMode="never" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+</LinearLayout>

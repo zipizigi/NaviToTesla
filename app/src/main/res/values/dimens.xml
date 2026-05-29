@@ -16,4 +16,7 @@
     <dimen name="bottomnav_safe_area">88dp</dimen>
     <dimen name="bluetooth_list_height">160dp</dimen>
     <dimen name="favorite_list_min_height">220dp</dimen>
+    <!-- 즐겨찾기/최근 카드 내부 RecyclerView 의 세로 모드 최대 높이.
+         이 값 이상이면 RecyclerView 내부 스크롤로 전환. -->
+    <dimen name="favorite_list_max_height">320dp</dimen>
 </resources>
