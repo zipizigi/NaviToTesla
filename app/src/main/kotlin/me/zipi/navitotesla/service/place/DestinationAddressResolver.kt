@@ -25,22 +25,22 @@ object DestinationAddressResolver {
 
         val dao = AppDatabase.getInstance().poiAddressDao()
         val cached = dao.findPoiByPackage(poiName, poi.packageName)?.takeUnless { it.isExpire }
+        if (cached != null) {
+            AppRepository.getInstance().touchLastUsed(poi)
+        }
         when (cached?.searchability) {
             Searchability.Searchable -> {
                 AnalysisUtil.debug("classify: local cache hit, searchable")
-                AppRepository.getInstance().touchLastUsed(poi)
                 return Searchability.Searchable
             }
             Searchability.NotSearchable -> {
                 AnalysisUtil.debug("classify: local cache hit, not_searchable")
-                AppRepository.getInstance().touchLastUsed(poi)
                 return Searchability.NotSearchable
             }
             Searchability.Unknown -> {
                 if (isWithinCooldown(cached.lastCheckedAt)) {
                     AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
                     AnalysisUtil.logEvent("place_check_cooldown_skip", eventParam)
-                    AppRepository.getInstance().touchLastUsed(poi)
                     return Searchability.Unknown
                 }
             }
