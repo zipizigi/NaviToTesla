@@ -14,16 +14,10 @@ object SendPlanner {
     fun plan(
         poi: Poi,
         searchability: Searchability,
-        registeredSentMode: SendMode?,
         isDuplicateSelected: Boolean,
         settings: SendSettings,
     ): SendPayload {
-        // 1. 즐겨찾기 explicit 선택 우선
-        if (registeredSentMode != null) {
-            return planRegistered(poi, registeredSentMode, settings)
-        }
-
-        // 2. UNKNOWN → RC 에 따라 NotSearchable 로 승격
+        // 1. UNKNOWN → RC 에 따라 NotSearchable 로 승격
         val effectiveSearchability =
             if (settings.treatUnknownAsNotSearchable && searchability is Searchability.Unknown) {
                 Searchability.NotSearchable
@@ -31,13 +25,17 @@ object SendPlanner {
                 searchability
             }
 
-        // 3. 모드 결정
+        // 2. 모드 결정
         var mode =
             if (effectiveSearchability is Searchability.NotSearchable) {
                 settings.fallbackMode
             } else {
                 settings.defaultMode
             }
+        // 즐겨찾기는 사용자가 등록한 roadAddress 텍스트가 곧 destination — NAME 분기를 우회.
+        if (poi.isFavorite && mode == SendMode.NAME) {
+            mode = SendMode.ROAD
+        }
         if (isDuplicateSelected && mode == SendMode.NAME) {
             mode = SendMode.ROAD
         }
@@ -73,55 +71,7 @@ object SendPlanner {
         return SendPayload(sendText = sendText, displayText = displayText, mode = mode, viaUrl = viaUrl)
     }
 
-    private fun planRegistered(
-        poi: Poi,
-        sentMode: SendMode,
-        settings: SendSettings,
-    ): SendPayload {
-        val byAppNonKorean =
-            settings.shareTransport == ShareTransport.APP &&
-                settings.locale.language != "ko"
-        return when (sentMode) {
-            SendMode.ROAD -> {
-                val road = poi.getRoadAddress()
-                wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
-            }
-
-            SendMode.JIBUN -> {
-                val jibun = jibunOrRoad(poi)
-                wrapIfNeeded(jibun, jibun, SendMode.JIBUN, byAppNonKorean)
-            }
-
-            SendMode.NAME -> {
-                // NAME 은 항상 URL wrap (Tesla 가 raw 명칭을 주소로 인식 못 함). locale 무관.
-                val name = poi.poiName ?: poi.getRoadAddress()
-                wrapIfNeeded(name, name, SendMode.NAME, wrap = true)
-            }
-
-            SendMode.GPS -> {
-                if (hasCoords(poi)) {
-                    val gps = "${poi.latitude},${poi.longitude}"
-                    // GPS 좌표는 locale-neutral — wrap 없이 그대로 전송
-                    SendPayload(gps, gps, SendMode.GPS, viaUrl = false)
-                } else {
-                    val road = poi.getRoadAddress()
-                    wrapIfNeeded(road, road, SendMode.ROAD, byAppNonKorean)
-                }
-            }
-        }
-    }
-
     private fun hasCoords(poi: Poi): Boolean = !poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()
-
-    private fun wrapIfNeeded(
-        rawSend: String,
-        display: String,
-        mode: SendMode,
-        wrap: Boolean,
-    ): SendPayload {
-        val sendText = if (wrap) GOOGLE_MAPS_URL_PREFIX + URLEncoder.encode(rawSend, "UTF-8") else rawSend
-        return SendPayload(sendText, display, mode, viaUrl = wrap)
-    }
 
     // Poi.getAddress() 는 jibun 이 비어있으면 GPS 좌표로 폴백하므로,
     // 좌표 폴백을 감지해 road 로 다시 폴백한다.

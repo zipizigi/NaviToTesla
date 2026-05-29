@@ -93,8 +93,13 @@ class FavoriteFragment :
     }
 
     private fun addFavoriteLocation(position: Int) {
-        val poi = favoriteViewModel.recentPoiAddress.value?.get(position)?.poi ?: return
-        addFavorite(poi)
+        // recent 항목이 이미 도로명/지번/GPS/packageName 풀세트를 갖고 있으므로
+        // entity 그대로 dialog 에 prefill — Kakao 재검색 skip.
+        val entity = favoriteViewModel.recentPoiAddress.value?.get(position) ?: return
+        if (activity == null) return
+        val dialog = FavoriteDialogFragment(entity.toPoi())
+        dialog.onDismissListener = Runnable(::updatePoiAddress)
+        dialog.show(childFragmentManager, FavoriteDialogFragment::class.java.name)
     }
 
     private fun removeFavoriteLocation(position: Int) {

@@ -126,7 +126,6 @@ class AppRepository private constructor(
                     longitude = poi.longitude,
                     registered = registered,
                     isDuplicate = poi.isDuplicate,
-                    sentMode = null,
                     created = Date(),
                 ),
             )
@@ -158,7 +157,6 @@ class AppRepository private constructor(
                     longitude = poi.longitude,
                     registered = existing?.registered ?: false,
                     isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
-                    sentMode = existing?.sentMode,
                     searchable = searchable,
                     created = existing?.created ?: Date(),
                     lastCheckedAt = now,

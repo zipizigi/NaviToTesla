@@ -11,6 +11,8 @@ import me.zipi.navitotesla.exception.ForbiddenException
 import me.zipi.navitotesla.exception.IgnorePoiException
 import me.zipi.navitotesla.exception.NotSupportedNaviException
 import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.model.SendMode
+import me.zipi.navitotesla.model.SendPayload
 import me.zipi.navitotesla.model.SendSettings
 import me.zipi.navitotesla.model.ShareTransport
 import me.zipi.navitotesla.model.TeslaApiResponse
@@ -18,7 +20,6 @@ import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.place.DestinationAddressResolver
-import me.zipi.navitotesla.service.place.Searchability
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.service.share.SendPlanner
 import me.zipi.navitotesla.service.share.TeslaShareByApi
@@ -150,17 +151,6 @@ class NaviToTeslaService(
             return
         }
 
-        // Poi 가 이미 favorite 의 sentMode 정보를 들고 옴 (PoiAddressEntity.toPoi() 에서 채움).
-        // 추가 DB lookup 없이 바로 사용.
-        val registeredSentMode = poi.registeredSentMode
-
-        val searchability =
-            if (registeredSentMode != null) {
-                Searchability.Unknown // 어차피 SendPlanner 1번 분기에서 무시됨 — classify 호출 비용 절약
-            } else {
-                DestinationAddressResolver.classify(poi)
-            }
-
         val shareMode = PreferencesUtil.getString("shareMode", "app")
         val transport =
             if (shareMode == "api" && PreferencesUtil.loadToken() != null) {
@@ -168,23 +158,31 @@ class NaviToTeslaService(
             } else {
                 ShareTransport.APP
             }
-        val settings =
-            SendSettings(
-                defaultMode = PreferencesUtil.getDefaultSendMode(),
-                fallbackMode = PreferencesUtil.getFallbackSendMode(),
-                treatUnknownAsNotSearchable = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_SEND_UNKNOWN_AS_NOT_SEARCHABLE),
-                shareTransport = transport,
-                locale = Locale.getDefault(),
-            )
 
         val payload =
-            SendPlanner.plan(
-                poi = poi,
-                searchability = searchability,
-                registeredSentMode = registeredSentMode,
-                isDuplicateSelected = poi.isDuplicate,
-                settings = settings,
-            )
+            if (poi.isCoordsAddress()) {
+                // 좌표 형식이면 classify/SendPlanner 우회 — Firestore/Places API 호출 skip,
+                // URL wrap 없이 Tesla 에 raw 좌표 그대로 전달 (가장 직접적이고 정확).
+                val coords = poi.getRoadAddress()
+                AnalysisUtil.log("coords bypass: pkg=${poi.packageName}, coords=$coords")
+                SendPayload(sendText = coords, displayText = coords, mode = SendMode.GPS, viaUrl = false)
+            } else {
+                val searchability = DestinationAddressResolver.classify(poi)
+                val settings =
+                    SendSettings(
+                        defaultMode = PreferencesUtil.getDefaultSendMode(),
+                        fallbackMode = PreferencesUtil.getFallbackSendMode(),
+                        treatUnknownAsNotSearchable = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_SEND_UNKNOWN_AS_NOT_SEARCHABLE),
+                        shareTransport = transport,
+                        locale = Locale.getDefault(),
+                    )
+                SendPlanner.plan(
+                    poi = poi,
+                    searchability = searchability,
+                    isDuplicateSelected = poi.isDuplicate,
+                    settings = settings,
+                )
+            }
 
         PreferencesUtil.put(key = "lastAddress", value = poi.getRoadAddress())
 

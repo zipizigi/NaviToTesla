@@ -112,6 +112,137 @@ class PoiAddressMigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate13To14_trimsRegisteredPoiWhitespace_andDropsDirtyWhenCleanExists() {
+        helper.createDatabase(testDbName, 13).use { db ->
+            // 1) trailing space favorite, 같은 packageName 에 clean ver 없음 → TRIM 적용되어 살아남아야 함
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('home ', '', 'home road', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            // 2) trailing space favorite, 같은 packageName 에 clean ver 이미 존재 → dirty 폐기
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('cafe ', 'pkg.a', 'cafe road dirty', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('cafe', 'pkg.a', 'cafe road clean', 1, 'ROAD', 1700000000001)
+                """.trimIndent(),
+            )
+            // 3) registered=0 (cache) 에 공백 — 정책상 건드리지 않음
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('cache ', 'pkg.a', 'cache road', 0, NULL, 1700000000000)
+                """.trimIndent(),
+            )
+        }
+
+        val db = helper.runMigrationsAndValidate(testDbName, 14, true, MIGRATION_13_14)
+
+        db.query("SELECT poi, packageName, roadAddress, registered FROM poi_address ORDER BY poi, packageName").use { cursor ->
+            assertEquals(3, cursor.count)
+            cursor.moveToFirst()
+            assertEquals("cache ", cursor.getString(0)) // registered=0 untouched
+            assertEquals("pkg.a", cursor.getString(1))
+            assertEquals(0, cursor.getInt(3))
+            cursor.moveToNext()
+            assertEquals("cafe", cursor.getString(0)) // clean 만 남고 dirty 폐기됨
+            assertEquals("pkg.a", cursor.getString(1))
+            assertEquals("cafe road clean", cursor.getString(2))
+            cursor.moveToNext()
+            assertEquals("home", cursor.getString(0)) // trailing space 제거됨
+            assertEquals("", cursor.getString(1))
+            assertEquals("home road", cursor.getString(2))
+            assertEquals(1, cursor.getInt(3))
+        }
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun migrate14To15_restoresFavoriteIntent_andDropsSentModeColumn() {
+        helper.createDatabase(testDbName, 14).use { db ->
+            // JIBUN 모드 favorite — roadAddress 컬럼이 jibunAddress 로 복원되어야
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, jibunAddress, latitude, longitude, registered, sentMode, created)
+                VALUES ('jibun_fav', 'pkg.a', 'road val', 'jibun val', NULL, NULL, 1, 'JIBUN', 1700000000000)
+                """.trimIndent(),
+            )
+            // GPS 모드 favorite — roadAddress 컬럼이 "lat,lng" 로 복원되어야
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, jibunAddress, latitude, longitude, registered, sentMode, created)
+                VALUES ('gps_fav', 'pkg.a', 'road val', NULL, '37.5', '127.0', 1, 'GPS', 1700000000000)
+                """.trimIndent(),
+            )
+            // ROAD 모드 favorite — 그대로 유지
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, jibunAddress, latitude, longitude, registered, sentMode, created)
+                VALUES ('road_fav', 'pkg.a', 'road val', 'jibun val', NULL, NULL, 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            // registered=0 cache — favorite 정책 무관, jibun/lat/lng 그대로 보존되어야
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, jibunAddress, latitude, longitude, registered, sentMode, created)
+                VALUES ('cache', 'pkg.a', 'cache road', 'cache jibun', '36.0', '128.0', 0, NULL, 1700000000000)
+                """.trimIndent(),
+            )
+        }
+
+        val db = helper.runMigrationsAndValidate(testDbName, 15, true, MIGRATION_14_15)
+
+        // sentMode 컬럼이 schema 에서 사라졌어야 함
+        db.query("PRAGMA table_info(poi_address)").use { cursor ->
+            val cols = mutableListOf<String>()
+            while (cursor.moveToNext()) {
+                cols += cursor.getString(cursor.getColumnIndexOrThrow("name"))
+            }
+            assertTrue("sentMode 컬럼이 남아있음", "sentMode" !in cols)
+        }
+
+        db.query(
+            "SELECT poi, roadAddress, jibunAddress, latitude, longitude, registered FROM poi_address ORDER BY poi",
+        ).use { cursor ->
+            assertEquals(4, cursor.count)
+
+            cursor.moveToNext() // cache
+            assertEquals("cache", cursor.getString(0))
+            assertEquals("cache road", cursor.getString(1))
+            assertEquals("cache jibun", cursor.getString(2))
+            assertEquals("36.0", cursor.getString(3))
+            assertEquals("128.0", cursor.getString(4))
+
+            cursor.moveToNext() // gps_fav
+            assertEquals("gps_fav", cursor.getString(0))
+            assertEquals("37.5,127.0", cursor.getString(1)) // road = lat,lng
+            assertTrue(cursor.isNull(2))
+            assertTrue(cursor.isNull(3))
+            assertTrue(cursor.isNull(4))
+
+            cursor.moveToNext() // jibun_fav
+            assertEquals("jibun_fav", cursor.getString(0))
+            assertEquals("jibun val", cursor.getString(1)) // road = jibun
+            assertTrue(cursor.isNull(2))
+            assertTrue(cursor.isNull(3))
+            assertTrue(cursor.isNull(4))
+
+            cursor.moveToNext() // road_fav
+            assertEquals("road_fav", cursor.getString(0))
+            assertEquals("road val", cursor.getString(1)) // road 유지
+            assertTrue(cursor.isNull(2))
+        }
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate7To9_chained_preservesRegisteredOnly_andStampsSentMode() {
         helper.createDatabase(testDbName, 7).use { db ->
             db.execSQL(

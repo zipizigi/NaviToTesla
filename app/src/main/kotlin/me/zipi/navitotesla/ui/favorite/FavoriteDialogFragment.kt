@@ -35,6 +35,7 @@ class FavoriteDialogFragment :
     RadioGroup.OnCheckedChangeListener {
     private lateinit var poiArrayAdapter: PoiArrayAdapter
     private var dest: String? = null
+    private var prefillPoi: Poi? = null
 
     var onDismissListener: Runnable? = null
     private lateinit var favoriteDialogViewModel: FavoriteDialogViewModel
@@ -43,6 +44,10 @@ class FavoriteDialogFragment :
     constructor() : super()
     constructor(dest: String?) : super() {
         this.dest = dest
+    }
+    constructor(prefill: Poi) : super() {
+        this.prefillPoi = prefill
+        this.dest = prefill.poiName
     }
 
     override fun onCreateView(
@@ -80,7 +85,14 @@ class FavoriteDialogFragment :
 
     override fun onResume() {
         super.onResume()
-        if (dest != null) {
+        val prefill = prefillPoi
+        if (prefill != null) {
+            // recent → + 진입 — DB 의 PoiAddressEntity 가 가진 도로명/지번/GPS 를 그대로 사용.
+            // selectedPoi 를 미리 채워서 라디오 변경 시 onCheckedChanged 가 해당 값을 textfield 에 prefill.
+            binding.txtDest.setText(prefill.poiName)
+            binding.txtAddress.setText(prefill.getRoadAddress())
+            favoriteDialogViewModel.selectedPoi.postValue(prefill)
+        } else if (dest != null) {
             binding.txtDest.setText(dest)
             searchDest()
         }
@@ -89,6 +101,7 @@ class FavoriteDialogFragment :
     override fun onDestroy() {
         super.onDestroy()
         dest = null
+        prefillPoi = null
     }
 
     override fun onClick(v: View) {
@@ -127,7 +140,7 @@ class FavoriteDialogFragment :
     override fun onNothingSelected(parent: AdapterView<*>?) {}
 
     private fun saveFavorite() {
-        val poiName = binding.txtDest.text.toString()
+        val poiName = binding.txtDest.text.toString().trim()
         if (poiName.isEmpty()) {
             AnalysisUtil.makeToast(
                 context = context,
@@ -136,37 +149,16 @@ class FavoriteDialogFragment :
             )
             return
         }
-        val selected = favoriteDialogViewModel.selectedPoi.value
-        val sentMode =
-            when (binding.radioGroup.checkedRadioButtonId) {
-                binding.radioRoadAddress.id -> PoiAddressEntity.SENT_MODE_ROAD
-                binding.radioAddress.id -> PoiAddressEntity.SENT_MODE_JIBUN
-                binding.radioGps.id -> PoiAddressEntity.SENT_MODE_GPS
-                else -> PoiAddressEntity.SENT_MODE_ROAD
-            }
+        // 즐겨찾기는 사용자가 마지막으로 본 textfield 값 (도로명/지번/gps 어느 모드든) 을 그대로
+        // roadAddress 컬럼에 저장하고, share 시 그 값을 그대로 사용한다 — 라디오/selected 분기 없음.
         val entity =
-            if (selected != null) {
-                PoiAddressEntity(
-                    poi = poiName,
-                    packageName = selected.packageName,
-                    roadAddress = selected.getRoadAddress(),
-                    jibunAddress = selected.getAddress(),
-                    latitude = selected.latitude,
-                    longitude = selected.longitude,
-                    registered = true,
-                    sentMode = sentMode,
-                    created = Date(),
-                )
-            } else {
-                PoiAddressEntity(
-                    poi = poiName,
-                    packageName = "",
-                    roadAddress = binding.txtAddress.text.toString(),
-                    registered = true,
-                    sentMode = PoiAddressEntity.SENT_MODE_ROAD,
-                    created = Date(),
-                )
-            }
+            PoiAddressEntity(
+                poi = poiName,
+                packageName = "",
+                roadAddress = binding.txtAddress.text.toString().trim(),
+                registered = true,
+                created = Date(),
+            )
         viewLifecycleOwner.lifecycleScope.launch {
             val dao = AppDatabase.getInstance().poiAddressDao()
             val existing = dao.findRegisteredByPoi(entity.poi)
