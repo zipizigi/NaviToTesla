@@ -30,6 +30,16 @@ interface PoiAddressDao {
     @Query("SELECT * FROM poi_address WHERE created < :date AND (registered IS NULL OR registered = 0)")
     suspend fun findExpired(date: Long): List<PoiAddressEntity>
 
+    @Query("DELETE FROM poi_address WHERE created < :date AND (registered IS NULL OR registered = 0)")
+    suspend fun deleteExpired(date: Long): Int
+
+    @Query("UPDATE poi_address SET lastUsedAt = :now WHERE poi = :poi AND packageName = :packageName")
+    suspend fun updateLastUsedAt(
+        poi: String,
+        packageName: String,
+        now: Long,
+    ): Int
+
     @Query(
         "SELECT * FROM poi_address WHERE registered IS NULL OR registered = 0 " +
             "ORDER BY COALESCE(lastUsedAt, lastCheckedAt, created) DESC LIMIT :limit",

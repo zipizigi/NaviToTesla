@@ -175,37 +175,16 @@ class AppRepository private constructor(
 
     suspend fun touchLastUsed(poi: Poi) {
         val poiName = poi.poiName ?: return
-        database.withTransaction {
-            val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName) ?: return@withTransaction
-            database.poiAddressDao().insertPoi(
-                PoiAddressEntity(
-                    id = existing.id,
-                    poi = existing.poi,
-                    packageName = existing.packageName,
-                    roadAddress = existing.roadAddress,
-                    jibunAddress = existing.jibunAddress,
-                    latitude = existing.latitude,
-                    longitude = existing.longitude,
-                    registered = existing.registered,
-                    isDuplicate = existing.isDuplicate,
-                    sentMode = existing.sentMode,
-                    searchable = existing.searchable,
-                    created = existing.created,
-                    lastCheckedAt = existing.lastCheckedAt,
-                    lastUsedAt = System.currentTimeMillis(),
-                ),
-            )
-        }
+        database.poiAddressDao().updateLastUsedAt(poiName, poi.packageName, System.currentTimeMillis())
     }
 
     suspend fun clearExpiredPoi() {
-        // remove expire poi. (20% over)
         val ttlMs = PoiAddressEntity.EXPIRE_DAY.toLong() * 24L * 60L * 60L * 1000L
-        val expireDate = System.currentTimeMillis() - ttlMs * 12L / 10L
-        database.poiAddressDao().findExpired(expireDate).forEach { entity ->
-            database.withTransaction {
-                database.poiAddressDao().delete(entity)
-            }
+        val expireDate = System.currentTimeMillis() - ttlMs
+        try {
+            database.poiAddressDao().deleteExpired(expireDate)
+        } catch (e: Exception) {
+            AnalysisUtil.recordException(e)
         }
     }
 
