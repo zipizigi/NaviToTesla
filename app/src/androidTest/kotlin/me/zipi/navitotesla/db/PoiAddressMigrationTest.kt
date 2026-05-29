@@ -112,108 +112,46 @@ class PoiAddressMigrationTest {
 
     @Test
     @Throws(IOException::class)
-    fun migrate13To14_twoDirtyFavoritesWithSameTrimResult_preserveNewerActivity() {
-        // 같은 packageName 에 trim 후 같은 결과 dirty favorite 두 개 — UNIQUE 충돌 없이 마이그레이션 통과 +
-        // newer activity (lastUsedAt 더 최근) row 보존.
+    fun migrate13To14_keepsShortestPerGroupAndTrimsAll() {
         helper.createDatabase(testDbName, 13).use { db ->
-            // id=1, lastUsedAt 옛것 — 삭제 대상
-            db.execSQL(
-                """
-                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created, lastUsedAt)
-                VALUES ('집 ', 'pkg.a', 'old road', 1, 'ROAD', 1700000000000, 1700000000000)
-                """.trimIndent(),
-            )
-            // id=2, lastUsedAt 최근 — 보존 대상
-            db.execSQL(
-                """
-                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created, lastUsedAt)
-                VALUES ('집  ', 'pkg.a', 'new road', 1, 'ROAD', 1700000000000, 1800000000000)
-                """.trimIndent(),
-            )
-        }
-
-        val db = helper.runMigrationsAndValidate(testDbName, 14, true, MIGRATION_13_14)
-
-        db.query("SELECT poi, roadAddress FROM poi_address WHERE registered = 1").use { cursor ->
-            assertEquals(1, cursor.count) // 최근 활동 row 만 살아남음
-            cursor.moveToFirst()
-            assertEquals("집", cursor.getString(0))
-            assertEquals("new road", cursor.getString(1))
-        }
-    }
-
-    @Test
-    @Throws(IOException::class)
-    fun migrate13To14_dirtyFavoriteAndCleanCacheWithSameTrim_keepsFavorite() {
-        // Step 1 회귀 가드: dirty favorite + 같은 (TRIM(poi), packageName) 의 cache row (registered=0) 공존 시
-        // favorite 이 cache 와 매치되어 삭제되면 안 됨.
-        helper.createDatabase(testDbName, 13).use { db ->
-            db.execSQL(
-                """
-                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
-                VALUES ('집 ', 'pkg.a', 'fav road', 1, 'ROAD', 1700000000000)
-                """.trimIndent(),
-            )
-            db.execSQL(
-                """
-                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
-                VALUES ('집', 'pkg.a', 'cache road', 0, NULL, 1700000000001)
-                """.trimIndent(),
-            )
-        }
-
-        // favorite (poi='집 ') 와 cache (poi='집') 두 row 가 있고, Step 3 TRIM 적용 시 favorite poi 도 '집' 이 되어
-        // UNIQUE(poi='집', packageName='pkg.a') 충돌 가능. Step 2 가 아닌 별도 dedup 필요 — 현재 정책은 cache 와
-        // favorite 의 동일 (poi, packageName) 공존을 허용 안 함. 마이그레이션 abort 방지 위해 trim 적용 전에 cache 를
-        // 제거하거나 favorite 우선 처리.
-        // 현재 코드에서 이 케이스가 처리되는지 검증.
-        try {
-            val db = helper.runMigrationsAndValidate(testDbName, 14, true, MIGRATION_13_14)
-            db.query("SELECT poi, registered FROM poi_address WHERE TRIM(poi) = '집'").use { cursor ->
-                // 적어도 favorite (registered=1) 은 살아남아야 함.
-                val rows = mutableListOf<Pair<String, Int>>()
-                while (cursor.moveToNext()) {
-                    rows += cursor.getString(0) to cursor.getInt(1)
-                }
-                assertTrue(
-                    "favorite 이 보존되어야 함, 실제: $rows",
-                    rows.any { it.second == 1 },
-                )
-            }
-        } catch (e: Exception) {
-            throw AssertionError("마이그레이션이 abort 되면 안 됨 (Step 3 UNIQUE 충돌 가능성): ${e.message}", e)
-        }
-    }
-
-    @Test
-    @Throws(IOException::class)
-    fun migrate13To14_trimsRegisteredPoiWhitespace_andDropsDirtyWhenCleanExists() {
-        helper.createDatabase(testDbName, 13).use { db ->
-            // 1) trailing space favorite, 같은 packageName 에 clean ver 없음 → TRIM 적용되어 살아남아야 함
+            // 단독 dirty favorite — TRIM
             db.execSQL(
                 """
                 INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
                 VALUES ('home ', '', 'home road', 1, 'ROAD', 1700000000000)
                 """.trimIndent(),
             )
-            // 2) trailing space favorite, 같은 packageName 에 clean ver 이미 존재 → dirty 폐기
+            // dirty + clean favorite 같은 그룹 — 최단 (clean) 보존
             db.execSQL(
                 """
                 INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
-                VALUES ('cafe ', 'pkg.a', 'cafe road dirty', 1, 'ROAD', 1700000000000)
+                VALUES ('cafe ', 'pkg.a', 'cafe dirty', 1, 'ROAD', 1700000000000)
                 """.trimIndent(),
             )
             db.execSQL(
                 """
                 INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
-                VALUES ('cafe', 'pkg.a', 'cafe road clean', 1, 'ROAD', 1700000000001)
+                VALUES ('cafe', 'pkg.a', 'cafe clean', 1, 'ROAD', 1700000000001)
                 """.trimIndent(),
             )
-            // 3) registered=0 (cache) 에 공백 — 정책상 건드리지 않음
+            // dirty + dirty 두 개 같은 그룹 — 길이 짧은 쪽 + id tiebreak
             db.execSQL(
                 """
                 INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
-                VALUES ('cache ', 'pkg.a', 'cache road', 0, NULL, 1700000000000)
+                VALUES ('home ', 'pkg.b', 'len2 first', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('home  ', 'pkg.b', 'len3', 1, 'ROAD', 1700000000001)
+                """.trimIndent(),
+            )
+            // cache (registered=0) 도 같이 정리됨
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('cache ', 'pkg.c', 'cache road', 0, NULL, 1700000000000)
                 """.trimIndent(),
             )
         }
@@ -221,20 +159,19 @@ class PoiAddressMigrationTest {
         val db = helper.runMigrationsAndValidate(testDbName, 14, true, MIGRATION_13_14)
 
         db.query("SELECT poi, packageName, roadAddress, registered FROM poi_address ORDER BY poi, packageName").use { cursor ->
-            assertEquals(3, cursor.count)
+            assertEquals(4, cursor.count)
             cursor.moveToFirst()
-            assertEquals("cache ", cursor.getString(0)) // registered=0 untouched
-            assertEquals("pkg.a", cursor.getString(1))
+            assertEquals("cache" to "pkg.c", cursor.getString(0) to cursor.getString(1))
             assertEquals(0, cursor.getInt(3))
             cursor.moveToNext()
-            assertEquals("cafe", cursor.getString(0)) // clean 만 남고 dirty 폐기됨
-            assertEquals("pkg.a", cursor.getString(1))
-            assertEquals("cafe road clean", cursor.getString(2))
+            assertEquals("cafe" to "pkg.a", cursor.getString(0) to cursor.getString(1))
+            assertEquals("cafe clean", cursor.getString(2))
             cursor.moveToNext()
-            assertEquals("home", cursor.getString(0)) // trailing space 제거됨
-            assertEquals("", cursor.getString(1))
+            assertEquals("home" to "", cursor.getString(0) to cursor.getString(1))
             assertEquals("home road", cursor.getString(2))
-            assertEquals(1, cursor.getInt(3))
+            cursor.moveToNext()
+            assertEquals("home" to "pkg.b", cursor.getString(0) to cursor.getString(1))
+            assertEquals("len2 first", cursor.getString(2))
         }
     }
 
