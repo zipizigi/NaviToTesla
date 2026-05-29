@@ -145,20 +145,25 @@ class AppRepository private constructor(
             }
         val now = System.currentTimeMillis()
         database.withTransaction {
-            val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName)
-            database.poiAddressDao().insertPoi(
+            val dao = database.poiAddressDao()
+            val existing = dao.findPoiByPackage(poiName, poi.packageName)
+            if (existing?.id != null) {
+                dao.updateClassification(existing.id, searchable, now)
+                return@withTransaction
+            }
+            // 새 cache row — isAddress 분기 등 savePoi 우회 path 에서 진입. registered=false 로 신규 생성.
+            dao.insertPoi(
                 PoiAddressEntity(
-                    id = existing?.id,
                     poi = poiName,
                     packageName = poi.packageName,
                     roadAddress = poi.getRoadAddress(),
                     jibunAddress = poi.getAddress(),
                     latitude = poi.latitude,
                     longitude = poi.longitude,
-                    registered = existing?.registered ?: false,
-                    isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
+                    registered = false,
+                    isDuplicate = poi.isDuplicate,
                     searchable = searchable,
-                    created = existing?.created ?: Date(),
+                    created = Date(),
                     lastCheckedAt = now,
                     lastUsedAt = now,
                 ),

@@ -43,6 +43,14 @@ interface PoiAddressDao {
         now: Long,
     ): Int
 
+    // searchable / lastCheckedAt / lastUsedAt 만 갱신 — favorite 의 사용자 입력 컬럼 보존.
+    @Query("UPDATE poi_address SET searchable = :searchable, lastCheckedAt = :now, lastUsedAt = :now WHERE id = :id")
+    suspend fun updateClassification(
+        id: Int,
+        searchable: Boolean?,
+        now: Long,
+    ): Int
+
     @Query(
         "SELECT * FROM poi_address WHERE registered IS NULL OR registered = 0 " +
             "ORDER BY COALESCE(lastUsedAt, lastCheckedAt, created) DESC LIMIT :limit",

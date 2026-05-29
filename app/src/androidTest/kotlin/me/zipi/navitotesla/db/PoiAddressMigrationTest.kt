@@ -112,6 +112,35 @@ class PoiAddressMigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate13To14_twoDirtyFavoritesWithSameTrimResult_doNotConflict() {
+        // 같은 packageName 에 trim 후 같은 결과가 되는 dirty favorite 두 개 — UNIQUE 충돌 없이 마이그레이션 통과해야 함.
+        helper.createDatabase(testDbName, 13).use { db ->
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('집 ', 'pkg.a', 'road A', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('집  ', 'pkg.a', 'road B', 1, 'ROAD', 1700000000001)
+                """.trimIndent(),
+            )
+        }
+
+        val db = helper.runMigrationsAndValidate(testDbName, 14, true, MIGRATION_13_14)
+
+        db.query("SELECT poi, roadAddress FROM poi_address WHERE registered = 1").use { cursor ->
+            assertEquals(1, cursor.count) // 하나만 살아남음 (id 작은 쪽 = 'road A')
+            cursor.moveToFirst()
+            assertEquals("집", cursor.getString(0))
+            assertEquals("road A", cursor.getString(1))
+        }
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate13To14_trimsRegisteredPoiWhitespace_andDropsDirtyWhenCleanExists() {
         helper.createDatabase(testDbName, 13).use { db ->
             // 1) trailing space favorite, 같은 packageName 에 clean ver 없음 → TRIM 적용되어 살아남아야 함

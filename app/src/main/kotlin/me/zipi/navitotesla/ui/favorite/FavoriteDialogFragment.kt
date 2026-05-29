@@ -128,13 +128,13 @@ class FavoriteDialogFragment :
     ) {
         val poi = favoriteDialogViewModel.poiList.value?.get(position) ?: return
         favoriteDialogViewModel.selectedPoi.postValue(poi)
-        if (binding.radioRoadAddress.isChecked) {
-            binding.txtAddress.setText(poi.getRoadAddress())
-        } else if (binding.radioAddress.isChecked) {
-            binding.txtAddress.setText(poi.getAddress())
-        } else {
-            binding.txtAddress.setText(poi.getGpsAddress())
-        }
+        val checkedId =
+            when {
+                binding.radioRoadAddress.isChecked -> binding.radioRoadAddress.id
+                binding.radioAddress.isChecked -> binding.radioAddress.id
+                else -> binding.radioGps.id
+            }
+        valueForRadio(poi, checkedId)?.let { binding.txtAddress.setText(it) }
     }
 
     override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -149,13 +149,23 @@ class FavoriteDialogFragment :
             )
             return
         }
+        val address = binding.txtAddress.text.toString().trim()
+        // "null,null" / 빈 주소는 Tesla 에 그대로 전송되면 navigation 실패 — 저장 전 거부.
+        if (address.isEmpty() || address == "null,null") {
+            AnalysisUtil.makeToast(
+                context = context,
+                text = getString(R.string.addressNotFound),
+                level = AnalysisUtil.ToastLevel.WARN,
+            )
+            return
+        }
         // 즐겨찾기는 사용자가 마지막으로 본 textfield 값 (도로명/지번/gps 어느 모드든) 을 그대로
         // roadAddress 컬럼에 저장하고, share 시 그 값을 그대로 사용한다 — 라디오/selected 분기 없음.
         val entity =
             PoiAddressEntity(
                 poi = poiName,
                 packageName = "",
-                roadAddress = binding.txtAddress.text.toString().trim(),
+                roadAddress = address,
                 registered = true,
                 created = Date(),
             )
@@ -202,23 +212,25 @@ class FavoriteDialogFragment :
         group: RadioGroup,
         checkedId: Int,
     ) {
-        if (favoriteDialogViewModel.selectedPoi.value == null) {
-            return
-        }
+        val poi = favoriteDialogViewModel.selectedPoi.value ?: return
+        // 채울 값이 없거나 "null,null" 같은 fallback junk 면 textfield 변경 안 함 —
+        // 사용자가 라디오 클릭 한 번으로 잘못된 favorite 저장하는 것 방지.
+        valueForRadio(poi, group.checkedRadioButtonId)?.let { binding.txtAddress.setText(it) }
+    }
 
-        if (binding.radioRoadAddress.id == group.checkedRadioButtonId) {
-            binding.txtAddress.setText(
-                favoriteDialogViewModel.selectedPoi.value?.getRoadAddress(),
-            )
-        } else if (binding.radioAddress.id == group.checkedRadioButtonId) {
-            binding.txtAddress.setText(
-                favoriteDialogViewModel.selectedPoi.value?.getAddress(),
-            )
-        } else {
-            binding.txtAddress.setText(
-                favoriteDialogViewModel.selectedPoi.value?.getGpsAddress(),
-            )
-        }
+    private fun valueForRadio(
+        poi: Poi,
+        radioId: Int,
+    ): String? {
+        val raw =
+            when (radioId) {
+                binding.radioRoadAddress.id -> poi.getRoadAddress()
+                binding.radioAddress.id -> poi.getAddress()
+                binding.radioGps.id -> poi.getGpsAddress()
+                else -> return null
+            }
+        if (raw.isEmpty() || raw == "null,null") return null
+        return raw
     }
 
     class PoiArrayAdapter(

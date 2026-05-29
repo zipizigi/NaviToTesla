@@ -35,8 +35,10 @@ val MIGRATION_13_14 =
     object : Migration(13, 14) {
         override fun migrate(db: SupportSQLiteDatabase) {
             // 즐겨찾기(registered=1) 등록 시 user input trim 누락으로 poi 컬럼에 trailing/leading space 가
-            // 박힌 row 가 share lookup (strict =) 에서 매칭 실패. trim 후 동일 (poi, packageName) 이
-            // 이미 존재하면 dirty row 폐기, 없으면 trim 적용.
+            // 박힌 row 가 share lookup (strict =) 에서 매칭 실패. UPDATE 단계에서 UNIQUE(poi, packageName)
+            // 충돌 가능성을 모두 사전 정리해서 마이그레이션이 절대로 abort 되지 않도록 보장.
+            //
+            // Step 1: dirty 와 같은 (TRIM(poi), packageName) 의 clean row 가 있으면 dirty 삭제 (clean 우선).
             db.execSQL(
                 "DELETE FROM poi_address WHERE registered = 1 AND poi <> TRIM(poi) AND EXISTS (" +
                     "SELECT 1 FROM poi_address other " +
@@ -44,6 +46,16 @@ val MIGRATION_13_14 =
                     "AND other.poi = TRIM(poi_address.poi) " +
                     "AND other.packageName IS poi_address.packageName)",
             )
+            // Step 2: dirty 두 개 이상이 trim 후 같은 (poi, packageName) 이 되는 경우 — id 큰 쪽 삭제 (작은 id 보존).
+            db.execSQL(
+                "DELETE FROM poi_address WHERE registered = 1 AND poi <> TRIM(poi) AND EXISTS (" +
+                    "SELECT 1 FROM poi_address other " +
+                    "WHERE other.id < poi_address.id " +
+                    "AND other.registered = 1 " +
+                    "AND TRIM(other.poi) = TRIM(poi_address.poi) " +
+                    "AND other.packageName IS poi_address.packageName)",
+            )
+            // Step 3: 살아남은 dirty row 의 poi 를 TRIM 처리. 충돌은 1, 2 단계에서 모두 해소됨.
             db.execSQL("UPDATE poi_address SET poi = TRIM(poi) WHERE registered = 1 AND poi <> TRIM(poi)")
         }
     }
@@ -70,6 +82,8 @@ val MIGRATION_14_15 =
             )
 
             // sentMode 컬럼 제거 — table rebuild.
+            // 이전 부분 마이그레이션 실패로 남았을 가능성에 대비해 임시 테이블 사전 정리.
+            db.execSQL("DROP TABLE IF EXISTS poi_address_new")
             db.execSQL(
                 """
                 CREATE TABLE poi_address_new (

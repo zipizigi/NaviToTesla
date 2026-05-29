@@ -18,8 +18,9 @@ object SendPlanner {
         settings: SendSettings,
     ): SendPayload {
         // 좌표 형식이면 raw GPS payload — URL wrap 없이 Tesla 에 좌표 직접 전달.
+        // isCoordsAddress() 가 trim 후 매칭하므로 출력도 trim 해서 일관성 유지.
         if (poi.isCoordsAddress()) {
-            val coords = poi.getRoadAddress()
+            val coords = poi.getRoadAddress().trim()
             return SendPayload(sendText = coords, displayText = coords, mode = SendMode.GPS, viaUrl = false)
         }
 
