@@ -115,15 +115,18 @@ class AppRepository private constructor(
         if (poi.poiName == null) {
             return
         }
+
+        val road = poi.getRoadAddress().sanitizeAddressOrNull()
+        val jibun = poi.getAddress().sanitizeAddressOrNull()
         database.withTransaction {
             database.poiAddressDao().insertPoi(
                 PoiAddressEntity(
                     poi = poi.poiName,
                     packageName = poi.packageName,
-                    roadAddress = poi.getRoadAddress(),
-                    jibunAddress = poi.getAddress(),
-                    latitude = poi.latitude,
-                    longitude = poi.longitude,
+                    roadAddress = road,
+                    jibunAddress = jibun,
+                    latitude = poi.latitude?.takeUnless { it.isBlank() },
+                    longitude = poi.longitude?.takeUnless { it.isBlank() },
                     registered = registered,
                     isDuplicate = poi.isDuplicate,
                     created = Date(),
@@ -132,6 +135,8 @@ class AppRepository private constructor(
         }
     }
 
+    // 분류 결과 mark 전용 — cache row 생성은 savePoi 책임. (poi, packageName) UNIQUE 라
+    // 단일 UPDATE 로 match-or-no-op. cross-package favorite share 처럼 매치 row 없으면 0 affected.
     suspend fun markClassified(
         poi: Poi,
         searchability: Searchability,
@@ -143,32 +148,20 @@ class AppRepository private constructor(
                 Searchability.NotSearchable -> false
                 Searchability.Unknown -> null
             }
-        val now = System.currentTimeMillis()
-        database.withTransaction {
-            val dao = database.poiAddressDao()
-            val existing = dao.findPoiByPackage(poiName, poi.packageName)
-            if (existing?.id != null) {
-                dao.updateClassification(existing.id, searchable, now)
-                return@withTransaction
-            }
-            // 새 cache row — isAddress 분기 등 savePoi 우회 path 에서 진입. registered=false 로 신규 생성.
-            dao.insertPoi(
-                PoiAddressEntity(
-                    poi = poiName,
-                    packageName = poi.packageName,
-                    roadAddress = poi.getRoadAddress(),
-                    jibunAddress = poi.getAddress(),
-                    latitude = poi.latitude,
-                    longitude = poi.longitude,
-                    registered = false,
-                    isDuplicate = poi.isDuplicate,
-                    searchable = searchable,
-                    created = Date(),
-                    lastCheckedAt = now,
-                    lastUsedAt = now,
-                ),
-            )
-        }
+        database.poiAddressDao().updateClassification(
+            poi = poiName,
+            packageName = poi.packageName,
+            searchable = searchable,
+            now = System.currentTimeMillis(),
+        )
+    }
+
+
+    private fun String.sanitizeAddressOrNull(): String? {
+        val t = trim()
+        if (t.isEmpty()) return null
+        if (t == "null,null") return null
+        return t
     }
 
     suspend fun touchLastUsed(poi: Poi) {

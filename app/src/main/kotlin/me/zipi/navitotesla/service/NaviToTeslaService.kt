@@ -229,11 +229,12 @@ class NaviToTeslaService(
                 Poi(
                     poiName = poiName,
                     roadAddress = poiName,
-                    address = poiName,
+                    address = null,
                     longitude = null,
                     latitude = null,
                     packageName = packageName,
                 )
+            appRepository.savePoi(poi, false)
             AnalysisUtil.logEvent("address_direct", eventParam)
         } else {
             poi = poiFinder.findPoi(poiName, packageName)

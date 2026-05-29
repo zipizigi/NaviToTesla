@@ -43,10 +43,12 @@ interface PoiAddressDao {
         now: Long,
     ): Int
 
-    // searchable / lastCheckedAt / lastUsedAt 만 갱신 — favorite 의 사용자 입력 컬럼 보존.
-    @Query("UPDATE poi_address SET searchable = :searchable, lastCheckedAt = :now, lastUsedAt = :now WHERE id = :id")
+    // classify 결과 mark 전용 — favorite 의 사용자 입력 컬럼 보존. (poi, packageName) UNIQUE 라 단일 UPDATE.
+    // row 없으면 0 affected — no-op (cross-package favorite share 처럼 cache row 없는 케이스).
+    @Query("UPDATE poi_address SET searchable = :searchable, lastCheckedAt = :now WHERE poi = :poi AND packageName = :packageName")
     suspend fun updateClassification(
-        id: Int,
+        poi: String,
+        packageName: String,
         searchable: Boolean?,
         now: Long,
     ): Int
