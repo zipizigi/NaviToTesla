@@ -24,8 +24,8 @@ class TeslaShareByApi(
     override suspend fun share(payload: SendPayload) {
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(
-                context,
-                "[DEBUG] 목적지 전송 By api Skip\n${payload.sendText}",
+                context = context,
+                text = "[DEBUG] 목적지 전송 By api Skip\n${payload.sendText}",
             )
             delay(500)
             return
@@ -38,20 +38,27 @@ class TeslaShareByApi(
 
         val result = response.body().takeIf { response.isSuccessful }
         if (result != null && result.error == null && (result.response?.result == true)) {
-            AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationSuccess) + "\n" + payload.displayText)
+            AnalysisUtil.makeToast(
+                context = context,
+                text = context.getString(R.string.sendDestinationSuccess) + "\n" + payload.displayText,
+            )
             AnalysisUtil.log("send_success")
             AnalysisUtil.logEvent("share_by_api_success", eventParam(packageName, payload))
         } else {
             AnalysisUtil.warn(response.toString())
-            AnalysisUtil.makeToast(context, context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: ""))
+            AnalysisUtil.makeToast(
+                context = context,
+                text = context.getString(R.string.sendDestinationFail) + (result?.errorDescription ?: ""),
+                level = AnalysisUtil.ToastLevel.WARN,
+            )
 
-            AnalysisUtil.log("send_fail")
+            AnalysisUtil.warn("send_fail")
             if (result?.errorDescription != null) {
-                AnalysisUtil.log("errorDescription: " + result.errorDescription)
+                AnalysisUtil.warn("errorDescription: " + result.errorDescription)
             }
             if (!response.isSuccessful) {
-                AnalysisUtil.log("Http response code: " + response.code())
-                response.errorBody()?.string()?.let { AnalysisUtil.log("Http error response: $it") }
+                AnalysisUtil.warn("Http response code: " + response.code())
+                response.errorBody()?.string()?.let { AnalysisUtil.warn("Http error response: $it") }
             }
             val exception: RuntimeException =
                 if (response.code() == 401) {

@@ -487,7 +487,7 @@ class HomeFragment :
                     requireContext().packageManager.getPackageInfo("com.teslamotors.tesla", 0)
                     true
                 } catch (e: PackageManager.NameNotFoundException) {
-                    AnalysisUtil.log("package not found $e")
+                    AnalysisUtil.warn("package not found $e")
                     false
                 }
             }

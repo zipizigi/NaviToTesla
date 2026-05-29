@@ -147,13 +147,19 @@ object AnalysisUtil {
             }
         }
 
+    enum class ToastLevel { INFO, WARN, ERROR }
+
     fun makeToast(
         context: Context?,
         text: String,
+        level: ToastLevel = ToastLevel.INFO,
     ) {
         try {
-            Log.i(LOG_TAG, text)
-            log(text)
+            when (level) {
+                ToastLevel.WARN -> warn(text)
+                ToastLevel.ERROR -> error(text)
+                ToastLevel.INFO -> log(text)
+            }
             CoroutineScope(Dispatchers.Main).launch {
                 if (context != null) {
                     Toast.makeText(context, text, Toast.LENGTH_LONG).show()

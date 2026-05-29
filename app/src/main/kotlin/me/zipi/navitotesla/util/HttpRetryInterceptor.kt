@@ -39,7 +39,7 @@ class HttpRetryInterceptor(
                 response = chain.proceed(chain.request())
                 isSuccess = response.isSuccessful
                 if (!isSuccess) {
-                    AnalysisUtil.log("http status code : " + response.code)
+                    AnalysisUtil.warn("http status code : " + response.code)
                 }
             } catch (e: UnknownHostException) {
                 AnalysisUtil.info("Network unstable...#" + retry + " " + e.javaClass.name)
@@ -51,7 +51,7 @@ class HttpRetryInterceptor(
             if (isSuccess) {
                 break
             } else if (response != null && response.code >= 400 && response.code <= 405) {
-                AnalysisUtil.info("Http call 4xx error!: " + response.code)
+                AnalysisUtil.warn("Http call 4xx error!: " + response.code)
                 break
             } else if (retry >= maxRetryCount) {
                 if (response == null) {

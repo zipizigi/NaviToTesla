@@ -96,11 +96,11 @@ object AppUpdaterUtil {
                         )
 
                     if (response.code() == 403) {
-                        AnalysisUtil.log("github api rate limit exceed")
+                        AnalysisUtil.warn("github api rate limit exceed")
                     } else if (!response.isSuccessful || response.body() == null) {
-                        AnalysisUtil.log("github api call fail. Http code: " + response.code())
+                        AnalysisUtil.warn("github api call fail. Http code: " + response.code())
                         response.errorBody()?.string()?.let {
-                            AnalysisUtil.log(it)
+                            AnalysisUtil.warn(it)
                             AnalysisUtil.recordException(RuntimeException())
                         }
                     } else {
@@ -174,7 +174,7 @@ object AppUpdaterUtil {
                     clearDoNotShow()
                     return
                 } catch (e: ActivityNotFoundException) {
-                    AnalysisUtil.log("play store is installed, but launch error")
+                    AnalysisUtil.warn("play store is installed, but launch error")
                     AnalysisUtil.recordException(e)
                 }
             }

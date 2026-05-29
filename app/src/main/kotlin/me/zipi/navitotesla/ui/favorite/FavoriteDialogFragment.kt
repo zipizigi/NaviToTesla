@@ -129,7 +129,11 @@ class FavoriteDialogFragment :
     private fun saveFavorite() {
         val poiName = binding.txtDest.text.toString()
         if (poiName.isEmpty()) {
-            AnalysisUtil.makeToast(context, getString(R.string.emptyPoiName))
+            AnalysisUtil.makeToast(
+                context = context,
+                text = getString(R.string.emptyPoiName),
+                level = AnalysisUtil.ToastLevel.WARN,
+            )
             return
         }
         val selected = favoriteDialogViewModel.selectedPoi.value
@@ -167,7 +171,11 @@ class FavoriteDialogFragment :
             val dao = AppDatabase.getInstance().poiAddressDao()
             val existing = dao.findRegisteredByPoi(entity.poi)
             if (existing != null) {
-                AnalysisUtil.makeToast(context, getString(R.string.duplicatedPoiName))
+                AnalysisUtil.makeToast(
+                    context = context,
+                    text = getString(R.string.duplicatedPoiName),
+                    level = AnalysisUtil.ToastLevel.WARN,
+                )
                 return@launch
             }
             dao.insertPoi(entity)
