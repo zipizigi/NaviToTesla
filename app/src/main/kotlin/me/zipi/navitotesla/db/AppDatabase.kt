@@ -9,7 +9,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [PoiAddressEntity::class, ConditionEntity::class],
-    version = 11,
+    version = 12,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -19,6 +19,7 @@ import androidx.room.TypeConverters
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8, spec = AppDatabaseAutoMigration7To8::class),
         AutoMigration(from = 10, to = 11),
+        AutoMigration(from = 11, to = 12),
     ],
 )
 @TypeConverters(DateConverter::class)

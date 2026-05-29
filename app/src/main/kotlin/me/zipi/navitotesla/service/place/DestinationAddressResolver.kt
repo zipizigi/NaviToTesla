@@ -28,21 +28,22 @@ object DestinationAddressResolver {
         when (cached?.searchability) {
             Searchability.Searchable -> {
                 AnalysisUtil.debug("classify: local cache hit, searchable")
-                // 사용순 정렬을 위해 lastCheckedAt 갱신.
-                AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
+                // 사용순 정렬을 위해 lastUsedAt 만 갱신 (cooldown anchor 인 lastCheckedAt 은 보존).
+                AppRepository.getInstance().touchLastUsed(poi)
                 return Searchability.Searchable
             }
             Searchability.NotSearchable -> {
                 AnalysisUtil.debug("classify: local cache hit, not_searchable")
-                AppRepository.getInstance().markClassified(poi, Searchability.NotSearchable)
+                AppRepository.getInstance().touchLastUsed(poi)
                 return Searchability.NotSearchable
             }
             // 쿨다운(default 24h) 동안은 동일 POI 에 대해 Firestore/Places API skip.
+            // lastCheckedAt 은 갱신하지 않음 — 그래야 매일 안내해도 첫 anchor 로부터 24h 만 잠그고 그 후 재시도 가능.
             Searchability.Unknown -> {
                 if (isWithinCooldown(cached.lastCheckedAt)) {
                     AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
                     AnalysisUtil.logEvent("place_check_cooldown_skip", eventParam)
-                    AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
+                    AppRepository.getInstance().touchLastUsed(poi)
                     return Searchability.Unknown
                 }
             }

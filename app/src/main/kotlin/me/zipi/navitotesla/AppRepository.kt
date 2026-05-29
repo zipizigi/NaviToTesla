@@ -139,9 +139,9 @@ class AppRepository private constructor(
     }
 
     /**
-     * Resolver 가 검색 가능 여부 결정 후 호출. 기존 row 가 있으면 id/registered/sentMode/isDuplicate 유지하면서
-     * searchable 갱신. 없으면 신규 insert. 즐겨찾기(registered=true) row 의 sentMode 는 보존하고,
-     * 한번 isDuplicate=true 로 마킹된 row 는 stick (resolver 가 false 로 덮어쓰지 못함).
+     * Resolver 가 실제 Firestore/Places API 호출 결과를 기록할 때 호출.
+     * lastCheckedAt(cooldown anchor) 와 lastUsedAt(사용 시점) 둘 다 갱신.
+     * 기존 row 가 있으면 id/registered/sentMode/isDuplicate/created 유지.
      */
     suspend fun markClassified(
         poi: Poi,
@@ -154,6 +154,7 @@ class AppRepository private constructor(
                 Searchability.NotSearchable -> false
                 Searchability.Unknown -> null
             }
+        val now = System.currentTimeMillis()
         database.withTransaction {
             val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName)
             database.poiAddressDao().insertPoi(
@@ -170,7 +171,37 @@ class AppRepository private constructor(
                     sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
                     searchable = searchable,
                     created = existing?.created ?: Date(),
-                    lastCheckedAt = System.currentTimeMillis(),
+                    lastCheckedAt = now,
+                    lastUsedAt = now,
+                ),
+            )
+        }
+    }
+
+    /**
+     * Cache hit / cooldown skip 등 실제 API 호출이 발생하지 않은 사용 시점만 기록.
+     * lastUsedAt 만 갱신 — lastCheckedAt(cooldown anchor)는 보존.
+     */
+    suspend fun touchLastUsed(poi: Poi) {
+        val poiName = poi.poiName ?: return
+        database.withTransaction {
+            val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName) ?: return@withTransaction
+            database.poiAddressDao().insertPoi(
+                PoiAddressEntity(
+                    id = existing.id,
+                    poi = existing.poi,
+                    packageName = existing.packageName,
+                    roadAddress = existing.roadAddress,
+                    jibunAddress = existing.jibunAddress,
+                    latitude = existing.latitude,
+                    longitude = existing.longitude,
+                    registered = existing.registered,
+                    isDuplicate = existing.isDuplicate,
+                    sentMode = existing.sentMode,
+                    searchable = existing.searchable,
+                    created = existing.created,
+                    lastCheckedAt = existing.lastCheckedAt,
+                    lastUsedAt = System.currentTimeMillis(),
                 ),
             )
         }

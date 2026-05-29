@@ -28,6 +28,7 @@ class PoiAddressEntity(
     val searchable: Boolean? = null,
     val created: Date? = null,
     val lastCheckedAt: Long? = null,
+    val lastUsedAt: Long? = null,
 ) {
     val isExpire: Boolean
         get() {
