@@ -79,6 +79,8 @@ class NaviToTeslaService(
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
         try {
+            // share 사이클 시작 시 만료 캐시 정리 — 이후 getPoi/classify 가 깔끔한 상태에서 동작.
+            appRepository.clearExpiredPoi()
             val poi = getPoi(packageName, notificationTitle, notificationText)
             val lastAddress = PreferencesUtil.getString("lastAddress", "")
             if (lastAddress != poi.getRoadAddress()) {
@@ -96,7 +98,6 @@ class NaviToTeslaService(
                 )
                 AnalysisUtil.logEvent("previous_request_address", eventParam)
             }
-            appRepository.clearExpiredPoi()
         } catch (e: DuplicatePoiException) {
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)

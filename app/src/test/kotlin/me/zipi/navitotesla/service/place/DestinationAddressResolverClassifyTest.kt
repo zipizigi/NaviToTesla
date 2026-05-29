@@ -197,26 +197,6 @@ class DestinationAddressResolverClassifyTest {
         }
 
     @Test
-    fun `expired Unknown row still hits cooldown when lastCheckedAt within window`() =
-        runBlocking {
-            // created 가 expire 됐어도 lastCheckedAt 이 최근이면 쿨다운으로 Unknown 즉시 반환.
-            val createdLongAgo = java.util.Date(System.currentTimeMillis() - 35L * 24L * 60L * 60L * 1000L)
-            coEvery { dao.findPoiByPackage(any(), any()) } returns
-                entity(
-                    searchable = null,
-                    registered = false,
-                    lastCheckedAt = System.currentTimeMillis() - 60L * 60L * 1000L,
-                    created = createdLongAgo,
-                )
-            every {
-                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
-            } returns true
-            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.Searchable
-            assertSame(Searchability.Unknown, DestinationAddressResolver.classify(poi))
-            assertEquals(0, fakeCache.lookupCount)
-        }
-
-    @Test
     fun `cooldown disabled by RC=0 still falls through`() =
         runBlocking {
             // cooldownHours=0 → 쿨다운 기능 off. lastCheckedAt 이 최근이어도 firestore 진행.

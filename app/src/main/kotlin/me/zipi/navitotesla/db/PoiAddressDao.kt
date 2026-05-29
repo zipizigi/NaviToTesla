@@ -30,7 +30,12 @@ interface PoiAddressDao {
     @Query("SELECT * FROM poi_address WHERE created < :date AND (registered IS NULL OR registered = 0)")
     suspend fun findExpired(date: Long): List<PoiAddressEntity>
 
-    @Query("SELECT * FROM poi_address WHERE registered IS NULL OR registered = 0 ORDER BY created desc LIMIT :limit")
+    // 사용순 정렬: 마지막 share/classify 시점(lastCheckedAt) 기준 내림차순.
+    // legacy row(lastCheckedAt 이 null) 는 IFNULL 로 created 시점 사용.
+    @Query(
+        "SELECT * FROM poi_address WHERE registered IS NULL OR registered = 0 " +
+            "ORDER BY IFNULL(lastCheckedAt, created) DESC LIMIT :limit",
+    )
     suspend fun findRecentPoi(limit: Int): List<PoiAddressEntity>
 
     @Query("SELECT * FROM poi_address WHERE registered = 1 ORDER BY poi")

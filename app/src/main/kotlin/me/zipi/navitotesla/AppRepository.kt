@@ -169,7 +169,7 @@ class AppRepository private constructor(
                     isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
                     sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
                     searchable = searchable,
-                    created = Date(),
+                    created = existing?.created ?: Date(),
                     lastCheckedAt = System.currentTimeMillis(),
                 ),
             )
