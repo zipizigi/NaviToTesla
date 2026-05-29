@@ -35,7 +35,6 @@ import com.gun0912.tedpermission.coroutine.TedPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.R
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.databinding.FragmentHomeBinding
@@ -47,6 +46,7 @@ import me.zipi.navitotesla.service.NaviToTeslaService
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppUpdaterUtil
 import me.zipi.navitotesla.util.PreferencesUtil
+import me.zipi.navitotesla.util.TeslaAppDetector
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent.setEventListener
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
@@ -476,22 +476,7 @@ class HomeFragment :
     }
 
     private val isTeslaAppInstalled: Boolean
-        get() {
-            if (context == null) {
-                return false
-            }
-            return if (BuildConfig.DEBUG) {
-                true
-            } else {
-                try {
-                    requireContext().packageManager.getPackageInfo("com.teslamotors.tesla", 0)
-                    true
-                } catch (e: PackageManager.NameNotFoundException) {
-                    AnalysisUtil.warn("package not found $e")
-                    false
-                }
-            }
-        }
+        get() = context?.let { TeslaAppDetector.isInstalled(it) } ?: false
 
     // share mode
     override fun onButtonChecked(
