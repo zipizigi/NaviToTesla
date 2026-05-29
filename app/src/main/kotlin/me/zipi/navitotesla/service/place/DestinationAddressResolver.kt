@@ -28,7 +28,6 @@ object DestinationAddressResolver {
         when (cached?.searchability) {
             Searchability.Searchable -> {
                 AnalysisUtil.debug("classify: local cache hit, searchable")
-                // 사용순 정렬을 위해 lastUsedAt 만 갱신 (cooldown anchor 인 lastCheckedAt 은 보존).
                 AppRepository.getInstance().touchLastUsed(poi)
                 return Searchability.Searchable
             }
@@ -37,8 +36,6 @@ object DestinationAddressResolver {
                 AppRepository.getInstance().touchLastUsed(poi)
                 return Searchability.NotSearchable
             }
-            // 쿨다운(default 24h) 동안은 동일 POI 에 대해 Firestore/Places API skip.
-            // lastCheckedAt 은 갱신하지 않음 — 그래야 매일 안내해도 첫 anchor 로부터 24h 만 잠그고 그 후 재시도 가능.
             Searchability.Unknown -> {
                 if (isWithinCooldown(cached.lastCheckedAt)) {
                     AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
@@ -149,7 +146,6 @@ object DestinationAddressResolver {
             }
 
             null -> {
-                // Places API 예외(레이트 리밋 등). 다음 호출 때 쿨다운으로 재시도를 막는다.
                 AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
                 Searchability.Unknown
             }
@@ -161,15 +157,15 @@ object DestinationAddressResolver {
         val cooldownHours =
             RemoteConfigUtil
                 .getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS)
-                .coerceIn(0L, MAX_COOLDOWN_HOURS) // overflow 방지
+                .coerceIn(0L, MAX_COOLDOWN_HOURS)
         if (cooldownHours <= 0L) return false
         val cooldownMs = cooldownHours * 60L * 60L * 1000L
         val elapsedMs = System.currentTimeMillis() - lastCheckedAt
-        // 시계 역행(elapsedMs < 0) 시 쿨다운 만료로 처리. 시계 따라잡힐 때까지 무한 잠금 방지.
+        // 시계 역행(elapsedMs < 0) 시 쿨다운 만료로 처리.
         if (elapsedMs < 0L) return false
         return elapsedMs < cooldownMs
     }
 
-    // cooldownHours * 3_600_000L 이 Long overflow 되지 않는 최대값. (Long.MAX_VALUE / 3_600_000 ≈ 2.56e12)
+    // cooldownHours * 3_600_000L Long overflow 가드 상한.
     private const val MAX_COOLDOWN_HOURS = Long.MAX_VALUE / (60L * 60L * 1000L)
 }

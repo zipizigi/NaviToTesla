@@ -138,11 +138,6 @@ class AppRepository private constructor(
         }
     }
 
-    /**
-     * Resolver 가 실제 Firestore/Places API 호출 결과를 기록할 때 호출.
-     * lastCheckedAt(cooldown anchor) 와 lastUsedAt(사용 시점) 둘 다 갱신.
-     * 기존 row 가 있으면 id/registered/sentMode/isDuplicate/created 유지.
-     */
     suspend fun markClassified(
         poi: Poi,
         searchability: Searchability,
@@ -168,7 +163,7 @@ class AppRepository private constructor(
                     longitude = poi.longitude,
                     registered = existing?.registered ?: false,
                     isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
-                    sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
+                    sentMode = existing?.sentMode,
                     searchable = searchable,
                     created = existing?.created ?: Date(),
                     lastCheckedAt = now,
@@ -178,10 +173,6 @@ class AppRepository private constructor(
         }
     }
 
-    /**
-     * Cache hit / cooldown skip 등 실제 API 호출이 발생하지 않은 사용 시점만 기록.
-     * lastUsedAt 만 갱신 — lastCheckedAt(cooldown anchor)는 보존.
-     */
     suspend fun touchLastUsed(poi: Poi) {
         val poiName = poi.poiName ?: return
         database.withTransaction {
