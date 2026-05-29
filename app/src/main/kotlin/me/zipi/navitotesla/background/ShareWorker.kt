@@ -11,12 +11,12 @@ import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
-import androidx.work.WorkRequest
 import androidx.work.WorkerParameters
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
@@ -117,8 +117,8 @@ class ShareWorker(
             notificationText: String?,
         ) {
             AnalysisUtil.log("Register share worker")
-            val workRequest: WorkRequest =
-                OneTimeWorkRequestBuilder<ShareWorker>() // (ShareWorker::class.java)
+            val workRequest =
+                OneTimeWorkRequestBuilder<ShareWorker>()
                     .setInputData(
                         Data
                             .Builder()
@@ -130,7 +130,14 @@ class ShareWorker(
                     .setConstraints(
                         Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
                     ).build()
-            WorkManager.getInstance(context).enqueue(workRequest)
+            // destination 별 unique key — 동일 알림 update 는 dedup, destination 변경 시엔 새 work enqueue.
+            val uniqueKey =
+                "share_${(packageName + (notificationTitle ?: "") + (notificationText ?: "")).hashCode()}"
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                uniqueKey,
+                ExistingWorkPolicy.KEEP,
+                workRequest,
+            )
         }
     }
 }
