@@ -18,6 +18,9 @@ interface PoiAddressDao {
     @Query("SELECT * FROM poi_address WHERE poi = :poi LIMIT 1")
     suspend fun findPoi(poi: String): PoiAddressEntity?
 
+    @Query("SELECT * FROM poi_address WHERE poi = :poi")
+    suspend fun findAllByPoi(poi: String): List<PoiAddressEntity>
+
     @Query("SELECT * FROM poi_address WHERE poi = :poi AND packageName = :packageName")
     suspend fun findPoiByPackage(
         poi: String,

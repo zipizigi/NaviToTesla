@@ -18,3 +18,11 @@ val MIGRATION_9_10 =
             db.execSQL("UPDATE poi_address SET sentMode = NULL WHERE registered = 0")
         }
     }
+
+// v1~v5 시절 등록된 favorite 가 v6 마이그레이션 시 packageName=NULL 로 채워져 매칭 누락되는 회귀(1.102) 정규화.
+val MIGRATION_12_13 =
+    object : Migration(12, 13) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("UPDATE poi_address SET packageName = '' WHERE packageName IS NULL")
+        }
+    }

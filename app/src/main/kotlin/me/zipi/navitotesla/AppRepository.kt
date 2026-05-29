@@ -89,28 +89,23 @@ class AppRepository private constructor(
             .create()
 
     /**
-     * 우선순위:
-     *   1) 같은 packageName 의 row (favorite 든 자동 저장 cache 든)
-     *   2) packageName="" 의 글로벌 favorite (사용자가 앱에서 직접 등록한 즐겨찾기)
-     * 다른 packageName 의 favorite/cache 는 매칭하지 않아 cross-navi hijack 을 방지.
+     * 우선순위 (1차 매칭 후 즉시 반환):
+     *   1) 같은 packageName 의 row (favorite or cache)
+     *   2) packageName 비어있는 글로벌 favorite (NULL 포함 — v1~v5 마이그레이션 row 보호)
+     *   3) 다른 packageName 의 favorite — 즐겨찾기는 navi 무관하게 같은 장소로 본다
      */
     suspend fun getPoiSync(
         poiName: String,
         packageName: String = "",
     ): PoiAddressEntity? {
-        val dao = database.poiAddressDao()
-        val byPackage =
-            if (packageName.isNotEmpty()) {
-                dao.findPoiByPackage(poiName, packageName)
-            } else {
-                dao.findPoiLatest(poiName)
-            }
-        if (byPackage != null) return byPackage
-        // cross-package fallback 은 packageName="" 의 글로벌 favorite 만 매칭.
+        val rows = database.poiAddressDao().findAllByPoi(poiName)
+        if (rows.isEmpty()) return null
+
         if (packageName.isNotEmpty()) {
-            return dao.findPoiByPackage(poiName, "")?.takeIf { it.isRegistered() }
+            rows.firstOrNull { it.packageName == packageName }?.let { return it }
         }
-        return null
+        rows.firstOrNull { it.isRegistered() && it.packageName.isNullOrEmpty() }?.let { return it }
+        return rows.firstOrNull { it.isRegistered() }
     }
 
     suspend fun savePoi(
