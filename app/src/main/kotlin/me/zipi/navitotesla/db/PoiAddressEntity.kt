@@ -5,6 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.model.SendMode
+import me.zipi.navitotesla.service.place.Searchability
 import java.util.Date
 import kotlin.math.abs
 
@@ -26,6 +27,8 @@ class PoiAddressEntity(
     val sentMode: String? = null,
     val searchable: Boolean? = null,
     val created: Date? = null,
+    val lastCheckedAt: Long? = null,
+    val lastUsedAt: Long? = null,
 ) {
     val isExpire: Boolean
         get() {
@@ -35,6 +38,14 @@ class PoiAddressEntity(
             val expireDays = if (isDuplicate == true) DUPLICATE_EXPIRE_DAY else EXPIRE_DAY
             return ageInDays >= expireDays
         }
+
+    val searchability: Searchability
+        get() =
+            when (searchable) {
+                true -> Searchability.Searchable
+                false -> Searchability.NotSearchable
+                null -> Searchability.Unknown
+            }
 
     fun isRegistered(): Boolean = registered == true
 

@@ -24,10 +24,31 @@ object DestinationAddressResolver {
         AnalysisUtil.debug("classify start: poi='$poiName', pkg=${poi.packageName}")
 
         val dao = AppDatabase.getInstance().poiAddressDao()
-        val cached = dao.findPoiByPackage(poiName, poi.packageName)
-        if (cached != null && !cached.isExpire && cached.searchable != null) {
-            AnalysisUtil.debug("classify: local cache hit, searchable=${cached.searchable}")
-            return if (cached.searchable) Searchability.Searchable else Searchability.NotSearchable
+        val cached = dao.findPoiByPackage(poiName, poi.packageName)?.takeUnless { it.isExpire }
+        if (cached != null) {
+            AppRepository.getInstance().touchLastUsed(poi)
+        }
+        when (cached?.searchability) {
+            Searchability.Searchable -> {
+                AnalysisUtil.debug("classify: local cache hit, searchable")
+                return Searchability.Searchable
+            }
+
+            Searchability.NotSearchable -> {
+                AnalysisUtil.debug("classify: local cache hit, not_searchable")
+                return Searchability.NotSearchable
+            }
+
+            Searchability.Unknown -> {
+                if (isWithinCooldown(cached.lastCheckedAt)) {
+                    AnalysisUtil.debug("classify: cooldown active (lastCheckedAt=${cached.lastCheckedAt}), unknown")
+                    AnalysisUtil.logEvent("place_check_cooldown_skip", eventParam)
+                    return Searchability.Unknown
+                }
+            }
+
+            null -> {
+            }
         }
 
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
@@ -53,7 +74,7 @@ object DestinationAddressResolver {
                         putString("result", "searchable")
                     },
                 )
-                AppRepository.getInstance().markClassified(poi, true)
+                AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
                 return Searchability.Searchable
             }
 
@@ -66,7 +87,7 @@ object DestinationAddressResolver {
                         putString("result", "not_searchable")
                     },
                 )
-                AppRepository.getInstance().markClassified(poi, false)
+                AppRepository.getInstance().markClassified(poi, Searchability.NotSearchable)
                 return Searchability.NotSearchable
             }
 
@@ -78,12 +99,14 @@ object DestinationAddressResolver {
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
             AnalysisUtil.debug("classify: places update disabled by RC, unknown")
+            AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
             return Searchability.Unknown
         }
 
         val ratio = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO).coerceIn(0L, 100L).toInt()
         if (Random.nextInt(100) >= ratio) {
             AnalysisUtil.debug("classify: places update sampled out (ratio=$ratio), unknown")
+            AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
             return Searchability.Unknown
         }
 
@@ -109,7 +132,7 @@ object DestinationAddressResolver {
                     },
                 )
                 cacheClient.cache(roadAddress, searchable = true)
-                AppRepository.getInstance().markClassified(poi, true)
+                AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
                 Searchability.Searchable
             }
 
@@ -122,13 +145,31 @@ object DestinationAddressResolver {
                     },
                 )
                 cacheClient.cache(roadAddress, searchable = false)
-                AppRepository.getInstance().markClassified(poi, false)
+                AppRepository.getInstance().markClassified(poi, Searchability.NotSearchable)
                 Searchability.NotSearchable
             }
 
             null -> {
+                AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
                 Searchability.Unknown
             }
         }
     }
+
+    private fun isWithinCooldown(lastCheckedAt: Long?): Boolean {
+        if (lastCheckedAt == null) return false
+        val cooldownHours =
+            RemoteConfigUtil
+                .getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS)
+                .coerceIn(0L, MAX_COOLDOWN_HOURS)
+        if (cooldownHours <= 0L) return false
+        val cooldownMs = cooldownHours * 60L * 60L * 1000L
+        val elapsedMs = System.currentTimeMillis() - lastCheckedAt
+        // 시계 역행(elapsedMs < 0) 시 쿨다운 만료로 처리.
+        if (elapsedMs < 0L) return false
+        return elapsedMs < cooldownMs
+    }
+
+    // cooldownHours * 3_600_000L Long overflow 가드 상한.
+    private const val MAX_COOLDOWN_HOURS = Long.MAX_VALUE / (60L * 60L * 1000L)
 }

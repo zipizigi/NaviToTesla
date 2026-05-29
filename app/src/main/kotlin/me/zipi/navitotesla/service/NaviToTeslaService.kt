@@ -79,6 +79,7 @@ class NaviToTeslaService(
         val eventParam = Bundle()
         eventParam.putString("package", packageName)
         try {
+            appRepository.clearExpiredPoi()
             val poi = getPoi(packageName, notificationTitle, notificationText)
             val lastAddress = PreferencesUtil.getString("lastAddress", "")
             if (lastAddress != poi.getRoadAddress()) {
@@ -96,7 +97,6 @@ class NaviToTeslaService(
                 )
                 AnalysisUtil.logEvent("previous_request_address", eventParam)
             }
-            appRepository.clearExpiredPoi()
         } catch (e: DuplicatePoiException) {
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)

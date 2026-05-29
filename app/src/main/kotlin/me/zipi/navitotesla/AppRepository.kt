@@ -6,6 +6,7 @@ import me.zipi.navitotesla.api.TeslaAuthApi
 import me.zipi.navitotesla.db.AppDatabase
 import me.zipi.navitotesla.db.PoiAddressEntity
 import me.zipi.navitotesla.model.Poi
+import me.zipi.navitotesla.service.place.Searchability
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -137,16 +138,18 @@ class AppRepository private constructor(
         }
     }
 
-    /**
-     * Resolver 가 검색 가능 여부 결정 후 호출. 기존 row 가 있으면 id/registered/sentMode/isDuplicate 유지하면서
-     * searchable 갱신. 없으면 신규 insert. 즐겨찾기(registered=true) row 의 sentMode 는 보존하고,
-     * 한번 isDuplicate=true 로 마킹된 row 는 stick (resolver 가 false 로 덮어쓰지 못함).
-     */
     suspend fun markClassified(
         poi: Poi,
-        searchable: Boolean?,
+        searchability: Searchability,
     ) {
         val poiName = poi.poiName ?: return
+        val searchable: Boolean? =
+            when (searchability) {
+                Searchability.Searchable -> true
+                Searchability.NotSearchable -> false
+                Searchability.Unknown -> null
+            }
+        val now = System.currentTimeMillis()
         database.withTransaction {
             val existing = database.poiAddressDao().findPoiByPackage(poiName, poi.packageName)
             database.poiAddressDao().insertPoi(
@@ -160,22 +163,28 @@ class AppRepository private constructor(
                     longitude = poi.longitude,
                     registered = existing?.registered ?: false,
                     isDuplicate = existing?.isDuplicate ?: poi.isDuplicate,
-                    sentMode = existing?.sentMode, // 즐겨찾기 명시 mode 보존
+                    sentMode = existing?.sentMode,
                     searchable = searchable,
-                    created = Date(),
+                    created = existing?.created ?: Date(),
+                    lastCheckedAt = now,
+                    lastUsedAt = now,
                 ),
             )
         }
     }
 
+    suspend fun touchLastUsed(poi: Poi) {
+        val poiName = poi.poiName ?: return
+        database.poiAddressDao().updateLastUsedAt(poiName, poi.packageName, System.currentTimeMillis())
+    }
+
     suspend fun clearExpiredPoi() {
-        // remove expire poi. (20% over)
         val ttlMs = PoiAddressEntity.EXPIRE_DAY.toLong() * 24L * 60L * 60L * 1000L
-        val expireDate = System.currentTimeMillis() - ttlMs * 12L / 10L
-        database.poiAddressDao().findExpired(expireDate).forEach { entity ->
-            database.withTransaction {
-                database.poiAddressDao().delete(entity)
-            }
+        val expireDate = System.currentTimeMillis() - ttlMs
+        try {
+            database.poiAddressDao().deleteExpired(expireDate)
+        } catch (e: Exception) {
+            AnalysisUtil.recordException(e)
         }
     }
 

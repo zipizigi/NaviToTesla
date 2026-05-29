@@ -55,6 +55,8 @@ class DestinationAddressResolverClassifyTest {
         // RC 도 mock — Resolver 가 KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED 등을 직접 조회.
         mockkObject(RemoteConfigUtil)
         every { RemoteConfigUtil.getBoolean(any()) } returns false
+        every { RemoteConfigUtil.getLong(any()) } returns 0L
+        every { RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS) } returns 24L
 
         dao = mockk(relaxed = true)
         db = mockk(relaxed = true)
@@ -119,9 +121,145 @@ class DestinationAddressResolverClassifyTest {
             assertSame(Searchability.Searchable, DestinationAddressResolver.classify(poi))
         }
 
+    @Test
+    fun `cooldown active returns Unknown without firestore lookup`() =
+        runBlocking {
+            // lookup_enabled=true 인데도 lastCheckedAt 이 1h 전 → 쿨다운(24h) 안이라 firestore/places 둘 다 skip.
+            coEvery { dao.findPoiByPackage(any(), any()) } returns
+                entity(
+                    searchable = null,
+                    registered = false,
+                    lastCheckedAt = System.currentTimeMillis() - 60L * 60L * 1000L,
+                )
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.Searchable
+            assertSame(Searchability.Unknown, DestinationAddressResolver.classify(poi))
+            // firestore lookup 까지 도달하지 않았음을 확인.
+            assertEquals(0, fakeCache.lookupCount)
+        }
+
+    @Test
+    fun `cooldown expired falls through to firestore lookup`() =
+        runBlocking {
+            // lastCheckedAt 이 25h 전 → 24h 쿨다운 만료, firestore lookup 진행.
+            coEvery { dao.findPoiByPackage(any(), any()) } returns
+                entity(
+                    searchable = null,
+                    registered = false,
+                    lastCheckedAt = System.currentTimeMillis() - 25L * 60L * 60L * 1000L,
+                )
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.Searchable
+            assertSame(Searchability.Searchable, DestinationAddressResolver.classify(poi))
+            assertEquals(1, fakeCache.lookupCount)
+        }
+
+    @Test
+    fun `clock skew - negative elapsed treated as cooldown expired`() =
+        runBlocking {
+            // lastCheckedAt 이 미래(now + 10분) — 디바이스 시계 역행 시나리오.
+            coEvery { dao.findPoiByPackage(any(), any()) } returns
+                entity(
+                    searchable = null,
+                    registered = false,
+                    lastCheckedAt = System.currentTimeMillis() + 10L * 60L * 1000L,
+                )
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.Searchable
+            // 음수 elapsed → 쿨다운 무시하고 firestore 진행.
+            assertSame(Searchability.Searchable, DestinationAddressResolver.classify(poi))
+            assertEquals(1, fakeCache.lookupCount)
+        }
+
+    @Test
+    fun `cooldown overflow guard - huge cooldownHours coerced safely`() =
+        runBlocking {
+            // RC 값이 Long.MAX_VALUE 라 곱셈 overflow 위험 — coerceIn 으로 안전 범위 자르고 쿨다운 적용되어야.
+            every { RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS) } returns Long.MAX_VALUE
+            coEvery { dao.findPoiByPackage(any(), any()) } returns
+                entity(
+                    searchable = null,
+                    registered = false,
+                    lastCheckedAt = System.currentTimeMillis() - 60L * 60L * 1000L,
+                )
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.Searchable
+            assertSame(Searchability.Unknown, DestinationAddressResolver.classify(poi))
+            assertEquals(0, fakeCache.lookupCount)
+        }
+
+    @Test
+    fun `cooldown disabled by RC=0 still falls through`() =
+        runBlocking {
+            // cooldownHours=0 → 쿨다운 기능 off. lastCheckedAt 이 최근이어도 firestore 진행.
+            every { RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS) } returns 0L
+            coEvery { dao.findPoiByPackage(any(), any()) } returns
+                entity(
+                    searchable = null,
+                    registered = false,
+                    lastCheckedAt = System.currentTimeMillis() - 60L * 1000L,
+                )
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.Searchable
+            assertSame(Searchability.Searchable, DestinationAddressResolver.classify(poi))
+            assertEquals(1, fakeCache.lookupCount)
+        }
+
+    @Test
+    fun `sampled out path records cooldown via markClassified(null)`() =
+        runBlocking {
+            // lookup/update 둘 다 enabled, firestore miss, ratio=0 → 항상 sampled out.
+            coEvery { dao.findPoiByPackage(any(), any()) } returns null
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
+            } returns true
+            every {
+                RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO)
+            } returns 0L
+            fakeCache.lookupResult = null
+
+            assertSame(Searchability.Unknown, DestinationAddressResolver.classify(poi))
+            io.mockk.coVerify { repo.markClassified(poi, Searchability.Unknown) }
+        }
+
+    @Test
+    fun `places api exception path records cooldown via markClassified(null)`() =
+        runBlocking {
+            coEvery { dao.findPoiByPackage(any(), any()) } returns null
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
+            } returns true
+            every {
+                RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO)
+            } returns 100L
+            fakeCache.lookupResult = null
+            fakeMatcher.throwOnMatch = RuntimeException("rate limit")
+
+            assertSame(Searchability.Unknown, DestinationAddressResolver.classify(poi))
+            io.mockk.coVerify { repo.markClassified(poi, Searchability.Unknown) }
+        }
+
     private fun entity(
         searchable: Boolean?,
         registered: Boolean,
+        lastCheckedAt: Long? = null,
+        created: java.util.Date = java.util.Date(),
     ) = PoiAddressEntity(
         id = 1,
         poi = "서울특별시청",
@@ -134,14 +272,19 @@ class DestinationAddressResolverClassifyTest {
         isDuplicate = false,
         sentMode = null,
         searchable = searchable,
-        created = java.util.Date(),
+        created = created,
+        lastCheckedAt = lastCheckedAt,
     )
 
     private class FakeCacheClient : PlaceAutocompleteCacheClient {
         var lookupResult: PlaceAutocompleteCacheEntry? = null
+        var lookupCount: Int = 0
         val cached = mutableListOf<Pair<String, Boolean>>()
 
-        override suspend fun lookup(address: String) = lookupResult
+        override suspend fun lookup(address: String): PlaceAutocompleteCacheEntry? {
+            lookupCount++
+            return lookupResult
+        }
 
         override suspend fun cache(
             address: String,
@@ -153,7 +296,11 @@ class DestinationAddressResolverClassifyTest {
 
     private class FakeMatcher : PlaceAutocompleteMatcher {
         var matchResult: Boolean = false
+        var throwOnMatch: Throwable? = null
 
-        override suspend fun isMatch(input: String) = matchResult
+        override suspend fun isMatch(input: String): Boolean {
+            throwOnMatch?.let { throw it }
+            return matchResult
+        }
     }
 }
