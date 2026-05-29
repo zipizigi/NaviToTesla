@@ -92,6 +92,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver android:name=".receiver.TeslaPackageReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_REMOVED"/>
+                <data android:scheme="package" android:ssp="com.teslamotors.tesla"/>
+            </intent-filter>
+        </receiver>
+
     </application>
     <queries>
         <package android:name="com.teslamotors.tesla"/>

@@ -2,9 +2,6 @@ package me.zipi.navitotesla.service
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.widget.Toast
 import com.google.firebase.perf.metrics.AddTrace
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.R
@@ -45,17 +42,10 @@ class NaviToTeslaService(
 
     fun isAddress(text: String): Boolean = ADDRESS_PATTERN.matcher(text).find()
 
-    private fun makeToast(text: String) {
-        try {
-            AnalysisUtil.log(text)
-            Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, text, Toast.LENGTH_LONG).show()
-            }
-        } catch (e: Exception) {
-            AnalysisUtil.recordException(e)
-            e.printStackTrace()
-        }
-    }
+    private fun makeToast(
+        text: String,
+        level: AnalysisUtil.ToastLevel = AnalysisUtil.ToastLevel.INFO,
+    ) = AnalysisUtil.makeToast(context = context, text = text, level = level)
 
     /**
      * 안내 종료
@@ -86,7 +76,7 @@ class NaviToTeslaService(
                 try {
                     share(poi)
                 } catch (_: ForbiddenException) {
-                    AnalysisUtil.log("force expire token and retry...")
+                    AnalysisUtil.warn("force expire token and retry...")
                     expireToken()
                     share(poi)
                 }
@@ -101,7 +91,10 @@ class NaviToTeslaService(
             AnalysisUtil.logEvent("duplicated_address", eventParam)
             AnalysisUtil.log("duplicate poi name: " + e.poiName)
             val duplicatedToast = {
-                makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName))
+                makeToast(
+                    text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.duplicatedPoiName),
+                    level = AnalysisUtil.ToastLevel.WARN,
+                )
             }
             val selectionEnabled = PreferencesUtil.getBoolean("duplicatePoiSelection", true)
             if (selectionEnabled && e.candidates.isNotEmpty()) {
@@ -111,7 +104,7 @@ class NaviToTeslaService(
                         duplicatedToast()
                     }
                 if (!shown) {
-                    AnalysisUtil.log("overlay permission denied for: " + e.poiName)
+                    AnalysisUtil.warn("overlay permission denied for: " + e.poiName)
                     duplicatedToast()
                 }
             } else {
@@ -120,16 +113,25 @@ class NaviToTeslaService(
         } catch (e: NotSupportedNaviException) {
             AnalysisUtil.logEvent("unsupported_navi", eventParam)
             AnalysisUtil.recordException(e)
-            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.unsupportedNavi))
+            makeToast(
+                text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.unsupportedNavi),
+                level = AnalysisUtil.ToastLevel.WARN,
+            )
         } catch (_: IgnorePoiException) {
             AnalysisUtil.logEvent("ignore_address", eventParam)
         } catch (e: ForbiddenException) {
-            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.authFail))
+            makeToast(
+                text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.authFail),
+                level = AnalysisUtil.ToastLevel.WARN,
+            )
             AnalysisUtil.logEvent("error_share", eventParam)
             AnalysisUtil.recordException(e)
         } catch (e: Exception) {
             AnalysisUtil.error("thread inside error", e)
-            makeToast(context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.apiError))
+            makeToast(
+                text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.apiError),
+                level = AnalysisUtil.ToastLevel.ERROR,
+            )
             AnalysisUtil.logEvent("error_share", eventParam)
             AnalysisUtil.recordException(e)
             AnalysisUtil.sendUnsentReports()
@@ -139,10 +141,11 @@ class NaviToTeslaService(
     @Throws(IOException::class, ForbiddenException::class)
     suspend fun share(poi: Poi) {
         if (poi.isAddressEmpty()) {
-            AnalysisUtil.log("share skipped: empty poi name=${poi.poiName}, pkg=${poi.packageName}")
+            AnalysisUtil.warn("share skipped: empty poi name=${poi.poiName}, pkg=${poi.packageName}")
             PreferencesUtil.put(key = "lastAddress", value = "")
             makeToast(
-                context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.addressNotFound),
+                text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.addressNotFound),
+                level = AnalysisUtil.ToastLevel.WARN,
             )
             return
         }
@@ -226,7 +229,10 @@ class NaviToTeslaService(
         val poiAddressEntity = appRepository.getPoiSync(poiName, packageName)
         val poi: Poi
         if (poiAddressEntity != null && !poiAddressEntity.isExpire) {
-            poi = poiAddressEntity.toPoi().copy(packageName = packageName)
+            // favorite 의 원래 packageName 보존 — cross-package favorite 의 cache key 일관성 유지.
+            // 빈 packageName(글로벌 favorite) 인 경우만 share 출처 packageName 으로 보정.
+            val effectivePackage = poiAddressEntity.packageName?.takeIf { it.isNotEmpty() } ?: packageName
+            poi = poiAddressEntity.toPoi().copy(packageName = effectivePackage)
             AnalysisUtil.logEvent("address_parse_cache", eventParam)
         } else if (isAddress(poiName)) {
             poi =
@@ -264,7 +270,7 @@ class NaviToTeslaService(
         if (refreshToken == null) {
             val token = PreferencesUtil.loadToken()
             if (token == null) {
-                makeToast(context.getString(R.string.notExistsToken))
+                makeToast(context.getString(R.string.notExistsToken), AnalysisUtil.ToastLevel.WARN)
                 return null
             } else if (!token.isExpire()) {
                 return token
@@ -289,11 +295,11 @@ class NaviToTeslaService(
             ResponseCloser.closeAll(newToken)
         } catch (e: Exception) {
             AnalysisUtil.warn("refresh token fail", e)
-            makeToast(context.getString(R.string.refreshTokenError))
+            makeToast(context.getString(R.string.refreshTokenError), AnalysisUtil.ToastLevel.WARN)
             AnalysisUtil.recordException(e)
         }
         if (token == null) {
-            AnalysisUtil.log("fail refresh access token. token is null")
+            AnalysisUtil.warn("fail refresh access token. token is null")
         }
         return token
     }
@@ -305,7 +311,7 @@ class NaviToTeslaService(
             actualToken = PreferencesUtil.loadToken()
         }
         if (actualToken?.refreshToken == null) {
-            makeToast(context.getString(R.string.requireToken))
+            makeToast(context.getString(R.string.requireToken), AnalysisUtil.ToastLevel.WARN)
             return emptyList()
         }
         val vehicles = mutableListOf<Vehicle>()
@@ -315,7 +321,7 @@ class NaviToTeslaService(
             }
             val response: Response<TeslaApiResponse.ListType<Map<String, Any>>> = appRepository.teslaApi.products()
             if (response.code() == 401) {
-                makeToast(context.getString(R.string.invalidToken))
+                makeToast(context.getString(R.string.invalidToken), AnalysisUtil.ToastLevel.WARN)
             } else if (response.isSuccessful) {
                 response
                     .body()
@@ -337,7 +343,7 @@ class NaviToTeslaService(
             AnalysisUtil.recordException(e)
         }
         if (vehicles.isEmpty()) {
-            makeToast(context.getString(R.string.noVehicle))
+            makeToast(text = context.getString(R.string.noVehicle), level = AnalysisUtil.ToastLevel.WARN)
         }
         return vehicles
     }

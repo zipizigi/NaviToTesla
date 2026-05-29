@@ -19,7 +19,7 @@ object EnablerUtil {
 
     fun addConnectedBluetooth(name: String?) {
         if (name == null) {
-            AnalysisUtil.log("add bluetooth name error. device name is null")
+            AnalysisUtil.warn("add bluetooth name error. device name is null")
             return
         }
         connectedBluetoothDevice.add(name.lowercase())
@@ -27,7 +27,7 @@ object EnablerUtil {
 
     fun removeConnectedBluetooth(name: String?) {
         if (name == null) {
-            AnalysisUtil.log("remove bluetooth name error. device name is null")
+            AnalysisUtil.warn("remove bluetooth name error. device name is null")
             return
         }
         connectedBluetoothDevice.remove(name.lowercase())
@@ -115,7 +115,7 @@ object EnablerUtil {
                     }
                 }
             } catch (Exception e) {
-                AnalysisUtil.log("error wifi condition check");
+                AnalysisUtil.warn("error wifi condition check");
                 AnalysisUtil.recordException(e);
                 return true;
             }

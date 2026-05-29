@@ -24,8 +24,8 @@ class TeslaShareByApp(
 
         if (BuildConfig.DEBUG) {
             AnalysisUtil.makeToast(
-                context,
-                "[DEBUG] 목적지 전송 By App Skip\n${payload.sendText}",
+                context = context,
+                text = "[DEBUG] 목적지 전송 By App Skip\n${payload.sendText}",
             )
             return
         }
@@ -33,7 +33,7 @@ class TeslaShareByApp(
             context.startActivity(intent)
             AnalysisUtil.logEvent("share_by_app_success", eventParam(packageName, payload))
         } catch (_: ActivityNotFoundException) {
-            AnalysisUtil.log("Tesla app is not installed")
+            AnalysisUtil.warn("Tesla app is not installed")
             AnalysisUtil.logEvent("share_by_app_fail", eventParam(packageName, payload))
         }
     }

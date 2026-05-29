@@ -18,3 +18,15 @@ val MIGRATION_9_10 =
             db.execSQL("UPDATE poi_address SET sentMode = NULL WHERE registered = 0")
         }
     }
+
+val MIGRATION_12_13 =
+    object : Migration(12, 13) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 동일 poi 에 (NULL) 과 ('') row 공존 시 UPDATE unique index 충돌 방지 — NULL row 먼저 삭제.
+            db.execSQL(
+                "DELETE FROM poi_address WHERE packageName IS NULL " +
+                    "AND poi IN (SELECT poi FROM poi_address WHERE packageName = '')",
+            )
+            db.execSQL("UPDATE poi_address SET packageName = '' WHERE packageName IS NULL")
+        }
+    }
