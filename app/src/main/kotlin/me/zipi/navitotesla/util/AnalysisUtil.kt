@@ -175,7 +175,14 @@ object AnalysisUtil {
         level: String,
         message: String,
     ) {
-        Log.i(LOG_TAG, message)
+        val priority =
+            when (level) {
+                "DEBUG" -> Log.DEBUG
+                "WARN" -> Log.WARN
+                "ERROR" -> Log.ERROR
+                else -> Log.INFO
+            }
+        Log.println(priority, LOG_TAG, message)
         val line = formatLine(level, message)
         logChannel.trySend(line)
     }

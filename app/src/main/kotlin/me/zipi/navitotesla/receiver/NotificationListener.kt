@@ -26,7 +26,7 @@ class NotificationListener : NotificationListenerService() {
     @VisibleForTesting
     internal var serviceScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val lastTitleByPackage = ConcurrentHashMap<String, String>()
+    private val lastTitleById = ConcurrentHashMap<Int, String>()
 
     override fun onCreate() {
         super.onCreate()
@@ -42,7 +42,7 @@ class NotificationListener : NotificationListenerService() {
         super.onNotificationRemoved(sbn)
         if (PoiFinderFactory.isNaviSupport(sbn.packageName)) {
             AnalysisUtil.log("onNotificationRemoved ~ packageName: ${sbn.packageName}")
-            lastTitleByPackage.remove(sbn.packageName)
+            lastTitleById.remove(sbn.id)
             serviceScope.launch { naviToTeslaService.notificationClear() }
             val param = Bundle()
             param.putString("package", sbn.packageName)
@@ -60,7 +60,7 @@ class NotificationListener : NotificationListenerService() {
                 val subText = extras.getString(Notification.EXTRA_SUB_TEXT) ?: ""
                 val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
 
-                if (lastTitleByPackage.put(sbn.packageName, title) != title) {
+                if (lastTitleById.put(sbn.id, title) != title) {
                     AnalysisUtil.log(
                         "onNotificationPosted ~ packageName: ${sbn.packageName} " +
                             "id: ${sbn.id} postTime: ${sbn.postTime} title: $title " +

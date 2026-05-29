@@ -229,7 +229,10 @@ class NaviToTeslaService(
         val poiAddressEntity = appRepository.getPoiSync(poiName, packageName)
         val poi: Poi
         if (poiAddressEntity != null && !poiAddressEntity.isExpire) {
-            poi = poiAddressEntity.toPoi().copy(packageName = packageName)
+            // favorite 의 원래 packageName 보존 — cross-package favorite 의 cache key 일관성 유지.
+            // 빈 packageName(글로벌 favorite) 인 경우만 share 출처 packageName 으로 보정.
+            val effectivePackage = poiAddressEntity.packageName?.takeIf { it.isNotEmpty() } ?: packageName
+            poi = poiAddressEntity.toPoi().copy(packageName = effectivePackage)
             AnalysisUtil.logEvent("address_parse_cache", eventParam)
         } else if (isAddress(poiName)) {
             poi =
