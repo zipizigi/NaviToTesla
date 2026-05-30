@@ -139,7 +139,7 @@ object DestinationAddressResolver {
         }
         if (prefixEnabled) cacheClient.cacheSiblings(first.predictions)
 
-        // searchable 판정을 낸 질의 결과(matchedPlaceId 추출용). null 이면 NotSearchable.
+        // matchedPlaceId 추출 때문에 boolean 대신 질의 결과를 들고 간다.
         val resolved: AutocompleteResult? =
             when {
                 first.matched -> first
