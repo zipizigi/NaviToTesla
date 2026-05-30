@@ -69,12 +69,10 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         placesId: String?,
     ) {
         try {
-            val canonical = AddressCanonicalizer.canonicalize(address)
-            AnalysisUtil.debug("cache target: '$address' -> canonical='$canonical' searchable=$searchable placesId=$placesId")
             FirebaseFirestore
                 .getInstance()
                 .collection(COLLECTION)
-                .document(hash(canonical))
+                .document(hash(AddressCanonicalizer.canonicalize(address)))
                 .set(buildDoc(searchable, placesId, computeExpiresAt()))
                 .await()
         } catch (e: CancellationException) {
@@ -92,12 +90,10 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
             // TTL/expiresAt 은 배치 전체에서 한 번만 계산해 재사용한다(형제별 RemoteConfig 읽기 방지).
             val expiresAt = computeExpiresAt()
             siblings.forEach { p ->
-                val canonical = AddressCanonicalizer.canonicalize(p.fullText)
-                AnalysisUtil.debug("cache sibling: '${p.fullText}' -> canonical='$canonical' placeId=${p.placeId}")
                 val ref =
                     db
                         .collection(COLLECTION)
-                        .document(hash(canonical))
+                        .document(hash(AddressCanonicalizer.canonicalize(p.fullText)))
                 batch.set(ref, buildDoc(searchable = true, placesId = p.placeId, expiresAt = expiresAt))
             }
             batch.commit().await()

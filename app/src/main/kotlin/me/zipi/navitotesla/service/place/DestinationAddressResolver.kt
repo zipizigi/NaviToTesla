@@ -121,8 +121,6 @@ object DestinationAddressResolver {
                 AddressPrefixBuilder.Prefix(roadAddress, isTruncated = false)
             }
 
-        AnalysisUtil.debug("classify: road='$roadAddress' prefix='${prefixSpec.prefix}' truncated=${prefixSpec.isTruncated} prefixEnabled=$prefixEnabled")
-
         val first = queryAndCacheSiblings(prefixSpec.prefix, roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi)
 
         // matchedPlaceId 추출 때문에 boolean 대신 질의 결과를 들고 간다. null 이면 NotSearchable.
@@ -146,7 +144,6 @@ object DestinationAddressResolver {
         )
         cacheClient.cache(roadAddress, searchable = searchable, placesId = resolved?.matchedPlaceId)
         val result = if (searchable) Searchability.Searchable else Searchability.NotSearchable
-        AnalysisUtil.debug("classify: verdict=$result road='$roadAddress' placesId=${resolved?.matchedPlaceId}")
         AppRepository.getInstance().markClassified(poi, result)
         return result
     }
@@ -173,14 +170,7 @@ object DestinationAddressResolver {
                 AnalysisUtil.recordException(e)
                 return null
             }
-        AnalysisUtil.debug(
-            "places query='$queryInput' target='$target' matched=${result.matched} matchedPlaceId=${result.matchedPlaceId} " +
-                "predictions=${result.predictions.map { "${it.fullText}|${it.placeId}" }}",
-        )
-        if (prefixEnabled) {
-            cacheClient.cacheSiblings(result.predictions)
-            AnalysisUtil.debug("cacheSiblings: ${result.predictions.size}건 기록")
-        }
+        if (prefixEnabled) cacheClient.cacheSiblings(result.predictions)
         return result
     }
 
