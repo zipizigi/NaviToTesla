@@ -127,11 +127,18 @@ object DestinationAddressResolver {
         // prefix 에서 못 찾고 prefix≠full(절단) 이면, prefix 자동완성 누락 가능성이 있어 full 로 한 번 더 확인한다.
         val resolved: AutocompleteResult? =
             when {
-                first.matched -> first
-                prefixSpec.isTruncated ->
+                first.matched -> {
+                    first
+                }
+
+                prefixSpec.isTruncated -> {
                     (queryAndCacheSiblings(roadAddress, roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi))
                         .takeIf { it.matched }
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
 
         val searchable = resolved != null
