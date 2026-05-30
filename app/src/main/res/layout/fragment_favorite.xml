@@ -57,14 +57,15 @@
                     android:text="@string/guideFavorite"
                     android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
-                <androidx.recyclerview.widget.RecyclerView
+                <me.zipi.navitotesla.ui.BoundedRecyclerView
                     android:id="@+id/recylerRegistered"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
                     android:minHeight="@dimen/favorite_list_min_height"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never" />
+                    android:nestedScrollingEnabled="true"
+                    android:overScrollMode="never"
+                    app:maxHeight="@dimen/favorite_list_max_height" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -107,14 +108,15 @@
                     android:text="@string/guideRecentDestination"
                     android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
-                <androidx.recyclerview.widget.RecyclerView
+                <me.zipi.navitotesla.ui.BoundedRecyclerView
                     android:id="@+id/recylerHistory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_sm"
                     android:minHeight="@dimen/favorite_list_min_height"
-                    android:nestedScrollingEnabled="false"
-                    android:overScrollMode="never" />
+                    android:nestedScrollingEnabled="true"
+                    android:overScrollMode="never"
+                    app:maxHeight="@dimen/favorite_list_max_height" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

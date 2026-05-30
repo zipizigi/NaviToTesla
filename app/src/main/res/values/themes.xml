@@ -25,9 +25,9 @@
         <item name="colorError">@color/md_error_light</item>
         <item name="colorOnError">@color/md_on_error_light</item>
 
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorSurface</item>
+        <!-- edge-to-edge: 시스템 바 색은 enableEdgeToEdge + WindowInsets 로 처리. 아이콘 대비만 지정. -->
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-        <item name="android:navigationBarColor" tools:targetApi="l">?attr/colorSurfaceContainer</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
     </style>
 
     <!-- Section title used inside cards (e.g. "전송 방식", "Tesla 토큰"). -->
