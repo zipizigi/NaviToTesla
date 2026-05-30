@@ -1,5 +1,8 @@
 package me.zipi.navitotesla.service.place
 
+/** Places Autocomplete 응답 최대 건수(API 페이지 상한). size==이 값이면 절단됐을 수 있다. */
+const val MAX_PREDICTIONS = 5
+
 /** SDK 비의존 도메인 예측. fullText 는 캐시키 정규화 전 원문. */
 data class PlacePrediction(
     val fullText: String,
@@ -28,7 +31,7 @@ class RealPlaceAutocompleteMatcher(
         return AutocompleteResult(
             predictions = predictions,
             matched = matchedIdx >= 0,
-            matchedPlaceId = matchedIdx.takeIf { it >= 0 }?.let { predictions[it].placeId },
+            matchedPlaceId = predictions.getOrNull(matchedIdx)?.placeId,
         )
     }
 }

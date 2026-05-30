@@ -113,15 +113,13 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         searchable: Boolean,
         placesId: String?,
         expiresAt: Timestamp,
-    ): Map<String, Any> {
-        val base =
-            mapOf(
-                FIELD_SEARCHABLE to searchable,
-                FIELD_EXPIRES_AT to expiresAt,
-                FIELD_CREATED_AT to FieldValue.serverTimestamp(),
-            )
-        return if (placesId != null) base + (FIELD_PLACES_ID to placesId) else base
-    }
+    ): Map<String, Any> =
+        buildMap {
+            put(FIELD_SEARCHABLE, searchable)
+            put(FIELD_EXPIRES_AT, expiresAt)
+            put(FIELD_CREATED_AT, FieldValue.serverTimestamp())
+            if (placesId != null) put(FIELD_PLACES_ID, placesId)
+        }
 
     private fun hash(address: String): String {
         val digest = MessageDigest.getInstance("SHA-256")
