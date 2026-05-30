@@ -104,61 +104,81 @@ object DestinationAddressResolver {
         val updateEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
         if (!updateEnabled) {
             AnalysisUtil.debug("classify: places update disabled by RC, unknown")
-            AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
-            return Searchability.Unknown
+            return markUnknown(poi)
         }
 
         val ratio = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO).coerceIn(0L, 100L).toInt()
         if (Random.nextInt(100) >= ratio) {
             AnalysisUtil.debug("classify: places update sampled out (ratio=$ratio), unknown")
-            AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
-            return Searchability.Unknown
+            return markUnknown(poi)
         }
 
-        val matched =
+        val prefixEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_PREFIX_ENABLED)
+        val prefixSpec =
+            if (prefixEnabled) {
+                AddressPrefixBuilder.build(roadAddress)
+            } else {
+                AddressPrefixBuilder.Prefix(roadAddress, isTruncated = false)
+            }
+
+        val first = queryAndCacheSiblings(prefixSpec.prefix, roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi)
+
+        // matchedPlaceId 추출 때문에 boolean 대신 질의 결과를 들고 간다. null 이면 NotSearchable.
+        // prefix 에서 못 찾고 prefix≠full(절단) 이면, prefix 자동완성 누락 가능성이 있어 full 로 한 번 더 확인한다.
+        val resolved: AutocompleteResult? =
+            when {
+                first.matched -> {
+                    first
+                }
+
+                prefixSpec.isTruncated -> {
+                    (queryAndCacheSiblings(roadAddress, roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi))
+                        .takeIf { it.matched }
+                }
+
+                else -> {
+                    null
+                }
+            }
+
+        val searchable = resolved != null
+        AnalysisUtil.logEvent(
+            "firestore_set",
+            Bundle().apply {
+                putString("package", poi.packageName)
+                putString("result", if (searchable) "searchable" else "not_searchable")
+            },
+        )
+        cacheClient.cache(roadAddress, searchable = searchable, placesId = resolved?.matchedPlaceId)
+        val result = if (searchable) Searchability.Searchable else Searchability.NotSearchable
+        AppRepository.getInstance().markClassified(poi, result)
+        return result
+    }
+
+    private suspend fun markUnknown(poi: Poi): Searchability {
+        AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
+        return Searchability.Unknown
+    }
+
+    // queryInput 으로 자동완성 조회(매칭은 target 기준) + (prefix 활성 시) 형제 캐싱. API 오류 시 null → Unknown.
+    private suspend fun queryAndCacheSiblings(
+        queryInput: String,
+        target: String,
+        prefixEnabled: Boolean,
+        eventParam: Bundle,
+    ): AutocompleteResult? {
+        val result =
             try {
                 AnalysisUtil.logEvent("places_api_call", eventParam)
-                matcher.isMatch(roadAddress)
+                matcher.query(queryInput, target)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 AnalysisUtil.recordException(e)
-                null
+                return null
             }
-        AnalysisUtil.debug("classify: places_api match=$matched")
-
-        return when (matched) {
-            true -> {
-                AnalysisUtil.logEvent(
-                    "firestore_set",
-                    Bundle().apply {
-                        putString("package", poi.packageName)
-                        putString("result", "searchable")
-                    },
-                )
-                cacheClient.cache(roadAddress, searchable = true)
-                AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
-                Searchability.Searchable
-            }
-
-            false -> {
-                AnalysisUtil.logEvent(
-                    "firestore_set",
-                    Bundle().apply {
-                        putString("package", poi.packageName)
-                        putString("result", "not_searchable")
-                    },
-                )
-                cacheClient.cache(roadAddress, searchable = false)
-                AppRepository.getInstance().markClassified(poi, Searchability.NotSearchable)
-                Searchability.NotSearchable
-            }
-
-            null -> {
-                AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
-                Searchability.Unknown
-            }
-        }
+        if (prefixEnabled) cacheClient.cacheSiblings(result.predictions)
+        return result
     }
 
     private fun isWithinCooldown(lastCheckedAt: Long?): Boolean {

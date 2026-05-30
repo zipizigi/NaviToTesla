@@ -48,4 +48,8 @@
         <key>sendUnknownAsNotSearchable</key>
         <value>false</value>
     </entry>
+    <entry>
+        <key>googlePlacePrefixEnabled</key>
+        <value>false</value>
+    </entry>
 </defaultsMap><!-- END xml_defaults -->
