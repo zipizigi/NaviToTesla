@@ -13,6 +13,7 @@ object RemoteConfigUtil {
     const val KEY_GOOGLE_PLACE_CHECK_TTL_DAYS = "googlePlaceCheckTtlDays"
     const val KEY_GOOGLE_PLACE_CHECK_COOLDOWN_HOURS = "googlePlaceCheckCooldownHours"
     const val KEY_SEND_UNKNOWN_AS_NOT_SEARCHABLE = "sendUnknownAsNotSearchable"
+    const val KEY_GOOGLE_PLACE_PREFIX_ENABLED = "googlePlacePrefixEnabled"
     private const val FETCH_INTERVAL_SECONDS = 20 * 3600L
     private const val DEFAULT_VALUE = "default"
 
