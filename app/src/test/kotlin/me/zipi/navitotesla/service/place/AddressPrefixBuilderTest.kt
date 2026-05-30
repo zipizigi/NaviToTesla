@@ -47,4 +47,11 @@ class AddressPrefixBuilderTest {
         assertEquals("", r.prefix)
         assertFalse(r.isTruncated)
     }
+
+    @Test
+    fun `single token without space truncates trailing digit`() {
+        val r = AddressPrefixBuilder.build("강남대로1234")
+        assertEquals("강남대로123", r.prefix)
+        assertTrue(r.isTruncated)
+    }
 }

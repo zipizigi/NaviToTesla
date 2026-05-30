@@ -73,7 +73,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
                 .getInstance()
                 .collection(COLLECTION)
                 .document(hash(AddressCanonicalizer.canonicalize(address)))
-                .set(buildDoc(searchable, placesId))
+                .set(buildDoc(searchable, placesId, computeExpiresAt()))
                 .await()
         } catch (e: CancellationException) {
             throw e
@@ -87,12 +87,14 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         try {
             val db = FirebaseFirestore.getInstance()
             val batch = db.batch()
+            // TTL/expiresAt 은 배치 전체에서 한 번만 계산해 재사용한다(형제별 RemoteConfig 읽기 방지).
+            val expiresAt = computeExpiresAt()
             siblings.forEach { p ->
                 val ref =
                     db
                         .collection(COLLECTION)
                         .document(hash(AddressCanonicalizer.canonicalize(p.fullText)))
-                batch.set(ref, buildDoc(searchable = true, placesId = p.placeId))
+                batch.set(ref, buildDoc(searchable = true, placesId = p.placeId, expiresAt = expiresAt))
             }
             batch.commit().await()
         } catch (e: CancellationException) {
@@ -102,12 +104,16 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         }
     }
 
+    private fun computeExpiresAt(): Timestamp {
+        val ttlDays = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_TTL_DAYS).takeIf { it > 0L } ?: DEFAULT_TTL_DAYS
+        return Timestamp(Date(System.currentTimeMillis() + ttlDays * 24L * 60L * 60L * 1000L))
+    }
+
     private fun buildDoc(
         searchable: Boolean,
         placesId: String?,
+        expiresAt: Timestamp,
     ): Map<String, Any> {
-        val ttlDays = RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_TTL_DAYS).takeIf { it > 0L } ?: DEFAULT_TTL_DAYS
-        val expiresAt = Timestamp(Date(System.currentTimeMillis() + ttlDays * 24L * 60L * 60L * 1000L))
         val base =
             mapOf(
                 FIELD_SEARCHABLE to searchable,
