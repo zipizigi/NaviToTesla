@@ -139,10 +139,11 @@ object DestinationAddressResolver {
         }
         if (prefixEnabled) cacheClient.cacheSiblings(first.predictions)
 
-        val resolved: Boolean =
+        // searchable 판정을 낸 질의 결과(matchedPlaceId 추출용). null 이면 NotSearchable.
+        val resolved: AutocompleteResult? =
             when {
-                first.matched -> true
-                first.predictions.size < MAX_PREDICTIONS -> false
+                first.matched -> first
+                first.predictions.size < MAX_PREDICTIONS -> null
                 prefixSpec.isTruncated -> {
                     val second =
                         try {
@@ -159,12 +160,12 @@ object DestinationAddressResolver {
                         return Searchability.Unknown
                     }
                     if (prefixEnabled) cacheClient.cacheSiblings(second.predictions)
-                    second.matched
+                    second.takeIf { it.matched }
                 }
-                else -> false
+                else -> null
             }
 
-        return if (resolved) {
+        return if (resolved != null) {
             AnalysisUtil.logEvent(
                 "firestore_set",
                 Bundle().apply {
@@ -172,7 +173,7 @@ object DestinationAddressResolver {
                     putString("result", "searchable")
                 },
             )
-            cacheClient.cache(roadAddress, searchable = true)
+            cacheClient.cache(roadAddress, searchable = true, placesId = resolved.matchedPlaceId)
             AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
             Searchability.Searchable
         } else {

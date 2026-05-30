@@ -33,5 +33,6 @@ class RealPlaceAutocompleteMatcherTest {
         assertEquals(1, result.predictions.size)
         assertEquals("대한민국 서울특별시 강남구 영동대로 513", result.predictions[0].fullText)
         assertEquals("pid1", result.predictions[0].placeId)
+        assertEquals("pid1", result.matchedPlaceId)
     }
 }

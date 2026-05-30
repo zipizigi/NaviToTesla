@@ -9,6 +9,7 @@ data class PlacePrediction(
 data class AutocompleteResult(
     val predictions: List<PlacePrediction>,
     val matched: Boolean,
+    val matchedPlaceId: String?,
 )
 
 interface PlaceAutocompleteMatcher {
@@ -21,9 +22,13 @@ class RealPlaceAutocompleteMatcher(
 ) : PlaceAutocompleteMatcher {
     override suspend fun query(input: String): AutocompleteResult {
         val raw = client.fetchPredictions(input)
-        val matched = roadNumberMatcher.matches(input, raw)
         val predictions =
             raw.map { PlacePrediction(fullText = it.getFullText(null).toString(), placeId = it.placeId) }
-        return AutocompleteResult(predictions = predictions, matched = matched)
+        val matchedIdx = raw.indexOfFirst { roadNumberMatcher.matches(input, listOf(it)) }
+        return AutocompleteResult(
+            predictions = predictions,
+            matched = matchedIdx >= 0,
+            matchedPlaceId = matchedIdx.takeIf { it >= 0 }?.let { predictions[it].placeId },
+        )
     }
 }
