@@ -321,10 +321,10 @@ class DestinationAddressResolverClassifyTest {
         }
 
     @Test
-    fun `prefix miss with fewer than max is not searchable in one call`() =
+    fun `prefix miss truncated then full miss is not searchable (two calls)`() =
         runBlocking {
             enablePrefixFlow()
-            // 4건만 반환(<5) + 타깃 미포함 → 전수 → NotSearchable, 2차 없음
+            // prefix 미매칭(건수 무관) → 절단됐으므로 항상 2차 full. full 도 미매칭(미설정=빈결과) → NotSearchable.
             fakeMatcher.results["서울특별시 강남구 영동대로 123"] =
                 AutocompleteResult(
                     List(4) { PlacePrediction("대한민국 서울특별시 강남구 영동대로 12${it}0", "p$it") },
@@ -335,19 +335,22 @@ class DestinationAddressResolverClassifyTest {
             val result = DestinationAddressResolver.classify(numberPoi)
 
             assertEquals(Searchability.NotSearchable, result)
-            assertEquals(listOf("서울특별시 강남구 영동대로 123"), fakeMatcher.queried) // 1호출
+            assertEquals(
+                listOf("서울특별시 강남구 영동대로 123", "서울특별시 강남구 영동대로 1234"),
+                fakeMatcher.queried,
+            ) // 1차 미스 → 2차 full = 2호출
             assertEquals("서울특별시 강남구 영동대로 1234" to false, fakeCache.cached.single())
             assertEquals(null, fakeCache.cachedPlacesId.single())
-            // matched 여부와 무관하게 1차 형제 캐싱은 발생해야 한다.
-            assertEquals(1, fakeCache.siblingBatches.size)
-            assertEquals(4, fakeCache.siblingBatches.single().size)
+            // 1차(4건)+2차(0건) 모두 형제 캐싱 시도.
+            assertEquals(2, fakeCache.siblingBatches.size)
+            assertEquals(4, fakeCache.siblingBatches[0].size)
         }
 
     @Test
-    fun `prefix miss with exactly max triggers full second query`() =
+    fun `prefix miss truncated then full hit is searchable (two calls)`() =
         runBlocking {
             enablePrefixFlow()
-            // 1차: 정확히 5건 + 타깃 미포함 → 모호 → 2차 full
+            // 1차 prefix 미매칭(건수와 무관) → 절단됐으므로 2차 full 로 확인
             fakeMatcher.results["서울특별시 강남구 영동대로 123"] =
                 AutocompleteResult(
                     List(5) { PlacePrediction("대한민국 서울특별시 강남구 영동대로 12${it}9", "p$it") },
@@ -479,11 +482,14 @@ class DestinationAddressResolverClassifyTest {
         var throwOnQuery: Throwable? = null
         val throwForInput = mutableMapOf<String, Throwable>()
 
-        override suspend fun query(input: String): AutocompleteResult {
-            queried += input
-            throwForInput[input]?.let { throw it }
+        override suspend fun query(
+            queryInput: String,
+            target: String,
+        ): AutocompleteResult {
+            queried += queryInput
+            throwForInput[queryInput]?.let { throw it }
             throwOnQuery?.let { throw it }
-            return results[input] ?: AutocompleteResult(emptyList(), false, null)
+            return results[queryInput] ?: AutocompleteResult(emptyList(), false, null)
         }
     }
 }

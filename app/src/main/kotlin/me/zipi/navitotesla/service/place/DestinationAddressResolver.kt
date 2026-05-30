@@ -121,15 +121,17 @@ object DestinationAddressResolver {
                 AddressPrefixBuilder.Prefix(roadAddress, isTruncated = false)
             }
 
-        val first = queryAndCacheSiblings(prefixSpec.prefix, prefixEnabled, eventParam) ?: return markUnknown(poi)
+        AnalysisUtil.debug("classify: road='$roadAddress' prefix='${prefixSpec.prefix}' truncated=${prefixSpec.isTruncated} prefixEnabled=$prefixEnabled")
+
+        val first = queryAndCacheSiblings(prefixSpec.prefix, roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi)
 
         // matchedPlaceId 추출 때문에 boolean 대신 질의 결과를 들고 간다. null 이면 NotSearchable.
+        // prefix 에서 못 찾고 prefix≠full(절단) 이면, prefix 자동완성 누락 가능성이 있어 full 로 한 번 더 확인한다.
         val resolved: AutocompleteResult? =
             when {
                 first.matched -> first
-                first.predictions.size < MAX_PREDICTIONS -> null
                 prefixSpec.isTruncated ->
-                    (queryAndCacheSiblings(roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi))
+                    (queryAndCacheSiblings(roadAddress, roadAddress, prefixEnabled, eventParam) ?: return markUnknown(poi))
                         .takeIf { it.matched }
                 else -> null
             }
@@ -144,6 +146,7 @@ object DestinationAddressResolver {
         )
         cacheClient.cache(roadAddress, searchable = searchable, placesId = resolved?.matchedPlaceId)
         val result = if (searchable) Searchability.Searchable else Searchability.NotSearchable
+        AnalysisUtil.debug("classify: verdict=$result road='$roadAddress' placesId=${resolved?.matchedPlaceId}")
         AppRepository.getInstance().markClassified(poi, result)
         return result
     }
@@ -153,23 +156,31 @@ object DestinationAddressResolver {
         return Searchability.Unknown
     }
 
-    // places API 질의 + (prefix 활성 시) 형제 캐싱. API 오류 시 null → 호출부에서 Unknown 처리.
+    // queryInput 으로 자동완성 조회(매칭은 target 기준) + (prefix 활성 시) 형제 캐싱. API 오류 시 null → Unknown.
     private suspend fun queryAndCacheSiblings(
-        input: String,
+        queryInput: String,
+        target: String,
         prefixEnabled: Boolean,
         eventParam: Bundle,
     ): AutocompleteResult? {
         val result =
             try {
                 AnalysisUtil.logEvent("places_api_call", eventParam)
-                matcher.query(input)
+                matcher.query(queryInput, target)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 AnalysisUtil.recordException(e)
                 return null
             }
-        if (prefixEnabled) cacheClient.cacheSiblings(result.predictions)
+        AnalysisUtil.debug(
+            "places query='$queryInput' target='$target' matched=${result.matched} matchedPlaceId=${result.matchedPlaceId} " +
+                "predictions=${result.predictions.map { "${it.fullText}|${it.placeId}" }}",
+        )
+        if (prefixEnabled) {
+            cacheClient.cacheSiblings(result.predictions)
+            AnalysisUtil.debug("cacheSiblings: ${result.predictions.size}건 기록")
+        }
         return result
     }
 

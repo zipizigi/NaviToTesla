@@ -1,8 +1,5 @@
 package me.zipi.navitotesla.service.place
 
-/** Places Autocomplete 응답 최대 건수(API 페이지 상한). size==이 값이면 절단됐을 수 있다. */
-const val MAX_PREDICTIONS = 5
-
 /** SDK 비의존 도메인 예측. fullText 는 캐시키 정규화 전 원문. */
 data class PlacePrediction(
     val fullText: String,
@@ -16,18 +13,28 @@ data class AutocompleteResult(
 )
 
 interface PlaceAutocompleteMatcher {
-    suspend fun query(input: String): AutocompleteResult
+    /**
+     * [queryInput] 으로 자동완성을 조회하되, 매칭은 항상 [target](목적지 도로명주소) 기준으로 한다.
+     * prefix 조회 시 queryInput(잘린 prefix)≠target 이므로 둘을 분리해야 한다.
+     */
+    suspend fun query(
+        queryInput: String,
+        target: String,
+    ): AutocompleteResult
 }
 
 class RealPlaceAutocompleteMatcher(
     private val client: PlacesAutocompleteClient = PlacesAutocompleteClient,
     private val roadNumberMatcher: RoadNumberMatcher = RoadNumberMatcher(),
 ) : PlaceAutocompleteMatcher {
-    override suspend fun query(input: String): AutocompleteResult {
-        val raw = client.fetchPredictions(input)
+    override suspend fun query(
+        queryInput: String,
+        target: String,
+    ): AutocompleteResult {
+        val raw = client.fetchPredictions(queryInput)
         val predictions =
             raw.map { PlacePrediction(fullText = it.getFullText(null).toString(), placeId = it.placeId) }
-        val matchedIdx = raw.indexOfFirst { roadNumberMatcher.matches(input, listOf(it)) }
+        val matchedIdx = raw.indexOfFirst { roadNumberMatcher.matches(target, listOf(it)) }
         return AutocompleteResult(
             predictions = predictions,
             matched = matchedIdx >= 0,
