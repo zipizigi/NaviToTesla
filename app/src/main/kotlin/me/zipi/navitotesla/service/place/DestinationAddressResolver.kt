@@ -115,51 +115,81 @@ object DestinationAddressResolver {
             return Searchability.Unknown
         }
 
-        val matched =
+        val prefixEnabled = RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_PREFIX_ENABLED)
+        val prefixSpec =
+            if (prefixEnabled) {
+                AddressPrefixBuilder.build(roadAddress)
+            } else {
+                AddressPrefixBuilder.Prefix(roadAddress, isTruncated = false)
+            }
+
+        val first =
             try {
                 AnalysisUtil.logEvent("places_api_call", eventParam)
-                matcher.isMatch(roadAddress)
+                matcher.query(prefixSpec.prefix)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 AnalysisUtil.recordException(e)
                 null
             }
-        AnalysisUtil.debug("classify: places_api match=$matched")
+        if (first == null) {
+            AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
+            return Searchability.Unknown
+        }
+        if (prefixEnabled) cacheClient.cacheSiblings(first.predictions)
 
-        return when (matched) {
-            true -> {
-                AnalysisUtil.logEvent(
-                    "firestore_set",
-                    Bundle().apply {
-                        putString("package", poi.packageName)
-                        putString("result", "searchable")
-                    },
-                )
-                cacheClient.cache(roadAddress, searchable = true)
-                AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
-                Searchability.Searchable
+        val resolved: Boolean =
+            when {
+                first.matched -> true
+                first.predictions.size < MAX_PREDICTIONS -> false
+                prefixSpec.isTruncated -> {
+                    val second =
+                        try {
+                            AnalysisUtil.logEvent("places_api_call", eventParam)
+                            matcher.query(roadAddress)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            AnalysisUtil.recordException(e)
+                            null
+                        }
+                    if (second == null) {
+                        AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
+                        return Searchability.Unknown
+                    }
+                    if (prefixEnabled) cacheClient.cacheSiblings(second.predictions)
+                    second.matched
+                }
+                else -> false
             }
 
-            false -> {
-                AnalysisUtil.logEvent(
-                    "firestore_set",
-                    Bundle().apply {
-                        putString("package", poi.packageName)
-                        putString("result", "not_searchable")
-                    },
-                )
-                cacheClient.cache(roadAddress, searchable = false)
-                AppRepository.getInstance().markClassified(poi, Searchability.NotSearchable)
-                Searchability.NotSearchable
-            }
-
-            null -> {
-                AppRepository.getInstance().markClassified(poi, Searchability.Unknown)
-                Searchability.Unknown
-            }
+        return if (resolved) {
+            AnalysisUtil.logEvent(
+                "firestore_set",
+                Bundle().apply {
+                    putString("package", poi.packageName)
+                    putString("result", "searchable")
+                },
+            )
+            cacheClient.cache(roadAddress, searchable = true)
+            AppRepository.getInstance().markClassified(poi, Searchability.Searchable)
+            Searchability.Searchable
+        } else {
+            AnalysisUtil.logEvent(
+                "firestore_set",
+                Bundle().apply {
+                    putString("package", poi.packageName)
+                    putString("result", "not_searchable")
+                },
+            )
+            cacheClient.cache(roadAddress, searchable = false)
+            AppRepository.getInstance().markClassified(poi, Searchability.NotSearchable)
+            Searchability.NotSearchable
         }
     }
+
+    private const val MAX_PREDICTIONS = 5
 
     private fun isWithinCooldown(lastCheckedAt: Long?): Boolean {
         if (lastCheckedAt == null) return false
