@@ -7,8 +7,8 @@ import me.zipi.navitotesla.BuildConfig
 object AppCheckUtil {
     fun initialize() {
         if (BuildConfig.BUILD_MODE != "playstore") return
-        FirebaseAppCheck
-            .getInstance()
-            .installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
+        val appCheck = FirebaseAppCheck.getInstance()
+        appCheck.installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
+        appCheck.setTokenAutoRefreshEnabled(true)
     }
 }
