@@ -1,8 +1,10 @@
 package me.zipi.navitotesla.service.place
 
+import android.os.Bundle
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -59,7 +61,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AnalysisUtil.recordException(e)
+            report(e, "lookup")
             null
         }
 
@@ -78,7 +80,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AnalysisUtil.recordException(e)
+            report(e, "cache")
         }
     }
 
@@ -100,6 +102,17 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            report(e, "cacheSiblings")
+        }
+    }
+
+    private fun report(
+        e: Exception,
+        op: String,
+    ) {
+        if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+            AnalysisUtil.logEvent("firestore_permission_denied", Bundle().apply { putString("op", op) })
+        } else {
             AnalysisUtil.recordException(e)
         }
     }
