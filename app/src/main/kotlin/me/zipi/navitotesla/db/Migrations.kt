@@ -28,6 +28,12 @@ val MIGRATION_12_13 =
                 AND poi IN (SELECT poi FROM poi_address WHERE packageName = '')
                 """,
             )
+            db.execSQL(
+                """
+                DELETE FROM poi_address WHERE packageName IS NULL
+                AND id NOT IN (SELECT MIN(id) FROM poi_address WHERE packageName IS NULL GROUP BY poi)
+                """,
+            )
             db.execSQL("UPDATE poi_address SET packageName = '' WHERE packageName IS NULL")
         }
     }
