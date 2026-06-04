@@ -97,6 +97,11 @@ object DestinationAddressResolver {
                 return Searchability.NotSearchable
             }
 
+            PlaceAutocompleteCacheEntry.PermissionDenied -> {
+                AnalysisUtil.debug("classify: firestore permission denied, skip places")
+                return markUnknown(poi)
+            }
+
             null -> {
                 AnalysisUtil.debug("classify: firestore miss")
             }

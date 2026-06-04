@@ -280,6 +280,32 @@ class DestinationAddressResolverClassifyTest {
         }
 
     @Test
+    fun `firestore permission denied skips places api and marks unknown`() =
+        runBlocking {
+            coEvery { dao.findPoiByPackage(any(), any()) } returns null
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_LOOKUP_ENABLED)
+            } returns true
+            every {
+                RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED)
+            } returns true
+            every {
+                RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO)
+            } returns 100L
+            fakeCache.lookupResult = PlaceAutocompleteCacheEntry.PermissionDenied
+            fakeMatcher.results["서울특별시 중구 세종대로 110"] =
+                AutocompleteResult(
+                    listOf(PlacePrediction("대한민국 서울특별시 중구 세종대로 110", "pid")),
+                    matched = true,
+                    matchedPlaceId = "pid",
+                )
+
+            assertSame(Searchability.Unknown, DestinationAddressResolver.classify(poi))
+            assertTrue(fakeMatcher.queried.isEmpty())
+            io.mockk.coVerify { repo.markClassified(poi, Searchability.Unknown) }
+        }
+
+    @Test
     fun `places quota exceeded logs event instead of recording exception`() =
         runBlocking {
             coEvery { dao.findPoiByPackage(any(), any()) } returns null

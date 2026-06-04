@@ -16,6 +16,8 @@ sealed class PlaceAutocompleteCacheEntry {
     object Searchable : PlaceAutocompleteCacheEntry()
 
     object NotSearchable : PlaceAutocompleteCacheEntry()
+
+    object PermissionDenied : PlaceAutocompleteCacheEntry()
 }
 
 interface PlaceAutocompleteCacheClient {
@@ -62,7 +64,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
             throw e
         } catch (e: Exception) {
             report(e, "lookup")
-            null
+            if (isPermissionDenied(e)) PlaceAutocompleteCacheEntry.PermissionDenied else null
         }
 
     override suspend fun cache(
@@ -106,11 +108,14 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         }
     }
 
+    private fun isPermissionDenied(e: Exception): Boolean =
+        e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED
+
     private fun report(
         e: Exception,
         op: String,
     ) {
-        if (e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+        if (isPermissionDenied(e)) {
             AnalysisUtil.logEvent("firestore_permission_denied", Bundle().apply { putString("op", op) })
         } else {
             AnalysisUtil.recordException(e)

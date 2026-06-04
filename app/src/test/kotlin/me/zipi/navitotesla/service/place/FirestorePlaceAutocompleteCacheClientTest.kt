@@ -18,6 +18,7 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
 import org.junit.After
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 
@@ -52,7 +53,7 @@ class FirestorePlaceAutocompleteCacheClientTest {
     }
 
     @Test
-    fun `lookup permission denied logs event instead of recording exception`() =
+    fun `lookup permission denied returns PermissionDenied and logs event instead of recording exception`() =
         runBlocking {
             every { docRef.get() } returns
                 Tasks.forException(
@@ -62,7 +63,10 @@ class FirestorePlaceAutocompleteCacheClientTest {
                     ),
                 )
 
-            assertNull(FirestorePlaceAutocompleteCacheClient.lookup("서울특별시 중구 세종대로 110"))
+            assertSame(
+                PlaceAutocompleteCacheEntry.PermissionDenied,
+                FirestorePlaceAutocompleteCacheClient.lookup("서울특별시 중구 세종대로 110"),
+            )
             verify { AnalysisUtil.logEvent("firestore_permission_denied", any()) }
             verify(exactly = 0) { AnalysisUtil.recordException(any()) }
         }
