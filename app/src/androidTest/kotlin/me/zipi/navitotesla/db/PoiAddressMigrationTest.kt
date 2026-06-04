@@ -112,6 +112,69 @@ class PoiAddressMigrationTest {
 
     @Test
     @Throws(IOException::class)
+    fun migrate12To13_dedupesNullPackageNameRows_beforeBlankingThem() {
+        helper.createDatabase(testDbName, 12).use { db ->
+            // 같은 poi 를 가진 NULL 행 2개, '' 짝 없음 — UPDATE 시 UNIQUE 충돌 원인
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('dup', NULL, 'dup first', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('dup', NULL, 'dup second', 1, 'ROAD', 1700000000001)
+                """.trimIndent(),
+            )
+            // NULL + '' 짝 — 기존 DELETE 가 NULL 쪽을 제거
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('paired', NULL, 'paired null', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('paired', '', 'paired blank', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            // 단독 NULL 행 — '' 로 변환만
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('solo', NULL, 'solo road', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+            // 일반 행 — 영향 없음
+            db.execSQL(
+                """
+                INSERT INTO poi_address (poi, packageName, roadAddress, registered, sentMode, created)
+                VALUES ('normal', 'pkg.a', 'normal road', 1, 'ROAD', 1700000000000)
+                """.trimIndent(),
+            )
+        }
+
+        val db = helper.runMigrationsAndValidate(testDbName, 13, true, MIGRATION_12_13)
+
+        db.query("SELECT poi, packageName, roadAddress FROM poi_address ORDER BY poi").use { cursor ->
+            assertEquals(4, cursor.count)
+            cursor.moveToFirst()
+            assertEquals("dup" to "", cursor.getString(0) to cursor.getString(1))
+            assertEquals("dup first", cursor.getString(2)) // id 가 작은 행 보존
+            cursor.moveToNext()
+            assertEquals("normal" to "pkg.a", cursor.getString(0) to cursor.getString(1))
+            cursor.moveToNext()
+            assertEquals("paired" to "", cursor.getString(0) to cursor.getString(1))
+            assertEquals("paired blank", cursor.getString(2))
+            cursor.moveToNext()
+            assertEquals("solo" to "", cursor.getString(0) to cursor.getString(1))
+        }
+    }
+
+    @Test
+    @Throws(IOException::class)
     fun migrate13To14_keepsShortestPerGroupAndTrimsAll() {
         helper.createDatabase(testDbName, 13).use { db ->
             // 단독 dirty favorite — TRIM

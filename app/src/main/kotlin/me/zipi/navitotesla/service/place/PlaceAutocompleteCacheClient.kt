@@ -1,8 +1,10 @@
 package me.zipi.navitotesla.service.place
 
+import android.os.Bundle
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -14,6 +16,8 @@ sealed class PlaceAutocompleteCacheEntry {
     object Searchable : PlaceAutocompleteCacheEntry()
 
     object NotSearchable : PlaceAutocompleteCacheEntry()
+
+    object PermissionDenied : PlaceAutocompleteCacheEntry()
 }
 
 interface PlaceAutocompleteCacheClient {
@@ -59,8 +63,8 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AnalysisUtil.recordException(e)
-            null
+            report(e, "lookup")
+            if (isPermissionDenied(e)) PlaceAutocompleteCacheEntry.PermissionDenied else null
         }
 
     override suspend fun cache(
@@ -78,7 +82,7 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            AnalysisUtil.recordException(e)
+            report(e, "cache")
         }
     }
 
@@ -100,6 +104,20 @@ object FirestorePlaceAutocompleteCacheClient : PlaceAutocompleteCacheClient {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            report(e, "cacheSiblings")
+        }
+    }
+
+    private fun isPermissionDenied(e: Exception): Boolean =
+        e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED
+
+    private fun report(
+        e: Exception,
+        op: String,
+    ) {
+        if (isPermissionDenied(e)) {
+            AnalysisUtil.logEvent("firestore_permission_denied", Bundle().apply { putString("op", op) })
+        } else {
             AnalysisUtil.recordException(e)
         }
     }

@@ -1,6 +1,7 @@
 package me.zipi.navitotesla.service.place
 
 import android.os.Bundle
+import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.CancellationException
 import me.zipi.navitotesla.AppRepository
 import me.zipi.navitotesla.BuildConfig
@@ -96,6 +97,11 @@ object DestinationAddressResolver {
                 return Searchability.NotSearchable
             }
 
+            PlaceAutocompleteCacheEntry.PermissionDenied -> {
+                AnalysisUtil.debug("classify: firestore permission denied, skip places")
+                return markUnknown(poi)
+            }
+
             null -> {
                 AnalysisUtil.debug("classify: firestore miss")
             }
@@ -174,12 +180,18 @@ object DestinationAddressResolver {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                AnalysisUtil.recordException(e)
+                if (isQuotaExceeded(e)) {
+                    AnalysisUtil.logEvent("places_api_quota_exceeded", eventParam)
+                } else {
+                    AnalysisUtil.recordException(e)
+                }
                 return null
             }
         if (prefixEnabled) cacheClient.cacheSiblings(result.predictions)
         return result
     }
+
+    private fun isQuotaExceeded(e: Exception): Boolean = e is ApiException && e.message?.contains("quota", ignoreCase = true) == true
 
     private fun isWithinCooldown(lastCheckedAt: Long?): Boolean {
         if (lastCheckedAt == null) return false
