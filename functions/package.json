@@ -2,7 +2,7 @@
   "name": "navito-functions",
   "private": true,
   "engines": {
-    "node": "22"
+    "node": "24"
   },
   "main": "index.js",
   "scripts": {
