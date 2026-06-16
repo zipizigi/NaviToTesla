@@ -11,6 +11,6 @@
   },
   "dependencies": {
     "firebase-admin": "^14.0.0",
-    "firebase-functions": "^6.0.0"
+    "firebase-functions": "^7.0.0"
   }
 }
