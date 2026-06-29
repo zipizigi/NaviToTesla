@@ -105,13 +105,14 @@ class SettingFragment :
     }
 
     private fun removeBluetoothDevice(position: Int) {
-        if (context == null || settingViewModel.bluetoothConditions.value == null) {
+        val name = settingViewModel.bluetoothConditions.value?.getOrNull(position) ?: return
+        if (context == null) {
             return
         }
-        settingViewModel.bluetoothConditions.value!![position]
-            .run { EnablerUtil.removeBluetoothCondition(this) }
-
-        updateConditions()
+        viewLifecycleOwner.lifecycleScope.launch {
+            EnablerUtil.removeBluetoothCondition(name).join()
+            settingViewModel.reloadBluetoothConditions()
+        }
     }
 
     override fun onResume() {
@@ -288,46 +289,23 @@ class SettingFragment :
 
     private fun updateConditions() =
         viewLifecycleOwner.lifecycleScope.launch {
-            if (context != null && activity != null) {
-                val appEnabled = context?.let { EnablerUtil.getAppEnabled() } ?: true
-                val conditionEnabled = context?.let { EnablerUtil.getConditionEnabled() } ?: false
+            if (context == null || activity == null) {
+                return@launch
+            }
+            // 앱 동작/조건/블루투스 상태는 ViewModel 이 저장소에서 로드한다(persist 하지 않음). 옵저버가 라디오/카드에 반영.
+            settingViewModel.loadStates()
+
+            launch {
                 val accEnabled: Boolean =
                     context?.let {
                         NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
                     } ?: false
-
                 withContext(Dispatchers.Main) {
-                    binding.radioGroupAppEnable.check(if (appEnabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
-                    binding.radioGroupConditionEnable.check(
-                        if (conditionEnabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id,
-                    )
                     if (accEnabled) {
                         binding.radioAccEnable.isChecked = true
                     } else {
                         binding.radioAccDisable.isChecked = true
                     }
-                }
-            }
-
-            launch {
-                context?.run {
-                    settingViewModel.bluetoothConditions.postValue(
-                        EnablerUtil.listBluetoothCondition(),
-                    )
-                }
-            }
-            launch {
-                context?.run {
-                    settingViewModel.isAppEnabled.postValue(
-                        EnablerUtil.getAppEnabled(),
-                    )
-                }
-            }
-            launch {
-                context?.run {
-                    settingViewModel.isConditionEnabled.postValue(
-                        EnablerUtil.getConditionEnabled(),
-                    )
                 }
             }
             launch {
@@ -401,10 +379,8 @@ class SettingFragment :
                 val selectedDevice = dialogSpinner.selectedItem.toString()
                 lifecycleScope.launch {
                     if (context != null) {
-                        EnablerUtil.addBluetoothCondition(selectedDevice)
-                        settingViewModel.bluetoothConditions.postValue(
-                            EnablerUtil.listBluetoothCondition(),
-                        )
+                        EnablerUtil.addBluetoothCondition(selectedDevice).join()
+                        settingViewModel.reloadBluetoothConditions()
                     }
                 }
             }.setNegativeButton(activity.getString(R.string.close)) { _: DialogInterface?, _: Int -> }
@@ -441,12 +417,10 @@ class SettingFragment :
         return granted
     }
 
+    // 옵저버는 UI 반영만 한다. 저장은 사용자가 실제 토글했을 때(onCheckedChanged → ViewModel)만 일어난다.
+    // 옵저버에서 persist 하면 초기 기본값 재방출이 저장된 설정을 덮어쓴다(조건이 계속 비활성으로 돌아가던 버그).
     private fun onChangedAppEnabled(enabled: Boolean) {
-        lifecycleScope.launch {
-            if (context != null) {
-                EnablerUtil.setAppEnabled(enabled)
-            }
-        }
+        binding.radioGroupAppEnable.check(if (enabled) binding.radioAppEnable.id else binding.radioAppDisable.id)
     }
 
     private fun onChangedConditionEnabled(enabled: Boolean) {
@@ -460,11 +434,9 @@ class SettingFragment :
         }
         binding.cardBluetooth.visibility = if (enabled) View.VISIBLE else View.GONE
         conditionAnimReady = true
-        lifecycleScope.launch {
-            if (context != null) {
-                EnablerUtil.setConditionEnabled(enabled)
-            }
-        }
+        binding.radioGroupConditionEnable.check(
+            if (enabled) binding.radioConditionEnable.id else binding.radioConditionDisable.id,
+        )
     }
 
     override fun onCheckedChanged(
@@ -472,21 +444,13 @@ class SettingFragment :
         checkedId: Int,
     ) {
         if (checkedId == R.id.radioAppEnable) {
-            if (settingViewModel.isAppEnabled.value == false) {
-                settingViewModel.isAppEnabled.postValue(true)
-            }
+            settingViewModel.setAppEnabledByUser(true)
         } else if (checkedId == R.id.radioAppDisable) {
-            if (settingViewModel.isAppEnabled.value == true) {
-                settingViewModel.isAppEnabled.postValue(false)
-            }
+            settingViewModel.setAppEnabledByUser(false)
         } else if (checkedId == R.id.radioConditionEnable) {
-            if (settingViewModel.isConditionEnabled.value == false) {
-                settingViewModel.isConditionEnabled.postValue(true)
-            }
+            settingViewModel.setConditionEnabledByUser(true)
         } else if (checkedId == R.id.radioConditionDisable) {
-            if (settingViewModel.isConditionEnabled.value == true) {
-                settingViewModel.isConditionEnabled.postValue(false)
-            }
+            settingViewModel.setConditionEnabledByUser(false)
         } else if (checkedId == R.id.radioAccEnable) {
             if (activity != null &&
                 !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
