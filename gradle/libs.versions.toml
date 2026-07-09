@@ -75,7 +75,7 @@ okhttp3 = "com.squareup.okhttp3:okhttp:5.4.0"
 okhttp3-logging = "com.squareup.okhttp3:logging-interceptor:5.4.0"
 
 ted-permission = "io.github.ParkSangGwon:tedpermission-coroutine:3.4.2"
-google-places = "com.google.android.libraries.places:places:5.2.0"
+google-places = "com.google.android.libraries.places:places:5.3.0"
 ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlint-cli" }
 
 [bundles]
