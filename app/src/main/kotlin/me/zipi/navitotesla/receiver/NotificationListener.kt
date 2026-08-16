@@ -73,10 +73,12 @@ class NotificationListener : NotificationListenerService() {
                 bundle.putString(FirebaseAnalytics.Param.SCREEN_CLASS, "NotificationListener")
                 AnalysisUtil.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle)
                 AnalysisUtil.setCustomKey("packageName", sbn.packageName)
+                NaviToTeslaAccessibilityService.closeScanWindow()
                 ShareWorker.startShare(applicationContext, sbn.packageName, title, text)
                 NaviToTeslaAccessibilityService.notifyIfAvailable(
                     applicationContext,
                     sbn.packageName,
+                    text,
                 )
                 RemoteConfigUtil.initialize()
                 VersionCheckWorker.startVersionCheck(applicationContext)

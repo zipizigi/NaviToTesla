@@ -30,4 +30,7 @@ interface PoiFinder {
         notificationTitle: String,
         notificationText: String,
     ): Boolean
+
+    /** 전송에 성공하면 접근성으로 모아 둔 목적지를 버린다. 알림이 재발행돼도 다시 나가지 않도록. */
+    fun consumeCapturedDestination() {}
 }

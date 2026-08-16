@@ -69,4 +69,41 @@ class PoiFinderFactoryTest {
             PoiFinderFactory.getPoiFinder("com.example.unknown")
         }
     }
+
+    @Test
+    fun `isKakaoNavi distinguishes Kakao vs others`() {
+        assertTrue(PoiFinderFactory.isKakaoNavi("com.locnall.KimGiSa"))
+        assertFalse(PoiFinderFactory.isKakaoNavi("com.nhn.android.nmap"))
+    }
+
+    @Test
+    fun `isAccessibilityRequired is always true for Naver`() {
+        assertTrue(PoiFinderFactory.isAccessibilityRequired("com.nhn.android.nmap", "무엇이든"))
+    }
+
+    @Test
+    fun `isAccessibilityRequired is false for legacy Kakao notification`() {
+        assertFalse(PoiFinderFactory.isAccessibilityRequired("com.locnall.KimGiSa", "목적지 : 송파구청"))
+    }
+
+    @Test
+    fun `isAccessibilityRequired is true for new Kakao notification`() {
+        assertTrue(
+            PoiFinderFactory.isAccessibilityRequired("com.locnall.KimGiSa", "빠르고 즐거운 운전, 카카오내비"),
+        )
+    }
+
+    @Test
+    fun `isAccessibilityRequired is false for TMap`() {
+        assertFalse(PoiFinderFactory.isAccessibilityRequired("com.skt.tmap.ku", "어디까지"))
+    }
+
+    @Test
+    fun `clearAllCapturedDestinations empties every finder cache`() {
+        KakaoPoiFinder.addDestination("정자역")
+        NaverPoiFinder.addDestination("판교역")
+        PoiFinderFactory.clearAllCapturedDestinations()
+        assertTrue(KakaoPoiFinder.isDestinationEmpty())
+        assertTrue(NaverPoiFinder.isDestinationEmpty())
+    }
 }
