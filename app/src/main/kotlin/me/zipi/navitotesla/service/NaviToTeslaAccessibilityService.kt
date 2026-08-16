@@ -79,7 +79,6 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
         fun isAccessibilityServiceRunning(): Boolean = connectedAt > 0L
 
-        /** 안내가 시작되면 더 훑을 이유가 없다. */
         fun closeScanWindow() {
             instance?.readers?.values?.forEach { it.closeScanWindow() }
         }

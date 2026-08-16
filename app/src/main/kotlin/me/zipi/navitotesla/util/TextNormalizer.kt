@@ -1,9 +1,6 @@
 package me.zipi.navitotesla.util
 
-/**
- * 내비 화면에서 읽은 목적지에는 눈에 보이지 않는 비표준 문자가 섞인다.
- * 정규화하지 않으면 그대로 지오코딩 API 로 넘어가 검색이 실패한다.
- */
+/** 목적지에 섞여 오는 비표준 공백·하이픈을 표준 문자로 접는다. */
 object TextNormalizer {
     private val SPACES =
         charArrayOf(
