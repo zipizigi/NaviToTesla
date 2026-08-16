@@ -61,7 +61,7 @@ class KakaoPoiFinder : PoiFinder {
         if (destination.isNullOrEmpty()) return true
         if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
         // 안전운전 진입에도 길안내 제목이 뜬다. 화면으로 확인한다.
-        return driveModeProvider?.invoke() == KakaoDriveMode.SAFE_DRIVE
+        return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
     }
 
     override fun consumeCapturedDestination() = clearDestination()
@@ -82,10 +82,10 @@ class KakaoPoiFinder : PoiFinder {
 
         @Volatile private var savedTime = 0L
 
-        @Volatile private var driveModeProvider: (() -> KakaoDriveMode)? = null
+        @Volatile private var driveModeProvider: (() -> NaviDriveMode)? = null
 
         /** 접근성 서비스가 붙어 있는 동안만 화면 판별이 가능하다. */
-        fun setDriveModeProvider(provider: (() -> KakaoDriveMode)?) {
+        fun setDriveModeProvider(provider: (() -> NaviDriveMode)?) {
             driveModeProvider = provider
         }
 
