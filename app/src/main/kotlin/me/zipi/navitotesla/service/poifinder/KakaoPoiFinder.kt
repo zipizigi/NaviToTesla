@@ -58,8 +58,10 @@ class KakaoPoiFinder : PoiFinder {
     ): Boolean {
         if (notificationTitle !in GUIDANCE_TITLES) return true
         if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) return false
-        return destination.isNullOrEmpty() ||
-            System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS
+        if (destination.isNullOrEmpty()) return true
+        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
+        // 안전운전 진입에도 길안내 제목이 뜬다. 화면으로 확인한다.
+        return driveModeProvider?.invoke() == KakaoDriveMode.SAFE_DRIVE
     }
 
     override fun consumeCapturedDestination() = clearDestination()
@@ -79,6 +81,13 @@ class KakaoPoiFinder : PoiFinder {
         @Volatile private var destination: String? = null
 
         @Volatile private var savedTime = 0L
+
+        @Volatile private var driveModeProvider: (() -> KakaoDriveMode)? = null
+
+        /** 접근성 서비스가 붙어 있는 동안만 화면 판별이 가능하다. */
+        fun setDriveModeProvider(provider: (() -> KakaoDriveMode)?) {
+            driveModeProvider = provider
+        }
 
         fun hasLegacyDestination(notificationText: String): Boolean = notificationText.contains(LEGACY_DESTINATION_PREFIX)
 

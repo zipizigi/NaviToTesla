@@ -12,7 +12,10 @@ class KakaoPoiFinderTest {
 
     @Before
     @After
-    fun clear() = KakaoPoiFinder.clearDestination()
+    fun clear() {
+        KakaoPoiFinder.clearDestination()
+        KakaoPoiFinder.setDriveModeProvider(null)
+    }
 
     // ---- 4.48 이하: 알림 본문에 목적지가 있다
 
@@ -116,6 +119,35 @@ class KakaoPoiFinderTest {
         val body = "빠르고 즐거운 운전, 카카오내비"
         assertFalse(finder.isIgnore("길안내 주행 중", body))
         assertTrue(finder.isIgnore("안전운전 주행 중", body))
+    }
+
+    // ---- 화면 모드 판별. 안전운전 진입에도 길안내 제목이 뜨므로 이게 실질 방어선이다.
+
+    @Test
+    fun `isIgnore returns true when screen shows safe drive`() {
+        KakaoPoiFinder.addDestination("정자역")
+        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.SAFE_DRIVE }
+        assertTrue(finder.isIgnore("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
+    }
+
+    @Test
+    fun `isIgnore returns false when screen shows guidance`() {
+        KakaoPoiFinder.addDestination("정자역")
+        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.GUIDANCE }
+        assertFalse(finder.isIgnore("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
+    }
+
+    @Test
+    fun `isIgnore allows send when mode is unknown`() {
+        KakaoPoiFinder.addDestination("정자역")
+        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.UNKNOWN }
+        assertFalse(finder.isIgnore("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
+    }
+
+    @Test
+    fun `legacy notification is not affected by screen mode`() {
+        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.SAFE_DRIVE }
+        assertFalse(finder.isIgnore("길안내 주행 중", "목적지 : 송파구청"))
     }
 
     @Test

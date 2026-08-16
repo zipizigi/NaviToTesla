@@ -155,8 +155,16 @@ class NaverPoiFinder : PoiFinder {
 
         @Volatile private var savedTime = System.currentTimeMillis()
 
+        /** 네이버는 로케일 리소스가 있어 언어별로 값이 달라진다. 알려진 번역을 함께 둔다. */
         private val PLACEHOLDER_TEXTS =
-            setOf("도착지 입력", "출발지 입력", "경유지 입력")
+            setOf(
+                "도착지 입력",
+                "출발지 입력",
+                "경유지 입력",
+                "Enter destination",
+                "Enter starting point",
+                "Enter stop",
+            )
 
         private const val DESTINATION_TTL_MS = 60_000L
 

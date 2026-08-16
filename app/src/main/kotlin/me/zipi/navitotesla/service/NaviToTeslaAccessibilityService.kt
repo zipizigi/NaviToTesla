@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.R
+import me.zipi.navitotesla.service.poifinder.KakaoDriveMode
 import me.zipi.navitotesla.service.poifinder.KakaoPoiFinder
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
@@ -34,11 +35,13 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         connectedAt = System.currentTimeMillis()
         instance = this
+        KakaoPoiFinder.setDriveModeProvider { kakaoDriveMode() }
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         connectedAt = 0L
         instance = null
+        KakaoPoiFinder.setDriveModeProvider(null)
         return super.onUnbind(intent)
     }
 
@@ -46,6 +49,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         super.onDestroy()
         connectedAt = 0L
         instance = null
+        KakaoPoiFinder.setDriveModeProvider(null)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
@@ -115,6 +119,43 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         }
     }
 
+    /**
+     * 주행 화면이 길안내인지 안전운전인지 화면에서 가른다.
+     * 알림은 두 모드 모두 `길안내 주행 중` 으로 뜨기 때문에 알림만으로는 구분되지 않는다.
+     * 화면이 아직 안 그려졌을 수 있어 잠깐 기다린다 — 호출부는 WorkManager 라 블로킹해도 된다.
+     */
+    private fun kakaoDriveMode(): KakaoDriveMode {
+        val deadline = System.currentTimeMillis() + DRIVE_MODE_TIMEOUT_MS
+        while (true) {
+            val root = rootInActiveWindow
+            if (root != null) {
+                val markers = mutableSetOf<String>()
+                collectMarkers(root, markers, intArrayOf(0), 0)
+                when {
+                    markers.any { m -> KAKAO_SAFE_MARKERS.any { it in m } } -> return KakaoDriveMode.SAFE_DRIVE
+                    markers.any { m -> KAKAO_GUIDANCE_MARKERS.any { it in m } } -> return KakaoDriveMode.GUIDANCE
+                }
+            }
+            if (System.currentTimeMillis() >= deadline) return KakaoDriveMode.UNKNOWN
+            Thread.sleep(DRIVE_MODE_POLL_MS)
+        }
+    }
+
+    private fun collectMarkers(
+        node: AccessibilityNodeInfo?,
+        out: MutableSet<String>,
+        visited: IntArray,
+        depth: Int,
+    ) {
+        if (node == null || depth > MAX_DEPTH || visited[0] > MAX_NODES) return
+        visited[0]++
+        node.text?.toString()?.takeIf { it.isNotBlank() }?.let { out.add(it) }
+        node.contentDescription?.toString()?.takeIf { it.isNotBlank() }?.let { out.add(it) }
+        for (i in 0 until node.childCount) {
+            collectMarkers(node.getChild(i), out, visited, depth + 1)
+        }
+    }
+
     private fun findKakaoDestination(
         node: AccessibilityNodeInfo?,
         visited: IntArray,
@@ -148,20 +189,45 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
     }
 
     private fun destinationFrom(texts: List<Pair<String, Rect>>): String? {
-        val anchorY = texts.firstOrNull { it.first == ENTRANCE_CHANGE_LABEL }?.second?.top
+        val anchorY = texts.firstOrNull { it.first in entranceLabels }?.second?.top
         val mainRows = if (anchorY != null) texts.filter { it.second.top < anchorY } else texts
         return mainRows.lastOrNull()?.first
+    }
+
+    /**
+     * 네이버는 171개 로케일 리소스를 갖고 있어 앵커 문자열이 언어를 탄다.
+     * 하드코딩하면 한국어가 아닐 때 출입구 행을 못 걸러 라벨 자체를 목적지로 잡는다.
+     * 네이버 앱에서 현재 로케일 값을 직접 읽고, 실패하면 알려진 번역으로 버틴다.
+     */
+    private val entranceLabels: Set<String> by lazy {
+        val known = setOf("출입구 변경", "Entrance", "出入口変更", "变更出入口")
+        try {
+            val res = packageManager.getResourcesForApplication(NAVER_PACKAGE)
+            val id = res.getIdentifier(ENTRANCE_CHANGE_RES, "string", NAVER_PACKAGE)
+            if (id != 0) known + res.getString(id) else known
+        } catch (e: Exception) {
+            AnalysisUtil.warn("naver entrance label resolve failed: " + e.message)
+            known
+        }
     }
 
     companion object {
         private const val CAPTURE_DEBOUNCE_MS = 200L
 
-        private const val ENTRANCE_CHANGE_LABEL = "출입구 변경"
+        private const val NAVER_PACKAGE = "com.nhn.android.nmap"
+        private const val ENTRANCE_CHANGE_RES = "map_navi_change_entrance2"
 
         private const val NAVER_SEARCH_BAR_ID = "com.nhn.android.nmap:id/route_search_bar"
         private const val KAKAO_ROUTE_SUMMARY_ID = "com.locnall.KimGiSa:id/route_result_trip"
 
         private val KAKAO_ROUTE_ANCHOR = Regex("^출발\\s+.+?,\\s*도착\\s+(.+)$")
+
+        /** 카카오는 언어별 리소스가 없어 한국어 문자열이 로케일과 무관하게 유지된다. */
+        private val KAKAO_SAFE_MARKERS = listOf("안전운전 종료", "교통상황", "신호등 정보")
+        private val KAKAO_GUIDANCE_MARKERS = listOf("전체경로", "경로 새로고침", "남음")
+
+        private const val DRIVE_MODE_TIMEOUT_MS = 2_500L
+        private const val DRIVE_MODE_POLL_MS = 200L
 
         private const val KAKAO_SCAN_WINDOW_MS = 20_000L
         private const val MAX_DEPTH = 40
