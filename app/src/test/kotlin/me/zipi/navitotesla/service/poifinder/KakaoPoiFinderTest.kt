@@ -126,27 +126,27 @@ class KakaoPoiFinderTest {
     @Test
     fun `isIgnore returns true when screen shows safe drive`() {
         KakaoPoiFinder.addDestination("정자역")
-        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.SAFE_DRIVE }
+        KakaoPoiFinder.setDriveModeProvider { NaviDriveMode.SAFE_DRIVE }
         assertTrue(finder.isIgnore("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
     }
 
     @Test
     fun `isIgnore returns false when screen shows guidance`() {
         KakaoPoiFinder.addDestination("정자역")
-        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.GUIDANCE }
+        KakaoPoiFinder.setDriveModeProvider { NaviDriveMode.GUIDANCE }
         assertFalse(finder.isIgnore("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
     }
 
     @Test
     fun `isIgnore allows send when mode is unknown`() {
         KakaoPoiFinder.addDestination("정자역")
-        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.UNKNOWN }
+        KakaoPoiFinder.setDriveModeProvider { NaviDriveMode.UNKNOWN }
         assertFalse(finder.isIgnore("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
     }
 
     @Test
     fun `legacy notification is not affected by screen mode`() {
-        KakaoPoiFinder.setDriveModeProvider { KakaoDriveMode.SAFE_DRIVE }
+        KakaoPoiFinder.setDriveModeProvider { NaviDriveMode.SAFE_DRIVE }
         assertFalse(finder.isIgnore("길안내 주행 중", "목적지 : 송파구청"))
     }
 

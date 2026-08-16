@@ -89,9 +89,11 @@ class NaverPoiFinder : PoiFinder {
         notificationText: String,
     ): Boolean {
         // 안내가 시작될 경우 도착지를 이용하여 전송한다. 목적지가 입력된지 특정 시간 내에만 동작한다.
-        return notificationText != "내비게이션 - 안내 중" ||
-            destination.isNullOrEmpty() ||
-            System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS
+        if (notificationText != GUIDANCE_TEXT) return true
+        if (destination.isNullOrEmpty()) return true
+        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
+        // 안전운행에서도 같은 알림이 뜬다. 화면으로 확인한다.
+        return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
     }
 
     override fun consumeCapturedDestination() = clearDestination()
@@ -155,7 +157,15 @@ class NaverPoiFinder : PoiFinder {
 
         @Volatile private var savedTime = System.currentTimeMillis()
 
-        /** 네이버는 로케일 리소스가 있어 언어별로 값이 달라진다. 알려진 번역을 함께 둔다. */
+        private const val GUIDANCE_TEXT = "내비게이션 - 안내 중"
+
+        @Volatile private var driveModeProvider: (() -> NaviDriveMode)? = null
+
+        fun setDriveModeProvider(provider: (() -> NaviDriveMode)?) {
+            driveModeProvider = provider
+        }
+
+        /** 실제 번역이 존재하는 로케일은 ko/en/ja/zh-CN 4개뿐이고 나머지는 영어로 폴백한다. */
         private val PLACEHOLDER_TEXTS =
             setOf(
                 "도착지 입력",
@@ -164,6 +174,12 @@ class NaverPoiFinder : PoiFinder {
                 "Enter destination",
                 "Enter starting point",
                 "Enter stop",
+                "目的地入力",
+                "出発地入力",
+                "経由地入力",
+                "输入目的地",
+                "输入出发地",
+                "输入经由地",
             )
 
         private const val DESTINATION_TTL_MS = 60_000L
