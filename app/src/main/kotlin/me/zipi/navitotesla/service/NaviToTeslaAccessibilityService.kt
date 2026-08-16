@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.R
+import me.zipi.navitotesla.service.poifinder.KakaoPoiFinder
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -25,44 +26,109 @@ import me.zipi.navitotesla.util.PreferencesUtil
 class NaviToTeslaAccessibilityService : AccessibilityService() {
     @Volatile private var lastCaptureAt = 0L
 
+    @Volatile private var lastKakaoScanAt = 0L
+
+    @Volatile private var kakaoScanUntil = 0L
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         connectedAt = System.currentTimeMillis()
+        instance = this
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
         connectedAt = 0L
+        instance = null
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         connectedAt = 0L
+        instance = null
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         try {
-            if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED &&
-                event.eventType != AccessibilityEvent.TYPE_VIEW_SELECTED
-            ) {
-                return
+            val packageName = event.packageName?.toString() ?: return
+            when {
+                PoiFinderFactory.isNaverMap(packageName) -> onNaverEvent(event)
+                PoiFinderFactory.isKakaoNavi(packageName) -> onKakaoEvent(event)
             }
-            if (!PoiFinderFactory.isNaverMap(event.packageName?.toString() ?: return)) return
-
-            val now = System.currentTimeMillis()
-            if (now - lastCaptureAt < CAPTURE_DEBOUNCE_MS) return
-            lastCaptureAt = now
-
-            val window = rootInActiveWindow ?: return
-            val texts =
-                window
-                    .findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/route_search_bar")
-                    ?.flatMap { collectTextsWithBounds(it) } ?: emptyList()
-            destinationFrom(texts)?.let { NaverPoiFinder.addDestination(it) }
         } catch (e: Exception) {
             AnalysisUtil.warn("accessibility error: " + e.message)
             AnalysisUtil.recordException(e)
         }
+    }
+
+    private fun onNaverEvent(event: AccessibilityEvent) {
+        if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED &&
+            event.eventType != AccessibilityEvent.TYPE_VIEW_SELECTED
+        ) {
+            return
+        }
+        val now = System.currentTimeMillis()
+        if (now - lastCaptureAt < CAPTURE_DEBOUNCE_MS) return
+        lastCaptureAt = now
+
+        val window = rootInActiveWindow ?: return
+        val texts =
+            window
+                .findAccessibilityNodeInfosByViewId(NAVER_SEARCH_BAR_ID)
+                ?.flatMap { collectTextsWithBounds(it) } ?: emptyList()
+        destinationFrom(texts)?.let { NaverPoiFinder.addDestination(it) }
+    }
+
+    /**
+     * 카카오는 주행 화면이 콘텐츠 변경 이벤트를 계속 쏟아낸다.
+     * 화면이 바뀐 뒤 잠깐 열리는 스캔 창 안에서만 트리를 훑는다.
+     */
+    private fun onKakaoEvent(event: AccessibilityEvent) {
+        val now = System.currentTimeMillis()
+        val windowChanged = event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        when {
+            windowChanged -> kakaoScanUntil = now + KAKAO_SCAN_WINDOW_MS
+            event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> if (now > kakaoScanUntil) return
+            else -> return
+        }
+        if (now - lastKakaoScanAt < CAPTURE_DEBOUNCE_MS) return
+        lastKakaoScanAt = now
+
+        val root = rootInActiveWindow ?: return
+        val scoped = root.findAccessibilityNodeInfosByViewId(KAKAO_ROUTE_SUMMARY_ID)
+        // 전체 트리 탐색은 화면이 막 바뀐 순간에만 한다. 주행 화면 갱신마다 훑으면 비싸다.
+        val roots =
+            if (!scoped.isNullOrEmpty()) {
+                scoped
+            } else if (windowChanged) {
+                listOf(root)
+            } else {
+                return
+            }
+        for (node in roots) {
+            findKakaoDestination(node, intArrayOf(0), 0)?.let {
+                KakaoPoiFinder.addDestination(it)
+                // 앵커가 보이는 동안은 계속 갱신되도록 창을 연장한다.
+                kakaoScanUntil = now + KAKAO_SCAN_WINDOW_MS
+                return
+            }
+        }
+    }
+
+    private fun findKakaoDestination(
+        node: AccessibilityNodeInfo?,
+        visited: IntArray,
+        depth: Int,
+    ): String? {
+        if (node == null || depth > MAX_DEPTH || visited[0] > MAX_NODES) return null
+        visited[0]++
+        node.contentDescription?.toString()?.let { description ->
+            KAKAO_ROUTE_ANCHOR.find(description)?.let { return it.groupValues[1] }
+        }
+        for (i in 0 until node.childCount) {
+            findKakaoDestination(node.getChild(i), visited, depth + 1)?.let { return it }
+        }
+        return null
     }
 
     override fun onInterrupt() {}
@@ -92,9 +158,25 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
         private const val ENTRANCE_CHANGE_LABEL = "출입구 변경"
 
+        private const val NAVER_SEARCH_BAR_ID = "com.nhn.android.nmap:id/route_search_bar"
+        private const val KAKAO_ROUTE_SUMMARY_ID = "com.locnall.KimGiSa:id/route_result_trip"
+
+        private val KAKAO_ROUTE_ANCHOR = Regex("^출발\\s+.+?,\\s*도착\\s+(.+)$")
+
+        private const val KAKAO_SCAN_WINDOW_MS = 20_000L
+        private const val MAX_DEPTH = 40
+        private const val MAX_NODES = 3000
+
         @Volatile private var connectedAt = 0L
 
+        @Volatile private var instance: NaviToTeslaAccessibilityService? = null
+
         fun isAccessibilityServiceRunning(): Boolean = connectedAt > 0L
+
+        /** 안내가 시작되면 더 훑을 이유가 없다. */
+        fun closeScanWindow() {
+            instance?.kakaoScanUntil = 0L
+        }
 
         private var lastNotifyAppVersion: String? = null
 
@@ -107,9 +189,10 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         fun notifyIfAvailable(
             context: Context,
             packageName: String,
+            notificationText: String,
         ) {
             CoroutineScope(Dispatchers.Main).launch {
-                if (!PoiFinderFactory.isNaverMap(packageName)) {
+                if (!PoiFinderFactory.isAccessibilityRequired(packageName, notificationText)) {
                     return@launch
                 }
                 if (!isAccessibilityServiceEnabled(context)) {

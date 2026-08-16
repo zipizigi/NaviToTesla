@@ -7,6 +7,7 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.RemoteConfigUtil
 import me.zipi.navitotesla.util.ResponseCloser
+import me.zipi.navitotesla.util.TextNormalizer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -93,6 +94,8 @@ class NaverPoiFinder : PoiFinder {
             System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS
     }
 
+    override fun consumeCapturedDestination() = clearDestination()
+
     companion object {
         private val httpClient =
             OkHttpClient
@@ -159,8 +162,12 @@ class NaverPoiFinder : PoiFinder {
 
         fun isDestinationEmpty(): Boolean = destination.isNullOrEmpty()
 
+        fun clearDestination() {
+            destination = null
+        }
+
         fun addDestination(dest: String) {
-            val cleaned = dest.trim()
+            val cleaned = TextNormalizer.normalize(dest)
             if (cleaned.isEmpty()) return
             if (PLACEHOLDER_TEXTS.any { it.equals(cleaned, ignoreCase = true) }) {
                 destination = null

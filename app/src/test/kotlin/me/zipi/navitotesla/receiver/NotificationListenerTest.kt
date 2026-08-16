@@ -60,7 +60,7 @@ class NotificationListenerTest {
         every { VersionCheckWorker.startVersionCheck(any()) } returns Unit
 
         mockkObject(NaviToTeslaAccessibilityService.Companion)
-        every { NaviToTeslaAccessibilityService.notifyIfAvailable(any(), any()) } returns Unit
+        every { NaviToTeslaAccessibilityService.notifyIfAvailable(any(), any(), any()) } returns Unit
 
         mockkObject(RemoteConfigUtil)
         every { RemoteConfigUtil.initialize() } returns Unit

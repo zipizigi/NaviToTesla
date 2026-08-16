@@ -219,3 +219,6 @@ fabric.properties
 app/build.properties
 app/build
 app/release
+
+# Local APK analysis workspace (not for commit)
+.analysis/
