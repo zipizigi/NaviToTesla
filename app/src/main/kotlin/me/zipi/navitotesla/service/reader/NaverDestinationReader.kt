@@ -5,10 +5,7 @@ import android.view.accessibility.AccessibilityNodeInfo
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder
 import me.zipi.navitotesla.service.poifinder.NaviDriveMode
 
-/**
- * 네이버지도는 경로 결과 화면 `route_search_bar` 안의 텍스트에서 읽는다.
- * 클릭만 보면 자동 안내 시작을 놓치므로 화면 변경도 함께 본다.
- */
+/** 경로 결과 화면 `route_search_bar` 안의 텍스트에서 읽는다. */
 class NaverDestinationReader : DestinationReader {
     @Volatile private var lastScanAt = 0L
 
@@ -40,7 +37,7 @@ class NaverDestinationReader : DestinationReader {
         destinationFrom(texts)?.let { NaverPoiFinder.addDestination(it) }
     }
 
-    /** 출입구 행은 목적지 아래에 붙는다. 앵커 위쪽 마지막 줄이 목적지다. */
+    /** 출입구 앵커 위쪽 마지막 줄이 목적지다. */
     private fun destinationFrom(texts: List<Pair<String, android.graphics.Rect>>): String? {
         val anchorY = texts.firstOrNull { it.first in ENTRANCE_CHANGE_LABELS }?.second?.top
         val rows = if (anchorY != null) texts.filter { it.second.top < anchorY } else texts
@@ -64,13 +61,9 @@ class NaverDestinationReader : DestinationReader {
         const val PKG = "com.nhn.android.nmap"
         const val SEARCH_BAR_ID = "$PKG:id/route_search_bar"
 
-        /**
-         * 네이버 `map_navi_change_entrance2`. 로케일 디렉토리는 171개지만
-         * 이 문자열이 실제로 번역된 건 아래 4개뿐이고 나머지는 영어로 폴백한다.
-         */
+        /** `map_navi_change_entrance2` 의 로케일별 값. */
         val ENTRANCE_CHANGE_LABELS = setOf("출입구 변경", "Entrance", "出入口変更", "变更出入口")
 
-        /** 안전운행엔 안내종료 버튼만, 길안내엔 ETA 행이 있다. viewId 라 언어와 무관하다. */
         val SAFE_IDS = listOf("$PKG:id/v_quit")
         val GUIDE_IDS = listOf("$PKG:id/eta", "$PKG:id/duration", "$PKG:id/tv_first_distance")
     }

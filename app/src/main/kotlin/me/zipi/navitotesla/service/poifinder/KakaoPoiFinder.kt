@@ -14,10 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-/**
- * 4.48 이하는 알림 본문에 `목적지 : ~~~` 가 들어 있고, 4.49 부터는 사라졌다.
- * 두 경로를 함께 지원한다 — 본문에 목적지가 있으면 그대로 쓰고, 없으면 접근성으로 저장해 둔 값을 쓴다.
- */
+/** 알림 본문에 `목적지 : ~~~` 가 있으면 그대로, 없으면 접근성으로 저장해 둔 값을 쓴다. */
 class KakaoPoiFinder : PoiFinder {
     override fun parseDestination(notificationText: String): String {
         if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) {
@@ -59,7 +56,6 @@ class KakaoPoiFinder : PoiFinder {
         if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) return false
         if (destination.isNullOrEmpty()) return true
         if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
-        // 안전운전 진입에도 길안내 제목이 뜬다. 화면으로 확인한다.
         return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
     }
 
@@ -68,13 +64,9 @@ class KakaoPoiFinder : PoiFinder {
     companion object {
         private const val LEGACY_DESTINATION_PREFIX = "목적지 : "
 
-        /** 보험 ON 이면 제목이 바뀐다. 4.48 이하에서 보험 사용자가 전송되지 않던 원인. */
+        /** 보험 ON 이면 제목이 바뀐다. */
         private val GUIDANCE_TITLES = setOf("길안내 주행 중", "보험을 켜고 길안내 주행 중")
 
-        /**
-         * 실측 트리거 시점 캡처 나이는 정상 전송이 29초, 취소 후 오전송이 18초였다.
-         * 나이로는 둘을 못 가른다. 짧게 잡으면 정상 전송이 먼저 막히므로 넉넉히 둔다.
-         */
         private const val DESTINATION_TTL_MS = 60_000L
 
         @Volatile private var destination: String? = null
@@ -83,7 +75,6 @@ class KakaoPoiFinder : PoiFinder {
 
         @Volatile private var driveModeProvider: (() -> NaviDriveMode)? = null
 
-        /** 접근성 서비스가 붙어 있는 동안만 화면 판별이 가능하다. */
         fun setDriveModeProvider(provider: (() -> NaviDriveMode)?) {
             driveModeProvider = provider
         }
@@ -100,7 +91,6 @@ class KakaoPoiFinder : PoiFinder {
             destination = cleaned
         }
 
-        /** 전송에 성공했거나 안내가 끝나면 버린다. 다음 트리거에 낡은 값이 실려 나가지 않도록. */
         fun clearDestination() {
             destination = null
             savedTime = 0L

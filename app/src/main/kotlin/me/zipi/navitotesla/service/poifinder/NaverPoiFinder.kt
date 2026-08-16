@@ -92,7 +92,6 @@ class NaverPoiFinder : PoiFinder {
         if (notificationText != GUIDANCE_TEXT) return true
         if (destination.isNullOrEmpty()) return true
         if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
-        // 안전운행에서도 같은 알림이 뜬다. 화면으로 확인한다.
         return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
     }
 
@@ -165,7 +164,6 @@ class NaverPoiFinder : PoiFinder {
             driveModeProvider = provider
         }
 
-        /** 실제 번역이 존재하는 로케일은 ko/en/ja/zh-CN 4개뿐이고 나머지는 영어로 폴백한다. */
         private val PLACEHOLDER_TEXTS =
             setOf(
                 "도착지 입력",
