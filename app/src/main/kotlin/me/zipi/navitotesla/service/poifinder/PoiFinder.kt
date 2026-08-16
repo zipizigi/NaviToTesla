@@ -30,4 +30,7 @@ interface PoiFinder {
         notificationTitle: String,
         notificationText: String,
     ): Boolean
+
+    /** 접근성으로 모아 둔 목적지를 버린다. */
+    fun consumeCapturedDestination() {}
 }

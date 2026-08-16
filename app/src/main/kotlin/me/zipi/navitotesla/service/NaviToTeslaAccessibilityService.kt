@@ -6,7 +6,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.graphics.Rect
 import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
@@ -16,85 +15,73 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.R
+import me.zipi.navitotesla.service.poifinder.KakaoPoiFinder
 import me.zipi.navitotesla.service.poifinder.NaverPoiFinder
+import me.zipi.navitotesla.service.poifinder.NaviDriveMode
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
+import me.zipi.navitotesla.service.reader.KakaoDestinationReader
+import me.zipi.navitotesla.service.reader.NaverDestinationReader
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppUpdaterUtil
 import me.zipi.navitotesla.util.PreferencesUtil
 
 class NaviToTeslaAccessibilityService : AccessibilityService() {
-    @Volatile private var lastCaptureAt = 0L
+    private val readers =
+        mapOf(
+            PoiFinderFactory.KAKAO_PACKAGE to KakaoDestinationReader(),
+            PoiFinderFactory.NAVER_PACKAGE to NaverDestinationReader(),
+        )
 
     override fun onServiceConnected() {
         super.onServiceConnected()
         connectedAt = System.currentTimeMillis()
+        instance = this
+        KakaoPoiFinder.setDriveModeProvider { driveMode(PoiFinderFactory.KAKAO_PACKAGE) }
+        NaverPoiFinder.setDriveModeProvider { driveMode(PoiFinderFactory.NAVER_PACKAGE) }
     }
 
     override fun onUnbind(intent: android.content.Intent?): Boolean {
-        connectedAt = 0L
+        detach()
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        detach()
+    }
+
+    private fun detach() {
         connectedAt = 0L
+        instance = null
+        KakaoPoiFinder.setDriveModeProvider(null)
+        NaverPoiFinder.setDriveModeProvider(null)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         try {
-            if (event.eventType != AccessibilityEvent.TYPE_VIEW_CLICKED &&
-                event.eventType != AccessibilityEvent.TYPE_VIEW_SELECTED
-            ) {
-                return
-            }
-            if (!PoiFinderFactory.isNaverMap(event.packageName?.toString() ?: return)) return
-
-            val now = System.currentTimeMillis()
-            if (now - lastCaptureAt < CAPTURE_DEBOUNCE_MS) return
-            lastCaptureAt = now
-
-            val window = rootInActiveWindow ?: return
-            val texts =
-                window
-                    .findAccessibilityNodeInfosByViewId("com.nhn.android.nmap:id/route_search_bar")
-                    ?.flatMap { collectTextsWithBounds(it) } ?: emptyList()
-            destinationFrom(texts)?.let { NaverPoiFinder.addDestination(it) }
+            val packageName = event.packageName?.toString() ?: return
+            readers[packageName]?.onEvent(event) { rootInActiveWindow }
         } catch (e: Exception) {
             AnalysisUtil.warn("accessibility error: " + e.message)
             AnalysisUtil.recordException(e)
         }
     }
 
+    private fun driveMode(packageName: String): NaviDriveMode =
+        readers[packageName]?.driveMode { rootInActiveWindow } ?: NaviDriveMode.UNKNOWN
+
     override fun onInterrupt() {}
 
-    private fun collectTextsWithBounds(node: AccessibilityNodeInfo): List<Pair<String, Rect>> {
-        if (!node.isVisibleToUser) return emptyList()
-        val result = mutableListOf<Pair<String, Rect>>()
-        node.text?.toString()?.takeIf { it.isNotBlank() }?.let {
-            val rect = Rect()
-            node.getBoundsInScreen(rect)
-            result.add(it to rect)
-        }
-        for (i in 0 until node.childCount) {
-            node.getChild(i)?.let { result.addAll(collectTextsWithBounds(it)) }
-        }
-        return result
-    }
-
-    private fun destinationFrom(texts: List<Pair<String, Rect>>): String? {
-        val anchorY = texts.firstOrNull { it.first == ENTRANCE_CHANGE_LABEL }?.second?.top
-        val mainRows = if (anchorY != null) texts.filter { it.second.top < anchorY } else texts
-        return mainRows.lastOrNull()?.first
-    }
-
     companion object {
-        private const val CAPTURE_DEBOUNCE_MS = 200L
-
-        private const val ENTRANCE_CHANGE_LABEL = "출입구 변경"
-
         @Volatile private var connectedAt = 0L
 
+        @Volatile private var instance: NaviToTeslaAccessibilityService? = null
+
         fun isAccessibilityServiceRunning(): Boolean = connectedAt > 0L
+
+        fun closeScanWindow() {
+            instance?.readers?.values?.forEach { it.closeScanWindow() }
+        }
 
         private var lastNotifyAppVersion: String? = null
 
@@ -107,9 +94,10 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         fun notifyIfAvailable(
             context: Context,
             packageName: String,
+            notificationText: String,
         ) {
             CoroutineScope(Dispatchers.Main).launch {
-                if (!PoiFinderFactory.isNaverMap(packageName)) {
+                if (!PoiFinderFactory.isAccessibilityRequired(packageName, notificationText)) {
                     return@launch
                 }
                 if (!isAccessibilityServiceEnabled(context)) {

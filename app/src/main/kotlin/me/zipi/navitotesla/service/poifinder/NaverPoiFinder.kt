@@ -7,6 +7,7 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.RemoteConfigUtil
 import me.zipi.navitotesla.util.ResponseCloser
+import me.zipi.navitotesla.util.TextNormalizer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -88,10 +89,13 @@ class NaverPoiFinder : PoiFinder {
         notificationText: String,
     ): Boolean {
         // 안내가 시작될 경우 도착지를 이용하여 전송한다. 목적지가 입력된지 특정 시간 내에만 동작한다.
-        return notificationText != "내비게이션 - 안내 중" ||
-            destination.isNullOrEmpty() ||
-            System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS
+        if (notificationText != GUIDANCE_TEXT) return true
+        if (destination.isNullOrEmpty()) return true
+        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
+        return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
     }
+
+    override fun consumeCapturedDestination() = clearDestination()
 
     companion object {
         private val httpClient =
@@ -152,15 +156,40 @@ class NaverPoiFinder : PoiFinder {
 
         @Volatile private var savedTime = System.currentTimeMillis()
 
+        private const val GUIDANCE_TEXT = "내비게이션 - 안내 중"
+
+        @Volatile private var driveModeProvider: (() -> NaviDriveMode)? = null
+
+        fun setDriveModeProvider(provider: (() -> NaviDriveMode)?) {
+            driveModeProvider = provider
+        }
+
         private val PLACEHOLDER_TEXTS =
-            setOf("도착지 입력", "출발지 입력", "경유지 입력")
+            setOf(
+                "도착지 입력",
+                "출발지 입력",
+                "경유지 입력",
+                "Enter destination",
+                "Enter starting point",
+                "Enter stop",
+                "目的地入力",
+                "出発地入力",
+                "経由地入力",
+                "输入目的地",
+                "输入出发地",
+                "输入经由地",
+            )
 
         private const val DESTINATION_TTL_MS = 60_000L
 
         fun isDestinationEmpty(): Boolean = destination.isNullOrEmpty()
 
+        fun clearDestination() {
+            destination = null
+        }
+
         fun addDestination(dest: String) {
-            val cleaned = dest.trim()
+            val cleaned = TextNormalizer.normalize(dest)
             if (cleaned.isEmpty()) return
             if (PLACEHOLDER_TEXTS.any { it.equals(cleaned, ignoreCase = true) }) {
                 destination = null

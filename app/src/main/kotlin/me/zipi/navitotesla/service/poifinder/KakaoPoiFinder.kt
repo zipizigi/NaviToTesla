@@ -6,6 +6,7 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.HttpRetryInterceptor
 import me.zipi.navitotesla.util.RemoteConfigUtil
 import me.zipi.navitotesla.util.ResponseCloser
+import me.zipi.navitotesla.util.TextNormalizer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -13,12 +14,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
+/** 알림 본문에 `목적지 : ~~~` 가 있으면 그대로, 없으면 접근성으로 저장해 둔 값을 쓴다. */
 class KakaoPoiFinder : PoiFinder {
     override fun parseDestination(notificationText: String): String {
-        /*
-         * 목적지 : ~~~~
-         */
-        return notificationText.replace("목적지 : ", "").trim()
+        if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) {
+            return TextNormalizer.normalize(notificationText.replace(LEGACY_DESTINATION_PREFIX, ""))
+        }
+        return destination ?: ""
     }
 
     @Throws(IOException::class)
@@ -49,9 +51,51 @@ class KakaoPoiFinder : PoiFinder {
     override fun isIgnore(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean = notificationTitle != "길안내 주행 중" || !notificationText.contains("목적지 : ")
+    ): Boolean {
+        if (notificationTitle !in GUIDANCE_TITLES) return true
+        if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) return false
+        if (destination.isNullOrEmpty()) return true
+        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
+        return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
+    }
+
+    override fun consumeCapturedDestination() = clearDestination()
 
     companion object {
+        private const val LEGACY_DESTINATION_PREFIX = "목적지 : "
+
+        /** 보험 ON 이면 제목이 바뀐다. */
+        private val GUIDANCE_TITLES = setOf("길안내 주행 중", "보험을 켜고 길안내 주행 중")
+
+        private const val DESTINATION_TTL_MS = 60_000L
+
+        @Volatile private var destination: String? = null
+
+        @Volatile private var savedTime = 0L
+
+        @Volatile private var driveModeProvider: (() -> NaviDriveMode)? = null
+
+        fun setDriveModeProvider(provider: (() -> NaviDriveMode)?) {
+            driveModeProvider = provider
+        }
+
+        fun hasLegacyDestination(notificationText: String): Boolean = notificationText.contains(LEGACY_DESTINATION_PREFIX)
+
+        fun isDestinationEmpty(): Boolean = destination.isNullOrEmpty()
+
+        fun addDestination(dest: String) {
+            val cleaned = TextNormalizer.normalize(dest)
+            if (cleaned.isEmpty()) return
+            savedTime = System.currentTimeMillis()
+            if (cleaned == destination) return
+            destination = cleaned
+        }
+
+        fun clearDestination() {
+            destination = null
+            savedTime = 0L
+        }
+
         private val kakaoMapApi =
             Retrofit
                 .Builder()

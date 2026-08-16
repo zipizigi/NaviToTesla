@@ -51,6 +51,7 @@ class NaviToTeslaService(
      */
     suspend fun notificationClear() {
         PreferencesUtil.put("lastAddress", "")
+        PoiFinderFactory.clearAllCapturedDestinations()
     }
 
     @AddTrace(name = "share")
@@ -72,12 +73,16 @@ class NaviToTeslaService(
             val poi = getPoi(packageName, notificationTitle, notificationText)
             val lastAddress = PreferencesUtil.getString("lastAddress", "")
             if (lastAddress != poi.getRoadAddress()) {
-                try {
-                    share(poi)
-                } catch (_: ForbiddenException) {
-                    AnalysisUtil.warn("force expire token and retry...")
-                    expireToken()
-                    share(poi)
+                val sent =
+                    try {
+                        share(poi)
+                    } catch (_: ForbiddenException) {
+                        AnalysisUtil.warn("force expire token and retry...")
+                        expireToken()
+                        share(poi)
+                    }
+                if (sent) {
+                    PoiFinderFactory.getPoiFinder(packageName).consumeCapturedDestination()
                 }
             } else {
                 val deltaMs = if (lastShareAt > 0L) System.currentTimeMillis() - lastShareAt else -1L
@@ -138,7 +143,7 @@ class NaviToTeslaService(
     }
 
     @Throws(IOException::class, ForbiddenException::class)
-    suspend fun share(poi: Poi) {
+    suspend fun share(poi: Poi): Boolean {
         if (poi.isAddressEmpty()) {
             AnalysisUtil.warn("share skipped: empty poi name=${poi.poiName}, pkg=${poi.packageName}")
             PreferencesUtil.put(key = "lastAddress", value = "")
@@ -146,7 +151,7 @@ class NaviToTeslaService(
                 text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.addressNotFound),
                 level = AnalysisUtil.ToastLevel.WARN,
             )
-            return
+            return false
         }
 
         // favorite/cache/좌표 무관 — classify 와 plan 이 각자 책임 안에서 처리.
@@ -182,13 +187,14 @@ class NaviToTeslaService(
         makeToast(context.getString(R.string.requestSend) + "\n" + payload.displayText)
         if (transport == ShareTransport.API) {
             if (refreshToken() == null) {
-                return
+                return false
             }
             val id = loadVehicleId()
             TeslaShareByApi(context, id, poi.packageName).share(payload)
         } else {
             TeslaShareByApp(context, poi.packageName).share(payload)
         }
+        return true
     }
 
     @AddTrace(name = "getAddress")
