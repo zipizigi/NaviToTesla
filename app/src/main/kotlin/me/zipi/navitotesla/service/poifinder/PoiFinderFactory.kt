@@ -3,10 +3,10 @@ package me.zipi.navitotesla.service.poifinder
 import me.zipi.navitotesla.exception.NotSupportedNaviException
 
 object PoiFinderFactory {
-    private const val TMAP_PACKAGE = "com.skt.tmap.ku"
-    private const val TMAP_SK_PACKAGE = "com.skt.skaf.l001mtm091"
-    private const val KAKAO_PACKAGE = "com.locnall.KimGiSa"
-    private const val NAVER_PACKAGE = "com.nhn.android.nmap"
+    const val TMAP_PACKAGE = "com.skt.tmap.ku"
+    const val TMAP_SK_PACKAGE = "com.skt.skaf.l001mtm091"
+    const val KAKAO_PACKAGE = "com.locnall.KimGiSa"
+    const val NAVER_PACKAGE = "com.nhn.android.nmap"
 
     fun isNaverMap(packageName: String): Boolean = packageName.equals(NAVER_PACKAGE, ignoreCase = true)
 

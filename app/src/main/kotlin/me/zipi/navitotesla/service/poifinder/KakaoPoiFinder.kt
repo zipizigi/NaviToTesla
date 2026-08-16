@@ -1,6 +1,5 @@
 package me.zipi.navitotesla.service.poifinder
 
-import me.zipi.navitotesla.BuildConfig
 import me.zipi.navitotesla.api.KakaoMapApi
 import me.zipi.navitotesla.model.Poi
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -99,9 +98,6 @@ class KakaoPoiFinder : PoiFinder {
             savedTime = System.currentTimeMillis()
             if (cleaned == destination) return
             destination = cleaned
-            AnalysisUtil.log(
-                if (BuildConfig.DEBUG) "kakao destination captured: $cleaned" else "kakao destination captured",
-            )
         }
 
         /** 전송에 성공했거나 안내가 끝나면 버린다. 다음 트리거에 낡은 값이 실려 나가지 않도록. */
