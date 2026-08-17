@@ -8,13 +8,13 @@
 
 ### Play store
 
-Play Store에서 Navi to Tesla를 검색하거나 아래 링크를 통해 설치할 수 있다.    
-https://play.google.com/store/apps/details?id=me.zipi.navitotesla
+Play Store에서 Navi to Tesla를 검색하거나 아래 링크를 통해 설치할 수 있다.  
+[https://play.google.com/store/apps/details?id=me.zipi.navitotesla](https://play.google.com/store/apps/details?id=me.zipi.navitotesla)
 
 ### Without Play store
 
 Play Store가 없는 기기(ex, 중국 태블릿, 계기반 등)를 위해 별도 버전으로 설치가 가능하다.  
-github release(https://github.com/zipizigi/NaviToTesla/releases/latest)에서 가장 최신 apk를 받아 설치한다.   
+[github release](https://github.com/zipizigi/NaviToTesla/releases/latest)에서 가장 최신 apk를 받아 설치한다.  
 설치할 때 '출처를 알 수 없는 앱 설치'를 허용해줘야한다.  
 설치할 때 _nostore 버전을 설치해야 자동 업데이트가 가능하다.
 
@@ -26,7 +26,7 @@ github release(https://github.com/zipizigi/NaviToTesla/releases/latest)에서 �
 ### Tesla App을 이용하는 방법
 
 안드로이드 기기에 Tesla 앱이 설치되어 있고, 로그인 되어 있을 때 사용한다.  
-앱 실행시 상단의 Tesla App을 선택해주면 되며, 별도의 설정이 필요하지 않는다.   
+앱 실행시 상단의 Tesla App을 선택해주면 되며, 별도의 설정이 필요하지 않는다.  
 목적지를 자동으로 전송해준다.
 
 ### Tesla Api를 이용하는 방법
@@ -36,9 +36,9 @@ Tesla App이 없는 경우에 사용한다.
 
 #### 1. Refresh Token 구하기
 
-데스크톱 GUI (Win/Mac/Linux, 권장) : https://github.com/adriankumpf/tesla_auth  
-웹 (PC 브라우저 + 개발자도구 필요) : https://www.myteslamate.com/tesla-token/  
-iOS : https://apps.apple.com/kr/app/auth-app-for-tesla/id1552058613
+데스크톱 GUI (Win/Mac/Linux, 권장) : [https://github.com/adriankumpf/tesla_auth](https://github.com/adriankumpf/tesla_auth)  
+웹 (PC 브라우저 + 개발자도구 필요) : [https://www.myteslamate.com/tesla-token/](https://www.myteslamate.com/tesla-token/)  
+iOS : [https://apps.apple.com/kr/app/auth-app-for-tesla/id1552058613](https://apps.apple.com/kr/app/auth-app-for-tesla/id1552058613)
 
 > Tesla 로그인 후 `tesla://` 스킴으로 리디렉트되어 모바일 브라우저에서는 토큰 추출이 어렵습니다. PC에서 발급 후 안드로이드 기기로 옮겨 붙여넣는 것을 권장합니다.
 
@@ -63,25 +63,25 @@ Navi to Tesla가 정확히 '집'이라는 목적지 안내가 필요한 경우 �
 
 ### 조건에 따른 전송 활성화
 
-여러대의 차량을 이용하는 등의 이유로 목적지 전송 기능을 선택적으로 사용해야 할 때 유용하다.   
+여러대의 차량을 이용하는 등의 이유로 목적지 전송 기능을 선택적으로 사용해야 할 때 유용하다.  
 설정 탭의 조건을 이용하여, 특정 블루투스 기기가 연결 될 때에만 목적지 전송 기능을 사용할 수 있다.  
 한번 페어링된 기기를 선택하여 등록한 후, 해당 기기가 연결될 때에만 목적지 전송 기능이 동작한다.
 
 #### 다른 앱과 연동
 
-특정 위치, WiFi, 블루투스 등 다양한 조건에서 목적지 전송 기능을 활성화/비활성화 할 수 있다.    
+특정 위치, WiFi, 블루투스 등 다양한 조건에서 목적지 전송 기능을 활성화/비활성화 할 수 있다.  
 Tasker, MacroDroid 등을 이용하여 Intent를 전송하여 앱을 활성화/비활성화 할 수 있다.
 
 - package : me.zipi.navitotesla
 - action
-    - navitotesla.ENABLE   : Navi to Tesla 활성화
-    - navitotesla.DISALBE  : Navi to Tesla 비활성화
+  - navitotesla.ENABLE   : Navi to Tesla 활성화
+  - navitotesla.DISABLE  : Navi to Tesla 비활성화
 
 상세한 설명은 [WiKi](https://github.com/zipizigi/NaviToTesla/wiki) 페이지를 참고
 
 ## 동작 원리
 
-안드로이드 TMap의 경우 경로 안내가 시작되면 아래와 같은 형태로 알림창이 나타난다.
+내비게이션의 경로 안내가 시작되면 Navi to Tesla가 목적지를 읽어서 차량으로 전송한다.
 
 ```
 안심주행
@@ -90,29 +90,22 @@ Tasker, MacroDroid 등을 이용하여 Intent를 전송하여 앱을 활성화/�
 출발지 > 경유지1 > 경유지2 > 목적지
 ```
 
-카카오 내비의 경우 아래와 같이 나온다.
-
-```
-목적지 : 목적지 
-```
-
-Navi to Tesla 앱은 알림을 분석하고, 목적지를 Tesla로 전송한다.  
-목적지가 주소일 경우 즉시 전송하고, 주소가 아닌 건물, 장소 명(서울역, 서울역 2번출구 )일 경우 TMap/Kakao API를 이용하여 주소를 찾아서 전송한다.
-간혹 주소가 없는 경우 경도/위도를 전송한다. (도로명 주소 -> 지번 주소 -> 경도/위도 순서)
+목적지를 얻은 뒤 주소면 즉시 전송하고, 건물·장소명(서울역, 서울역 2번출구)이면 TMap/Kakao/Naver API 로 주소를 찾아 전송한다. 주소가 없으면 경도/위도를 보낸다.  
+(도로명 주소 → 지번 주소 → 경도/위도 순서)
 
 ## 지원하는 목적지 형태
 
 ### 잘 지원하는 경우
 
 - 단순 주소
-    - 경기 성남시 분당구 대왕판교로 316
-    - 서울 용산구 한강대로 405
+  - 경기 성남시 분당구 대왕판교로 316
+  - 서울 용산구 한강대로 405
 - 건물명, 장소명, 아파트명
-    - 테슬라 분당 스토어
-    - 테슬라 분당 서비스 센터
-    - 서울역
-    - 서울역 KTX 빌딩 주차장
-    - 아크로리버파크아파트
+  - 테슬라 분당 스토어
+  - 테슬라 분당 서비스 센터
+  - 서울역
+  - 서울역 KTX 빌딩 주차장
+  - 아크로리버파크아파트
 
 ### 추가 선택이 필요한 경우
 
@@ -131,10 +124,10 @@ Navi to Tesla 앱은 알림을 분석하고, 목적지를 Tesla로 전송한다.
 아래와 같은 형태의 목적지 내 특정 위치로 안내는 지원하지 않는다.
 
 - 서울 어린이대공원 구의문 주차장
-    - 서울 어린이대공원 주소로 안내가 되며, 정문, 후문, 구의문 구분없이 안내가 된다.
+  - 서울 어린이대공원 주소로 안내가 되며, 정문, 후문, 구의문 구분없이 안내가 된다.
 - 특정 아파트 102동, 후문
-    - 아파트 내 특정 동수로는 연동이 안된다.
-    - 간혹 방문자는 정문 또는 후문으로 진입해야 하는데, 안내가 되지 않는다. (아파트 근처 위치로만 안내)
+  - 아파트 내 특정 동수로는 연동이 안된다.
+  - 간혹 방문자는 정문 또는 후문으로 진입해야 하는데, 안내가 되지 않는다. (아파트 근처 위치로만 안내)
 
 특정 위치로 안내가 필요할 경우, 폰내비를 병행해서 사용한다.
 
@@ -157,7 +150,14 @@ Tesla API 호출 목적 외에는 사용하지 않으며, 앱 외부로 전송�
 
 내비게이션 앱이 경로 안내를 시작할 때 표시하는 알림을 읽기 위해 필요하다.
 이 권한이 없으면 앱의 핵심 기능인 목적지 자동 전송이 동작하지 않는다.
-Android 설정 > 앱 > 특별한 앱 접근 권한 > 알림 접근에서 허용할 수 있다.
+Android 설정 &gt; 앱 &gt; 특별한 앱 접근 권한 &gt; 알림 접근에서 허용할 수 있다.
+
+### 접근성 권한
+
+일부 내비의 경우 알림으로 목적지를 알 수 없기 때문에 접근성 서비스를 이용하여 화면에서 읽어야 한다.
+
+읽는 범위, 저장·공유 범위, 해제 방법은 [접근성 기능 사용 안내](ACCESSIBILITY.md)에 정리해 두었다.
+앱에서 접근성을 켜기 전에 같은 내용의 동의 화면이 표시된다.
 
 ### 알림 권한 (권장)
 
@@ -172,7 +172,7 @@ Android 13(API 33) 이상에서 앱이 목적지 전송 결과(성공/실패)를
 - **중복 목적지 선택 팝업**: 동일한 이름의 목적지가 여러 개 검색될 경우, 내비 앱 위에 주소 선택 팝업을 띄울 때 필요하다.
 
 이 권한이 없으면 Tesla App 모드 사용이 불가하며, 중복 목적지 선택 팝업도 표시되지 않는다.
-Android 설정 > 앱 > 특별한 앱 접근 권한 > 다른 앱 위에 표시에서 허용할 수 있다.
+Android 설정 &gt; 앱 &gt; 특별한 앱 접근 권한 &gt; 다른 앱 위에 표시에서 허용할 수 있다.
 
 ### 인터넷 권한
 
@@ -190,7 +190,13 @@ Android 11 이하에서는 `BLUETOOTH`, Android 12 이상에서는 `BLUETOOTH_CO
 오류 로그 파일을 기기 내부 저장소에 저장할 때 사용한다.
 Android 13 이상에서는 요청하지 않는다.
 
+## 정책 문서
+
+- [접근성 기능 사용 안내](ACCESSIBILITY.md)
+- [개인정보 처리방침](PRIVACY.md)
+- [계정 및 데이터 삭제](DELETE.md)
+
 ## 추가 가이드
 
-https://zipi.me/657
+[https://zipi.me/657](https://zipi.me/657)
 
