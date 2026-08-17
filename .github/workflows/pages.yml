@@ -24,7 +24,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # 저장소 전체가 아니라 안내 문서만 사이트로 올린다.
       - name: Collect pages
