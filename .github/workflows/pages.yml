@@ -1,0 +1,58 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - ACCESSIBILITY.md
+      - PRIVACY.md
+      - DELETE.md
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # 저장소 전체가 아니라 안내 문서만 사이트로 올린다.
+      - name: Collect pages
+        run: |
+          mkdir -p _pages
+          cp README.md _pages/index.md
+          cp ACCESSIBILITY.md PRIVACY.md DELETE.md _pages/
+          cat > _pages/_config.yml <<'EOF'
+          title: Navi to Tesla
+          description: 스마트폰 내비의 목적지를 Tesla 차량으로 자동 전송
+          theme: jekyll-theme-cayman
+          EOF
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./_pages
+          destination: ./_site
+
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
