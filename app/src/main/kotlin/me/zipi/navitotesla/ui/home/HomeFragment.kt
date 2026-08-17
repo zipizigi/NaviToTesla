@@ -476,7 +476,7 @@ class HomeFragment :
     }
 
     private val isTeslaAppInstalled: Boolean
-        get() = context?.let { TeslaAppDetector.isInstalled(it) } ?: false
+        get() = TeslaAppDetector.isInstalled()
 
     // share mode
     override fun onButtonChecked(

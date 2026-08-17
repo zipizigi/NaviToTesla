@@ -17,6 +17,7 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppCheckUtil
 import me.zipi.navitotesla.util.PreferencesUtil
 import me.zipi.navitotesla.util.RemoteConfigUtil
+import me.zipi.navitotesla.util.TeslaAppDetector
 import java.util.Locale
 
 class Application : Application() {
@@ -25,6 +26,7 @@ class Application : Application() {
         AppDatabase.initialize(this.applicationContext)
         AppRepository.initialize(database)
         AnalysisUtil.initialize(this.applicationContext)
+        TeslaAppDetector.initialize(this.applicationContext)
         AnalysisUtil.log(
             "App started: v${BuildConfig.VERSION_NAME} (${BuildConfig.BUILD_MODE}, " +
                 "sdk=${Build.VERSION.SDK_INT}, device=${Build.MANUFACTURER} ${Build.MODEL})",
