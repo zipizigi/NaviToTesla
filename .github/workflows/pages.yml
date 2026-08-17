@@ -45,7 +45,7 @@ jobs:
           source: ./_pages
           destination: ./_site
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
 
   deploy:
     needs: build
