@@ -3,6 +3,7 @@
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
     <string name="send">Send</string>
+    <string name="openAndroidSettings">Android Settings</string>
     <string name="confirm">OK</string>
     <string name="guide">Guide</string>
     <string name="open">Open</string>
@@ -77,11 +78,11 @@
     <string name="enabledApp">Navi to Tesla is enabled</string>
     <string name="disabledApp">Navi to Tesla is disabled</string>
     <string name="accessibility_description">Navi to Tesla uses the Android accessibility service to obtain the destination from certain navigation apps.\n\n[Apps accessed]\n- NAVER Maps\n- Kakao Navi\n- These apps offer no way to obtain the destination without the accessibility service.\n\n[Information collected]\n- The driving destination\n- Whether route guidance is currently active\n\n[When it is collected]\n- When the navigation app starts guiding to a destination\n\n[Scope of screen reading]\n- Screens of other apps are not read.\n- Reads only the destination and the items needed to tell the driving mode apart.\n- Why both the destination screen and the driving screen are checked\n  - Identifying route guidance that starts without any user touch\n  - Preventing wrong sends in a drive-only mode with no destination\n\n[Purpose]\n- Sending the destination to the Tesla vehicle owned by the user\n- Caching the resolved address and coordinates on the device for a faster response\n\n[Stored information]\n- Stored items: destination name, resolved address, coordinates\n- Location: on the user\'s device\n- Cleanup: cached entries are removed automatically after a certain period\n\n[External sharing]\n- The Kakao and Naver APIs are called to resolve the destination into an address and coordinates.\n- The Google Places API is called to check whether the resolved address is searchable in the vehicle navigation.\n- The resolved destination is sent to the Tesla vehicle owned by the user.\n- The destination is not sent or shared with any other server or third party.\n\n[How to turn it off]\n- Can be turned off at any time in Android Settings.</string>
-    <string name="requireAccessibility">Requires accessibility services</string>
-    <string name="guideRequireAccessibility">For some navigation apps, you can use Navi to Tesla using accessibility services.\nDetails can be found in the Settings tab.</string>
+    <string name="requireAccessibility">Available with the accessibility service</string>
+    <string name="guideRequireAccessibility">This navigation app can be integrated through the accessibility service.\nSee the accessibility service notice in the Settings tab.</string>
     <string name="guideRequireRelaunch">Navi to Tesla has been updated. Please reopen.</string>
     <string name="accessibilityService">Accessibility Service</string>
-    <string name="disableAccessibility">Disable accessibility services. Navi to Tesla is not available on certain navigations.\nYou can disable the Navi to Tesla accessibility service in your Android settings.</string>
+    <string name="disableAccessibility">The accessibility service is now off. Destinations from some navigation apps are no longer sent.\nTo revoke the accessibility permission itself, turn it off in Android Settings.</string>
     <string name="guidePermissionDeny">You can grant permission again in Android\'s settings.</string>
     <string name="guideGrantNotificationPermission">By adding notification permissions, you can receive related notifications when Navi to Tesla operates.</string>
     <string name="duplicatePoiSelection">Duplicate destination</string>
