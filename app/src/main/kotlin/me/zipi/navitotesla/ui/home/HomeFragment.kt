@@ -363,6 +363,10 @@ class HomeFragment :
         if (refreshToken.isNullOrEmpty()) {
             return
         }
+        // App 모드는 토큰을 쓰지 않는다. 조회하면 차량 없음 토스트만 뜬다.
+        if (PreferencesUtil.getStringSync("shareMode", "app") != "api") {
+            return
+        }
         if (!binding.btnSave.isEnabled) {
             return
         }
@@ -554,6 +558,8 @@ class HomeFragment :
         refreshTokenButtonEnabled()
         if (mode == "app") {
             overlayPermissionGrantedCheck()
+        } else {
+            getAccessTokenAndVehicles(homeViewModel.refreshToken.value)
         }
     }
 

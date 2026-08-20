@@ -33,6 +33,11 @@ class TokenWorker(
         private const val WORKER_NAME = "refreshTokenWorker"
 
         suspend fun startBackgroundWork(context: Context) {
+            if (PreferencesUtil.getString("shareMode", "app") != "api") {
+                AnalysisUtil.log("Share mode is app. cancel token refresh work")
+                cancelBackgroundWork(context)
+                return
+            }
             if (PreferencesUtil.loadToken() == null) {
                 AnalysisUtil.log("Token is empty. add token refresh work ignore")
                 return
