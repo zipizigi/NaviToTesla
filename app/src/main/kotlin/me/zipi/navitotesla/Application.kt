@@ -11,6 +11,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import me.zipi.navitotesla.background.TokenWorker
 import me.zipi.navitotesla.db.AppDatabase
+import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.service.place.FirebaseAppCheckTokenProvider
 import me.zipi.navitotesla.service.place.PlacesAutocompleteClient
 import me.zipi.navitotesla.util.AnalysisUtil
@@ -39,6 +40,7 @@ class Application : Application() {
                 launch { RemoteConfigUtil.initialize() },
                 launch { AppCheckUtil.initialize() },
             ).joinAll()
+            NaviToTeslaAccessibilityService.migrateConsentOnUpgrade(applicationContext)
             if (BuildConfig.DEBUG || BuildConfig.BUILD_MODE == "playstore") {
                 initializePlacesSdk()
             }

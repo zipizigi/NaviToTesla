@@ -36,6 +36,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         super.onServiceConnected()
         connectedAt = System.currentTimeMillis()
         instance = this
+        CoroutineScope(Dispatchers.IO).launch { loadConsent() }
         KakaoPoiFinder.setDriveModeProvider { driveMode(PoiFinderFactory.KAKAO_PACKAGE) }
         NaverPoiFinder.setDriveModeProvider { driveMode(PoiFinderFactory.NAVER_PACKAGE) }
     }
@@ -59,6 +60,14 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         try {
+            // 미적재 상태면 적재만 걸고 이번 이벤트는 버린다.
+            val consented = consentCache
+            if (consented == null) {
+                CoroutineScope(Dispatchers.IO).launch { loadConsent() }
+                return
+            }
+            if (!consented) return
+
             val packageName = event.packageName?.toString() ?: return
             readers[packageName]?.onEvent(event) { rootInActiveWindow }
         } catch (e: Exception) {
@@ -76,6 +85,44 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
         @Volatile private var connectedAt = 0L
 
         @Volatile private var instance: NaviToTeslaAccessibilityService? = null
+
+        private const val KEY_CONSENT = "accessibilityConsent"
+        private const val KEY_CONSENT_MIGRATED = "accessibilityConsentMigrated"
+
+        /** onAccessibilityEvent 가 동기 콜백이라 저장소를 직접 못 읽는다. null = 미적재. */
+        @Volatile private var consentCache: Boolean? = null
+
+        private suspend fun loadConsent(): Boolean = PreferencesUtil.getBoolean(KEY_CONSENT, false).also { consentCache = it }
+
+        suspend fun isConsented(): Boolean = consentCache ?: loadConsent()
+
+        suspend fun setConsent(granted: Boolean) {
+            PreferencesUtil.put(KEY_CONSENT, granted)
+            consentCache = granted
+        }
+
+        suspend fun isActive(context: Context?): Boolean = isConsented() && isAccessibilityServiceEnabled(context)
+
+        /**
+         * 기존 사용자의 동의만 한 번 승계한다.
+         * 최초 설치는 firstInstallTime == lastUpdateTime 이므로 대상이 되지 않는다.
+         */
+        suspend fun migrateConsentOnUpgrade(context: Context) {
+            if (PreferencesUtil.getBoolean(KEY_CONSENT_MIGRATED, false)) return
+            if (isUpgradedInstall(context) && isAccessibilityServiceEnabled(context)) {
+                setConsent(true)
+            }
+            PreferencesUtil.put(KEY_CONSENT_MIGRATED, true)
+        }
+
+        private fun isUpgradedInstall(context: Context): Boolean =
+            try {
+                val info = context.packageManager.getPackageInfo(context.packageName, 0)
+                info.lastUpdateTime > info.firstInstallTime
+            } catch (e: Exception) {
+                AnalysisUtil.recordException(e)
+                false
+            }
 
         fun isAccessibilityServiceRunning(): Boolean = connectedAt > 0L
 
@@ -100,7 +147,7 @@ class NaviToTeslaAccessibilityService : AccessibilityService() {
                 if (!PoiFinderFactory.isAccessibilityRequired(packageName, notificationText)) {
                     return@launch
                 }
-                if (!isAccessibilityServiceEnabled(context)) {
+                if (!isActive(context)) {
                     notifyRequireAccessibility(context)
                     return@launch
                 }
