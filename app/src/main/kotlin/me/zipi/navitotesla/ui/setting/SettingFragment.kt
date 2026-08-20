@@ -49,8 +49,6 @@ class SettingFragment :
     private lateinit var settingViewModel: SettingViewModel
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
-    private var isDuplicatePoiRadioInitializing = false
-    private var isAccRadioUpdating = false
     private var diagnosticsUserToggled = false
     private var diagnosticsExpanded = false
     private var diagnosticsAnimReady = false
@@ -68,7 +66,8 @@ class SettingFragment :
         binding.btnAccEnableHelp.setOnClickListener(this)
         binding.radioGroupAppEnable.setOnCheckedChangeListener(this)
         binding.radioGroupConditionEnable.setOnCheckedChangeListener(this)
-        binding.radioGroupAccEnable.setOnCheckedChangeListener(this)
+        binding.radioAccEnable.setOnClickListener { onAccEnableClicked() }
+        binding.radioAccDisable.setOnClickListener { revokeAccessibilityConsent() }
         settingViewModel.isConditionEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedConditionEnabled(enabled) }
         settingViewModel.isAppEnabled
@@ -101,7 +100,8 @@ class SettingFragment :
                 conditionRecyclerAdapter.setItems(items)
                 binding.textBluetoothEmpty.visibility = if (items.isNullOrEmpty()) View.VISIBLE else View.GONE
             }
-        binding.radioGroupDuplicatePoiSelection.setOnCheckedChangeListener(this)
+        binding.radioDuplicatePoiShowPopup.setOnClickListener { onDuplicatePoiSelected(true) }
+        binding.radioDuplicatePoiIgnore.setOnClickListener { onDuplicatePoiSelected(false) }
         return root
     }
 
@@ -304,11 +304,9 @@ class SettingFragment :
                 context?.run {
                     val enabled = PreferencesUtil.getBoolean("duplicatePoiSelection", true)
                     withContext(Dispatchers.Main) {
-                        isDuplicatePoiRadioInitializing = true
                         binding.radioGroupDuplicatePoiSelection.check(
                             if (enabled) binding.radioDuplicatePoiShowPopup.id else binding.radioDuplicatePoiIgnore.id,
                         )
-                        isDuplicatePoiRadioInitializing = false
                     }
                 }
             }
@@ -443,30 +441,24 @@ class SettingFragment :
             settingViewModel.setConditionEnabledByUser(true)
         } else if (checkedId == R.id.radioConditionDisable) {
             settingViewModel.setConditionEnabledByUser(false)
-        } else if (checkedId == R.id.radioAccEnable) {
-            if (!isAccRadioUpdating) {
-                // 동의 전에는 켜진 것으로 보이지 않아야 한다.
-                setAccRadio(false)
+        }
+    }
+
+    private fun onDuplicatePoiSelected(showPopup: Boolean) {
+        if (showPopup && context != null && !Settings.canDrawOverlays(requireContext())) {
+            showOverlayPermissionDialog()
+        }
+        lifecycleScope.launch { PreferencesUtil.put("duplicatePoiSelection", showPopup) }
+    }
+
+    private fun onAccEnableClicked() {
+        // 동의 전에는 켜진 것으로 보이지 않아야 한다.
+        setAccRadio(false)
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (NaviToTeslaAccessibilityService.isActive(context)) {
+                setAccRadio(true)
+            } else {
                 showAccessibilityConsentDialog()
-            }
-        } else if (checkedId == R.id.radioDuplicatePoiShowPopup) {
-            if (!isDuplicatePoiRadioInitializing) {
-                if (context != null && !Settings.canDrawOverlays(requireContext())) {
-                    showOverlayPermissionDialog()
-                }
-                lifecycleScope.launch {
-                    PreferencesUtil.put("duplicatePoiSelection", true)
-                }
-            }
-        } else if (checkedId == R.id.radioDuplicatePoiIgnore) {
-            if (!isDuplicatePoiRadioInitializing) {
-                lifecycleScope.launch {
-                    PreferencesUtil.put("duplicatePoiSelection", false)
-                }
-            }
-        } else if (checkedId == R.id.radioAccDisable) {
-            if (!isAccRadioUpdating) {
-                revokeAccessibilityConsent()
             }
         }
     }
@@ -474,6 +466,9 @@ class SettingFragment :
     /** 동의를 회수하면 OS 접근성이 켜져 있어도 수집이 멈춘다. 서비스는 안드로이드 설정에서만 끌 수 있다. */
     private fun revokeAccessibilityConsent() =
         viewLifecycleOwner.lifecycleScope.launch {
+            if (!NaviToTeslaAccessibilityService.isConsented()) {
+                return@launch
+            }
             NaviToTeslaAccessibilityService.setConsent(false)
             val activity = activity ?: return@launch
             if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(activity)) {
@@ -484,8 +479,8 @@ class SettingFragment :
                 .setTitle(getString(R.string.guide))
                 .setMessage(getString(R.string.disableAccessibility))
                 .setCancelable(true)
-                .setPositiveButton(getString(R.string.title_setting)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
-                .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
+                .setNegativeButton(getString(R.string.openAndroidSettings)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
                 .create()
                 .show()
         }
@@ -493,13 +488,11 @@ class SettingFragment :
     private fun setAccRadio(enable: Boolean) {
         val activity = activity ?: return
         activity.runOnUiThread {
-            isAccRadioUpdating = true
             if (enable) {
                 binding.radioAccEnable.isChecked = true
             } else {
                 binding.radioAccDisable.isChecked = true
             }
-            isAccRadioUpdating = false
         }
     }
 
@@ -557,9 +550,7 @@ class SettingFragment :
                 lifecycleScope.launch {
                     PreferencesUtil.put("duplicatePoiSelection", false)
                     withContext(Dispatchers.Main) {
-                        isDuplicatePoiRadioInitializing = true
                         binding.radioGroupDuplicatePoiSelection.check(binding.radioDuplicatePoiIgnore.id)
-                        isDuplicatePoiRadioInitializing = false
                     }
                 }
             }.create()
