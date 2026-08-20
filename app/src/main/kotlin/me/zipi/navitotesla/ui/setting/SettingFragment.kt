@@ -50,6 +50,7 @@ class SettingFragment :
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var conditionRecyclerAdapter: ConditionRecyclerAdapter
     private var isDuplicatePoiRadioInitializing = false
+    private var isAccRadioUpdating = false
     private var diagnosticsUserToggled = false
     private var diagnosticsExpanded = false
     private var diagnosticsAnimReady = false
@@ -296,17 +297,8 @@ class SettingFragment :
             settingViewModel.loadStates()
 
             launch {
-                val accEnabled: Boolean =
-                    context?.let {
-                        NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
-                    } ?: false
-                withContext(Dispatchers.Main) {
-                    if (accEnabled) {
-                        binding.radioAccEnable.isChecked = true
-                    } else {
-                        binding.radioAccDisable.isChecked = true
-                    }
-                }
+                val accActive = NaviToTeslaAccessibilityService.isActive(context)
+                withContext(Dispatchers.Main) { setAccRadio(accActive) }
             }
             launch {
                 context?.run {
@@ -452,12 +444,10 @@ class SettingFragment :
         } else if (checkedId == R.id.radioConditionDisable) {
             settingViewModel.setConditionEnabledByUser(false)
         } else if (checkedId == R.id.radioAccEnable) {
-            if (activity != null &&
-                !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
-                    activity,
-                )
-            ) {
-                showAccessibilityConsentDialog(onDeny = { setAccRadio(false) })
+            if (!isAccRadioUpdating) {
+                // 동의 전에는 켜진 것으로 보이지 않아야 한다.
+                setAccRadio(false)
+                showAccessibilityConsentDialog()
             }
         } else if (checkedId == R.id.radioDuplicatePoiShowPopup) {
             if (!isDuplicatePoiRadioInitializing) {
@@ -475,36 +465,41 @@ class SettingFragment :
                 }
             }
         } else if (checkedId == R.id.radioAccDisable) {
-            if (activity != null &&
-                NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(
-                    activity,
-                )
-            ) {
-                AlertDialog
-                    .Builder(requireActivity())
-                    .setTitle(getString(R.string.guide))
-                    .setMessage(getString(R.string.disableAccessibility))
-                    .setCancelable(true)
-                    .setPositiveButton(getString(R.string.title_setting)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
-                    .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int ->
-                        setAccRadio(
-                            true,
-                        )
-                    }.create()
-                    .show()
+            if (!isAccRadioUpdating) {
+                revokeAccessibilityConsent()
             }
         }
     }
 
-    private fun setAccRadio(enable: Boolean) {
-        if (activity != null) {
-            requireActivity().runOnUiThread {
-                if (enable) {
-                    binding.radioAccEnable.isChecked = true
-                } else {
-                    binding.radioAccDisable.isChecked = true
-                }
+    /** 동의를 회수하면 OS 접근성이 켜져 있어도 수집이 멈춘다. 서비스는 안드로이드 설정에서만 끌 수 있다. */
+    private fun revokeAccessibilityConsent() =
+        viewLifecycleOwner.lifecycleScope.launch {
+            NaviToTeslaAccessibilityService.setConsent(false)
+            val activity = activity ?: return@launch
+            if (!NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(activity)) {
+                return@launch
             }
+            AlertDialog
+                .Builder(activity)
+                .setTitle(getString(R.string.guide))
+                .setMessage(getString(R.string.disableAccessibility))
+                .setCancelable(true)
+                .setPositiveButton(getString(R.string.title_setting)) { _: DialogInterface?, _: Int -> openAccessibilitySettings() }
+                .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+                .create()
+                .show()
+        }
+
+    private fun setAccRadio(enable: Boolean) {
+        val activity = activity ?: return
+        activity.runOnUiThread {
+            isAccRadioUpdating = true
+            if (enable) {
+                binding.radioAccEnable.isChecked = true
+            } else {
+                binding.radioAccDisable.isChecked = true
+            }
+            isAccRadioUpdating = false
         }
     }
 
@@ -516,20 +511,29 @@ class SettingFragment :
         }
     }
 
-    private fun showAccessibilityConsentDialog(onDeny: () -> Unit = {}) {
-        if (activity == null) return
+    private fun showAccessibilityConsentDialog() {
+        val activity = activity ?: return
         AlertDialog
-            .Builder(requireActivity())
+            .Builder(activity)
             .setTitle(getString(R.string.guide))
             .setMessage(getString(R.string.accessibility_description))
             .setCancelable(true)
             .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int ->
-                openAccessibilitySettings()
-            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int ->
-                onDeny()
-            }.create()
+                grantAccessibilityConsent()
+            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int -> }
+            .create()
             .show()
     }
+
+    private fun grantAccessibilityConsent() =
+        viewLifecycleOwner.lifecycleScope.launch {
+            NaviToTeslaAccessibilityService.setConsent(true)
+            if (NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)) {
+                setAccRadio(true)
+            } else {
+                openAccessibilitySettings()
+            }
+        }
 
     private fun showOverlayPermissionDialog() {
         if (activity == null) return

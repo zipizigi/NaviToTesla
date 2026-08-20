@@ -171,11 +171,11 @@ class HomeFragment :
             return
         }
 
-        val enabled =
+        val active =
             withContext(Dispatchers.IO) {
-                NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)
+                NaviToTeslaAccessibilityService.isActive(context)
             }
-        if (enabled) {
+        if (active) {
             return
         }
         permissionAlertDialog =
