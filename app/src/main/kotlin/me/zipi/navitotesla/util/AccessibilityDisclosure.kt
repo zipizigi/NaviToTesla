@@ -83,7 +83,7 @@ object AccessibilityDisclosure {
         PreferencesUtil.getBooleanSync(KEY_BANNER_DISMISSED, false) ||
             PreferencesUtil.getBooleanSync(KEY_DECLINED, false)
 
-    suspend fun dismissBanner() {
+    suspend fun hideGuide() {
         PreferencesUtil.put(KEY_BANNER_DISMISSED, true)
     }
 

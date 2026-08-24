@@ -105,16 +105,12 @@ class HomeFragment :
         binding.btnTokenClear.setOnClickListener(this)
         binding.txtVersion.setOnClickListener(this)
         binding.btnAccessibilityDetail.setOnClickListener { showAccessibilityTeaser() }
-        binding.bannerAccessibility.setOnClickListener { showAccessibilityTeaser() }
-        val dismiss =
-            View.OnClickListener {
-                lifecycleScope.launch {
-                    AccessibilityDisclosure.dismissBanner()
-                    bindAccessibilityGuide()
-                }
+        binding.btnAccessibilityCardClose.setOnClickListener {
+            lifecycleScope.launch {
+                AccessibilityDisclosure.hideGuide()
+                bindAccessibilityGuide()
             }
-        binding.btnAccessibilityBannerClose.setOnClickListener(dismiss)
-        binding.btnAccessibilityCardClose.setOnClickListener(dismiss)
+        }
         setupSendModeRadios()
         loadSendModeRadios()
 
@@ -204,13 +200,9 @@ class HomeFragment :
     private suspend fun bindAccessibilityGuide() {
         val ctx = context ?: return
         if (!isAdded) return
-        val active = NaviToTeslaAccessibilityService.isActive(ctx)
-        val installed = withContext(Dispatchers.IO) { AccessibilityDisclosure.isNaviInstalled(ctx) }
-        val visible = !active && !AccessibilityDisclosure.isGuideHiddenSync()
-        val showCard = visible && installed
-        val showBanner = visible && !installed
-        binding.cardAccessibility.visibility = if (showCard) View.VISIBLE else View.GONE
-        binding.bannerAccessibility.visibility = if (showBanner) View.VISIBLE else View.GONE
+        val visible =
+            !NaviToTeslaAccessibilityService.isActive(ctx) && !AccessibilityDisclosure.isGuideHiddenSync()
+        binding.cardAccessibility.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     private suspend fun permissionGrantedCheck() {
