@@ -23,7 +23,7 @@ object SendPlanner {
             return SendPayload(sendText = coords, displayText = coords, mode = SendMode.GPS, viaUrl = false)
         }
 
-        // 1. UNKNOWN → RC 에 따라 NotSearchable 로 승격
+        // UNKNOWN → RC 에 따라 NotSearchable 로 승격
         val effectiveSearchability =
             if (settings.treatUnknownAsNotSearchable && searchability is Searchability.Unknown) {
                 Searchability.NotSearchable
@@ -31,7 +31,6 @@ object SendPlanner {
                 searchability
             }
 
-        // 2. 모드 결정
         var mode =
             if (effectiveSearchability is Searchability.NotSearchable) {
                 settings.fallbackMode
@@ -83,9 +82,6 @@ object SendPlanner {
     // 좌표 폴백을 감지해 road 로 다시 폴백한다.
     private fun jibunOrRoad(poi: Poi): String {
         val jibun = poi.getAddress()
-        // Poi.getAddress() falls back to getGpsAddress() — either "lat,lng" or the literal
-        // "null,null" — when the underlying address field is empty. Both are unfit as jibun;
-        // re-fall back to road.
         val isAddressEmpty =
             jibun.isEmpty() ||
                 jibun == poi.getGpsAddress() ||

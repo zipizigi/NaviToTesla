@@ -250,9 +250,6 @@ class NaviToTeslaService(
         return poi
     }
 
-//    val token: Token?
-//        get() = PreferencesUtil.loadToken()
-
     suspend fun getToken(): Token? = PreferencesUtil.loadToken()
 
     private suspend fun expireToken() {

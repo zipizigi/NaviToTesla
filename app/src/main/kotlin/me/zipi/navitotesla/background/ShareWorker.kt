@@ -65,7 +65,6 @@ class ShareWorker(
         }
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // create channel
         val mChannel = NotificationChannel(channelId, "Share notification", NotificationManager.IMPORTANCE_LOW)
         mChannel.setSound(null, null)
         mChannel.setShowBadge(false)

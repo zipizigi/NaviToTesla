@@ -217,7 +217,6 @@ class HomeFragment :
             return
         }
 
-        //         file write permission
         // 권한 이미 grant 되어 있으면 TedPermission 호출 자체 skip — TedPermissionActivity launch 안 됨 → 탭 전환 즉시.
         if ((Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && !PreferencesUtil.getBoolean("denyFilePermission", false))) {
             val granted =
@@ -275,7 +274,6 @@ class HomeFragment :
             return
         }
 
-        // notification listener
         val sets =
             withContext(Dispatchers.IO) {
                 NotificationManagerCompat.getEnabledListenerPackages(requireContext())
@@ -502,7 +500,6 @@ class HomeFragment :
     private val isTeslaAppInstalled: Boolean
         get() = TeslaAppDetector.isInstalled()
 
-    // share mode
     override fun onButtonChecked(
         group: MaterialButtonToggleGroup,
         checkedId: Int,

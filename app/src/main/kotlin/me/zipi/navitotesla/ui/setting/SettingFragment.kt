@@ -186,7 +186,6 @@ class SettingFragment :
         return needsFix
     }
 
-    /** 닫은 배너와 거부 기록을 되돌리고 전문을 다시 보여준다. */
     private fun showGuideAgain() {
         val activity = activity ?: return
         viewLifecycleOwner.lifecycleScope.launch {

@@ -39,7 +39,6 @@ object AccessibilityDisclosure {
             .create()
             .also { it.show() }
 
-    /** 2단계 전문 고지 + 동의. */
     fun show(
         activity: FragmentActivity,
         onFinished: ((Boolean) -> Unit)? = null,

@@ -93,7 +93,6 @@ object PoiSelectionOverlay {
                 )
             params.gravity = Gravity.BOTTOM or Gravity.START
 
-            // Load saved position, fall back to defaults
             val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val orientationKey = if (isPortrait) "portrait" else "landscape"
             params.x = prefs.getInt("x_$orientationKey", 16.dp())
@@ -147,7 +146,6 @@ object PoiSelectionOverlay {
 
             closeButton.setOnClickListener { dismiss() }
 
-            // Drag-to-reposition via header handle
             var dragStartRawX = 0f
             var dragStartRawY = 0f
             var dragStartParamsX = 0
