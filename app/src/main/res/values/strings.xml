@@ -130,7 +130,7 @@
     <string name="a11yCardBody">NAVER Maps and Kakao Navi can provide the destination through the accessibility service.</string>
     <string name="a11yDetail">See details</string>
     <string name="a11yTeaserTitle">About accessibility service integration</string>
-    <string name="a11yTeaserBody">Some navigation apps provide the destination through the accessibility service.\n\nSupported navigation apps\n  \u00b7 Kakao Navi\n  \u00b7 NAVER Maps\n\nWhat the accessibility service reads, how it is used and shared, and the consent step are shown under [See details].\n\nTMAP works without the accessibility service.</string>
+    <string name="a11yTeaserBody">Some navigation apps provide the destination through the accessibility service.\n\nSupported navigation apps\n  \u00b7 NAVER Maps\n  \u00b7 Kakao Navi\n\nWhat the accessibility service reads, how it is used and shared, and the consent step are shown under [See details].\n\nTMAP works without the accessibility service.</string>
     <string name="a11yConsentTitle">Consent to accessibility service data use</string>
     <string name="guideAccessibilityRevoked">The accessibility service is off.\nTurn it back on in Android Settings.</string>
     <string name="a11yShowGuideAgain">Show again</string>

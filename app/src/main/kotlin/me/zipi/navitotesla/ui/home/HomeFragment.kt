@@ -107,7 +107,7 @@ class HomeFragment :
         binding.btnAccessibilityDetail.setOnClickListener { showAccessibilityTeaser() }
         binding.btnAccessibilityCardClose.setOnClickListener {
             lifecycleScope.launch {
-                AccessibilityDisclosure.hideGuide()
+                AccessibilityDisclosure.dismissGuide()
                 bindAccessibilityGuide()
             }
         }
@@ -201,7 +201,7 @@ class HomeFragment :
         val ctx = context ?: return
         if (!isAdded) return
         val visible =
-            !NaviToTeslaAccessibilityService.isActive(ctx) && !AccessibilityDisclosure.isGuideHiddenSync()
+            !NaviToTeslaAccessibilityService.isActive(ctx) && !AccessibilityDisclosure.isGuideDismissedSync()
         binding.cardAccessibility.visibility = if (visible) View.VISIBLE else View.GONE
     }
 

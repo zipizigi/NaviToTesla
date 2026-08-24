@@ -71,7 +71,7 @@ class SettingFragment :
         binding.radioAccDisable.setOnClickListener { revokeAccessibilityConsent() }
         binding.btnAccShowGuideAgain.setOnClickListener { showGuideAgain() }
         binding.btnAccShowGuideAgain.visibility =
-            if (AccessibilityDisclosure.isGuideHiddenSync()) View.VISIBLE else View.GONE
+            if (AccessibilityDisclosure.isGuideDismissedSync()) View.VISIBLE else View.GONE
         settingViewModel.isConditionEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedConditionEnabled(enabled) }
         settingViewModel.isAppEnabled
@@ -191,7 +191,7 @@ class SettingFragment :
 
     private fun showGuideAgain() =
         viewLifecycleOwner.lifecycleScope.launch {
-            AccessibilityDisclosure.resetGuideVisibility()
+            AccessibilityDisclosure.restoreGuide()
             AnalysisUtil.makeToast(context, getString(R.string.a11yShowGuideAgainDone))
             bindShowGuideAgain()
         }
@@ -199,7 +199,7 @@ class SettingFragment :
     /** 홈 안내를 숨긴 사용자에게만 복구 수단을 보여준다. */
     private fun bindShowGuideAgain() {
         binding.btnAccShowGuideAgain.visibility =
-            if (AccessibilityDisclosure.isGuideHiddenSync()) View.VISIBLE else View.GONE
+            if (AccessibilityDisclosure.isGuideDismissedSync()) View.VISIBLE else View.GONE
     }
 
     private fun applyDiagnosticsExpanded(expanded: Boolean) {

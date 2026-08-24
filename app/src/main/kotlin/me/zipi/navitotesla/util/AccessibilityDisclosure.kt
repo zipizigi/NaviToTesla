@@ -21,7 +21,7 @@ import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
  */
 object AccessibilityDisclosure {
     private const val KEY_DECLINED = "a11yDeclined"
-    private const val KEY_BANNER_DISMISSED = "a11yBannerDismissed"
+    private const val KEY_GUIDE_DISMISSED = "a11yBannerDismissed"
     private const val KEY_LAST_SHOWN_VERSION = "a11yLastShownVersionCode"
 
     /** 1단계 안내. 동의는 받지 않고 [show] 로만 넘긴다. */
@@ -54,13 +54,12 @@ object AccessibilityDisclosure {
             .also { it.show() }
 
     fun openSettings(context: Context) {
-        val fallback = Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
             context.startActivity(
                 Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
         } catch (_: ActivityNotFoundException) {
-            context.startActivity(fallback)
+            context.startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
     }
 
@@ -78,19 +77,15 @@ object AccessibilityDisclosure {
         PreferencesUtil.put(KEY_LAST_SHOWN_VERSION, BuildConfig.VERSION_CODE.toLong())
     }
 
-    /** ✕ 로 닫았거나 PD 를 거부한 상태. 첫 프레임 흔들림을 막기 위해 동기로 읽는다. */
-    fun isGuideHiddenSync(): Boolean =
-        PreferencesUtil.getBooleanSync(KEY_BANNER_DISMISSED, false) ||
-            PreferencesUtil.getBooleanSync(KEY_DECLINED, false)
+    /** 사용자가 ✕ 로 닫았는지. 첫 프레임 흔들림을 막기 위해 동기로 읽는다. */
+    fun isGuideDismissedSync(): Boolean = PreferencesUtil.getBooleanSync(KEY_GUIDE_DISMISSED, false)
 
-    suspend fun hideGuide() {
-        PreferencesUtil.put(KEY_BANNER_DISMISSED, true)
+    suspend fun dismissGuide() {
+        PreferencesUtil.put(KEY_GUIDE_DISMISSED, true)
     }
 
-    /** 설정 탭의 '연동 안내 다시 보기'. 닫은 배너와 거부 기록을 함께 되돌린다. */
-    suspend fun resetGuideVisibility() {
-        PreferencesUtil.put(KEY_BANNER_DISMISSED, false)
-        PreferencesUtil.put(KEY_DECLINED, false)
+    suspend fun restoreGuide() {
+        PreferencesUtil.put(KEY_GUIDE_DISMISSED, false)
     }
 
     private fun grant(
