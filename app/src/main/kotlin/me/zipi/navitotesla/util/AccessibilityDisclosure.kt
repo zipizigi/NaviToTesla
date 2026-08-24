@@ -78,14 +78,10 @@ object AccessibilityDisclosure {
         PreferencesUtil.put(KEY_LAST_SHOWN_VERSION, BuildConfig.VERSION_CODE.toLong())
     }
 
-    suspend fun isDeclined(): Boolean = PreferencesUtil.getBoolean(KEY_DECLINED, false)
-
-    /** 첫 프레임 레이아웃 흔들림 방지용 동기 조회. */
+    /** ✕ 로 닫았거나 PD 를 거부한 상태. 첫 프레임 흔들림을 막기 위해 동기로 읽는다. */
     fun isGuideHiddenSync(): Boolean =
         PreferencesUtil.getBooleanSync(KEY_BANNER_DISMISSED, false) ||
             PreferencesUtil.getBooleanSync(KEY_DECLINED, false)
-
-    suspend fun isBannerDismissed(): Boolean = PreferencesUtil.getBoolean(KEY_BANNER_DISMISSED, false)
 
     suspend fun dismissBanner() {
         PreferencesUtil.put(KEY_BANNER_DISMISSED, true)

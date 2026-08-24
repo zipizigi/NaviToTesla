@@ -55,36 +55,45 @@
                         style="@style/Widget.NaviToTesla.HelpButton" />
                 </LinearLayout>
 
-                <RadioGroup
-                    android:id="@+id/radioGroupAccEnable"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xs"
                     android:baselineAligned="false"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioAccEnable"
+                    <RadioGroup
+                        android:id="@+id/radioGroupAccEnable"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioAccEnable"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/space_xl"
+                            android:text="@string/enable" />
+
+                        <com.google.android.material.radiobutton.MaterialRadioButton
+                            android:id="@+id/radioAccDisable"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/disable" />
+                    </RadioGroup>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAccShowGuideAgain"
+                        style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/space_xl"
-                        android:text="@string/enable" />
-
-                    <com.google.android.material.radiobutton.MaterialRadioButton
-                        android:id="@+id/radioAccDisable"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/disable" />
-                </RadioGroup>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAccShowGuideAgain"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/a11yShowGuideAgain"
-                    android:visibility="gone" />
+                        android:maxLines="1"
+                        android:text="@string/a11yShowGuideAgain"
+                        android:visibility="gone" />
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"

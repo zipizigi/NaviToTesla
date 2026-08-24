@@ -104,14 +104,17 @@ class HomeFragment :
         binding.btnPaste.setOnClickListener(this)
         binding.btnTokenClear.setOnClickListener(this)
         binding.txtVersion.setOnClickListener(this)
-        binding.btnAccessibilityDetail.setOnClickListener { showAccessibilityDisclosure() }
-        binding.bannerAccessibility.setOnClickListener { showAccessibilityDisclosure() }
-        binding.btnAccessibilityBannerClose.setOnClickListener {
-            lifecycleScope.launch {
-                AccessibilityDisclosure.dismissBanner()
-                bindAccessibilityGuide()
+        binding.btnAccessibilityDetail.setOnClickListener { showAccessibilityTeaser() }
+        binding.bannerAccessibility.setOnClickListener { showAccessibilityTeaser() }
+        val dismiss =
+            View.OnClickListener {
+                lifecycleScope.launch {
+                    AccessibilityDisclosure.dismissBanner()
+                    bindAccessibilityGuide()
+                }
             }
-        }
+        binding.btnAccessibilityBannerClose.setOnClickListener(dismiss)
+        binding.btnAccessibilityCardClose.setOnClickListener(dismiss)
         setupSendModeRadios()
         loadSendModeRadios()
 
@@ -188,9 +191,9 @@ class HomeFragment :
         }
     }
 
-    private fun showAccessibilityDisclosure() {
+    private fun showAccessibilityTeaser() {
         val activity = activity ?: return
-        permissionAlertDialog = AccessibilityDisclosure.show(activity) { refreshAccessibilityGuide() }
+        permissionAlertDialog = AccessibilityDisclosure.showTeaser(activity) { refreshAccessibilityGuide() }
     }
 
     private fun refreshAccessibilityGuide() {
@@ -203,8 +206,9 @@ class HomeFragment :
         if (!isAdded) return
         val active = NaviToTeslaAccessibilityService.isActive(ctx)
         val installed = withContext(Dispatchers.IO) { AccessibilityDisclosure.isNaviInstalled(ctx) }
-        val showCard = !active && installed && !AccessibilityDisclosure.isDeclined()
-        val showBanner = !active && !installed && !AccessibilityDisclosure.isBannerDismissed()
+        val visible = !active && !AccessibilityDisclosure.isGuideHiddenSync()
+        val showCard = visible && installed
+        val showBanner = visible && !installed
         binding.cardAccessibility.visibility = if (showCard) View.VISIBLE else View.GONE
         binding.bannerAccessibility.visibility = if (showBanner) View.VISIBLE else View.GONE
     }

@@ -125,10 +125,10 @@
     <string name="a11yCardBody">NAVER Maps and Kakao Navi can provide the destination through the accessibility service.</string>
     <string name="a11yDetail">See details</string>
     <string name="a11yTeaserTitle">About accessibility service integration</string>
-    <string name="a11yTeaserBody">Some navigation apps can provide the destination through the accessibility service.\n\nSupported apps\n  \u00b7 NAVER Maps\n  \u00b7 Kakao Navi\n\nWhat is read, how it is used, and the consent step are shown under [See details].</string>
+    <string name="a11yTeaserBody">Sends the navigation destination to your Tesla vehicle.\n\nSupported navigation apps\n  \u00b7 NAVER Maps, Kakao Navi \u2014 accessibility service required\n  \u00b7 TMAP \u2014 works through notifications, no accessibility service needed\n\nWhat the accessibility service reads, how it is used and shared, and the consent step are shown under [See details].</string>
     <string name="a11yConsentTitle">Consent to accessibility service data use</string>
     <string name="guideAccessibilityRevoked">The accessibility service is off.\nTurn it back on in Android Settings.</string>
-    <string name="a11yShowGuideAgain">Show the integration notice on Home again</string>
+    <string name="a11yShowGuideAgain">Show again</string>
     <string name="later">Later</string>
     <string name="a11yShowGuideAgainDone">The integration notice will appear on the Home screen again.</string>
 </resources>
