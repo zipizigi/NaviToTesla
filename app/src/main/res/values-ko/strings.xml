@@ -77,12 +77,12 @@
     <string name="guideGrantBluetoothPermission">해당 기능을 사용하려면 블루투스 접근 권한이 필요합니다.</string>
     <string name="enabledApp">Navi to Tesla가 활성화 되었습니다</string>
     <string name="disabledApp">Navi to Tesla가 비활성화 되었습니다</string>
-    <string name="accessibility_description">Navi to Tesla 는 특정 내비게이션의 목적지를 가져오기 위해 Android 접근성 기능을 사용합니다.\n\n[접근 대상 앱]\n- 네이버지도\n- 카카오내비\n- 해당 앱은 접근성 기능을 통하지 않고 목적지를 가져올 방법이 없습니다.\n\n[수집 정보]\n- 주행 목적지\n- 현재 주행 안내 중인지 여부\n\n[수집 시점]\n- 내비게이션이 목적지로 안내를 시작할 때\n\n[화면을 읽는 범위]\n- 다른 앱의 화면은 읽지 않습니다.\n- 목적지와 주행 모드 판별에 필요한 항목만 읽습니다.\n- 목적지 화면과 주행 화면을 함께 확인하는 이유\n  - 사용자 터치 없이 자동으로 시작되는 경로 안내 구분\n  - 목적지 없이 주행만 하는 모드(안전운전·안심주행)에서 오동작 방지\n\n[사용 목적]\n- 고객 본인 소유 Tesla 차량으로 목적지 전송\n- 빠른 응답을 위해 변환된 주소·좌표를 기기 내부에 임시 캐시\n\n[저장 정보]\n- 저장 대상: 목적지명, 변환된 주소, 좌표\n- 저장 위치: 사용자 기기 내부\n- 자동 정리: 일정 기간이 지난 캐시는 자동 삭제됩니다.\n\n[외부 공유 범위]\n- 목적지를 주소·좌표로 변환하기 위해 카카오·네이버 API를 호출합니다.\n- 변환된 주소를 차량 내비게이션에서 검색할 수 있는지 확인하기 위해 Google Places API를 호출합니다.\n- 변환된 목적지는 고객 본인 소유의 Tesla 차량으로 전송합니다.\n- 그 외 어떤 서버나 제3자에도 전송·공유하지 않습니다.\n\n[비활성화 방법]\n- Android 설정에서 언제든 끌 수 있습니다.</string>
-    <string name="requireAccessibility">접근성 기능으로 연동할 수 있습니다</string>
-    <string name="guideRequireAccessibility">해당 내비게이션은 접근성 기능을 통해 연동할 수 있습니다.\n설정 탭에서 접근성 서비스 안내를 확인해주세요.</string>
+    <string name="accessibility_description">Navi to Tesla 는 특정 내비게이션의 목적지를 가져오기 위해 Android 접근성 서비스를 사용합니다.\n\n[접근 대상 앱]\n- 네이버지도\n- 카카오내비\n- 해당 앱은 접근성 서비스를 통하지 않고 목적지를 가져올 방법이 없습니다.\n\n[수집 정보]\n- 주행 목적지\n- 현재 주행 안내 중인지 여부\n\n[수집 시점]\n- 내비게이션이 목적지로 안내를 시작할 때\n\n[화면을 읽는 범위]\n- 다른 앱의 화면은 읽지 않습니다.\n- 목적지와 주행 모드 판별에 필요한 항목만 읽습니다.\n- 목적지 화면과 주행 화면을 함께 확인하는 이유\n  - 사용자 터치 없이 자동으로 시작되는 경로 안내 구분\n  - 목적지 없이 주행만 하는 모드(안전운전·안심주행)에서 오동작 방지\n\n[사용 목적]\n- 고객 본인 소유 Tesla 차량으로 목적지 전송\n- 빠른 응답을 위해 변환된 주소·좌표를 기기 내부에 임시 캐시\n\n[저장 정보]\n- 저장 대상: 목적지명, 변환된 주소, 좌표\n- 저장 위치: 사용자 기기 내부\n- 자동 정리: 일정 기간이 지난 캐시는 자동 삭제됩니다.\n\n[외부 공유 범위]\n- 목적지를 주소·좌표로 변환하기 위해 카카오·네이버 API를 호출합니다.\n- 변환된 주소를 차량 내비게이션에서 검색할 수 있는지 확인하기 위해 Google Places API를 호출합니다.\n- 변환된 목적지는 고객 본인 소유의 Tesla 차량으로 전송합니다.\n- 그 외 어떤 서버나 제3자에도 전송·공유하지 않습니다.\n\n[비활성화 방법]\n- 이 앱의 설정 탭에서 언제든 동의를 철회할 수 있습니다.\n- 접근성 서비스 자체는 Android 설정에서 끌 수 있습니다.</string>
+    <string name="requireAccessibility">접근성 서비스로 연동할 수 있습니다</string>
+    <string name="guideRequireAccessibility">네이버지도·카카오내비는 접근성 서비스로 목적지를 가져올 수 있습니다.\n눌러서 자세한 내용을 확인하세요.</string>
     <string name="guideRequireRelaunch">Navi to Tesla 업데이트가 적용되었습니다. 다시 실행해 주세요.</string>
     <string name="accessibilityService">접근성 서비스</string>
-    <string name="disableAccessibility">접근성 서비스를 비활성화했습니다. 일부 내비게이션의 목적지는 더 이상 전송되지 않습니다.\n접근성 권한 자체를 해제하려면 Android 설정에서 끌 수 있습니다.</string>
+    <string name="disableAccessibility">접근성 서비스를 비활성화했습니다. 일부 내비게이션의 목적지는 더 이상 전송되지 않습니다.\n접근성 서비스 자체는 Android 설정에서 끌 수 있습니다.</string>
     <string name="guidePermissionDeny">안드로이드 설정 앱에서 언제든지 다시 권한을 부여할 수 있습니다.</string>
     <string name="guideGrantNotificationPermission">알림 권한을 추가하면 Navi to Tesla가 동작할 때 관련 알림을 받을 수 있습니다. </string>
     <string name="duplicatePoiSelection">중복 목적지 처리</string>
@@ -121,4 +121,14 @@
     <string name="dialogClearRecentMessage">최근 보낸 목적지 캐시를 모두 삭제합니다. 이 작업은 되돌릴 수 없습니다.</string>
     <string name="dialogClearTokenTitle">토큰 삭제</string>
     <string name="dialogClearTokenMessage">Tesla 토큰을 삭제합니다. API 모드를 다시 사용하려면 토큰을 재등록해야 합니다.</string>
+    <string name="a11yCardTitle">내비게이션 연동</string>
+    <string name="a11yCardBody">네이버지도·카카오내비의 목적지를 접근성 서비스로 가져올 수 있습니다.</string>
+    <string name="a11yBannerNotInstalled">네이버지도·카카오내비를 설치하면 목적지를 자동으로 가져올 수 있습니다</string>
+    <string name="a11yDetail">자세히 보기</string>
+    <string name="a11yTeaserTitle">접근성 서비스 연동 안내</string>
+    <string name="a11yTeaserBody">일부 내비게이션은 접근성 서비스를 통해 목적지를 가져올 수 있습니다.\n\n지원 내비게이션\n  · 네이버지도\n  · 카카오내비\n\n읽는 정보와 사용·공유 범위, 동의 여부는 [자세히 보기]에서 확인하실 수 있습니다.</string>
+    <string name="a11yConsentTitle">접근성 서비스 데이터 이용 동의</string>
+    <string name="guideAccessibilityRevoked">접근성 서비스가 꺼져 있습니다.\nAndroid 설정에서 다시 켜주세요.</string>
+    <string name="a11yShowGuideAgain">연동 안내 다시 보기</string>
+    <string name="later">나중에</string>
 </resources>
