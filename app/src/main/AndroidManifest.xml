@@ -97,6 +97,7 @@
     <queries>
         <package android:name="com.teslamotors.tesla"/>
         <package android:name="com.nhn.android.nmap"/>
+        <package android:name="com.locnall.KimGiSa"/>
     </queries>
 
 </manifest>

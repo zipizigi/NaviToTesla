@@ -1,5 +1,6 @@
 package me.zipi.navitotesla.service.poifinder
 
+import android.content.pm.PackageManager
 import me.zipi.navitotesla.exception.NotSupportedNaviException
 
 object PoiFinderFactory {
@@ -18,6 +19,23 @@ object PoiFinderFactory {
     ): Boolean =
         isNaverMap(packageName) ||
             (isKakaoNavi(packageName) && !KakaoPoiFinder.hasLegacyDestination(notificationText))
+
+    /** 접근성 서비스 없이는 목적지를 얻을 수 없는 내비. TMAP 은 알림으로 취득하므로 제외한다. */
+    private val ACCESSIBILITY_PACKAGES = listOf(KAKAO_PACKAGE, NAVER_PACKAGE)
+
+    fun isAccessibilityNaviInstalled(packageManager: PackageManager): Boolean =
+        ACCESSIBILITY_PACKAGES.any { isInstalled(packageManager, it) }
+
+    private fun isInstalled(
+        packageManager: PackageManager,
+        packageName: String,
+    ): Boolean =
+        try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (_: PackageManager.NameNotFoundException) {
+            false
+        }
 
     fun isNaviSupport(packageName: String): Boolean =
         listOf(TMAP_PACKAGE, TMAP_SK_PACKAGE, KAKAO_PACKAGE, NAVER_PACKAGE)
