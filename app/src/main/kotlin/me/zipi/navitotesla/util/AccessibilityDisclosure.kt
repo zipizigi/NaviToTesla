@@ -28,7 +28,7 @@ object AccessibilityDisclosure {
     fun showTeaser(
         activity: FragmentActivity,
         onFinished: ((Boolean) -> Unit)? = null,
-    ) {
+    ): AlertDialog =
         AlertDialog
             .Builder(activity)
             .setTitle(activity.getString(R.string.a11yTeaserTitle))
@@ -37,14 +37,13 @@ object AccessibilityDisclosure {
             .setPositiveButton(activity.getString(R.string.a11yDetail)) { _, _ -> show(activity, onFinished) }
             .setNegativeButton(activity.getString(R.string.later)) { _, _ -> onFinished?.invoke(false) }
             .create()
-            .show()
-    }
+            .also { it.show() }
 
     /** 2단계 전문 고지 + 동의. */
     fun show(
         activity: FragmentActivity,
         onFinished: ((Boolean) -> Unit)? = null,
-    ) {
+    ): AlertDialog =
         AlertDialog
             .Builder(activity)
             .setTitle(activity.getString(R.string.a11yConsentTitle))
@@ -53,8 +52,7 @@ object AccessibilityDisclosure {
             .setPositiveButton(activity.getString(R.string.allow)) { _, _ -> grant(activity, onFinished) }
             .setNegativeButton(activity.getString(R.string.deny)) { _, _ -> decline(activity, onFinished) }
             .create()
-            .show()
-    }
+            .also { it.show() }
 
     fun openSettings(context: Context) {
         val fallback = Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -80,6 +78,8 @@ object AccessibilityDisclosure {
     suspend fun markAutoShown() {
         PreferencesUtil.put(KEY_LAST_SHOWN_VERSION, BuildConfig.VERSION_CODE.toLong())
     }
+
+    suspend fun isDeclined(): Boolean = PreferencesUtil.getBoolean(KEY_DECLINED, false)
 
     suspend fun isBannerDismissed(): Boolean = PreferencesUtil.getBoolean(KEY_BANNER_DISMISSED, false)
 

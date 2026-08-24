@@ -43,6 +43,7 @@ import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.service.NaviToTeslaService
+import me.zipi.navitotesla.util.AccessibilityDisclosure
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.AppUpdaterUtil
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -103,6 +104,14 @@ class HomeFragment :
         binding.btnPaste.setOnClickListener(this)
         binding.btnTokenClear.setOnClickListener(this)
         binding.txtVersion.setOnClickListener(this)
+        binding.btnAccessibilityDetail.setOnClickListener { showAccessibilityDisclosure() }
+        binding.bannerAccessibility.setOnClickListener { showAccessibilityDisclosure() }
+        binding.btnAccessibilityBannerClose.setOnClickListener {
+            lifecycleScope.launch {
+                AccessibilityDisclosure.dismissBanner()
+                bindAccessibilityGuide()
+            }
+        }
         setupSendModeRadios()
         loadSendModeRadios()
 
@@ -116,7 +125,11 @@ class HomeFragment :
         super.onResume()
         lifecycleScope.launch {
             accessibilityGrantedCheck()
+            bindAccessibilityGuide()
             permissionNotificationListenerGrantedCheck()
+            if (permissionAlertDialog?.isShowing != true) {
+                AppUpdaterUtil.dialog(activity, false)
+            }
         }
         lifecycleScope.launch(Dispatchers.Default) {
             launch { updateVersion() }
@@ -124,9 +137,6 @@ class HomeFragment :
             launch { updateLatestVersion() }
             launch { updateShareMode() }
             launch { homeViewModel.isInstalledTeslaApp.postValue(isTeslaAppInstalled) }
-            if (permissionAlertDialog == null || !permissionAlertDialog!!.isShowing) {
-                launch { AppUpdaterUtil.dialog(activity, false) }
-            }
         }
     }
 
@@ -157,36 +167,46 @@ class HomeFragment :
 
     private var permissionAlertDialog: AlertDialog? = null
 
+    /** 알림 경로는 전문으로 직행하고, 그 외에는 버전당 한 번 1단계 안내를 띄운다. */
     private suspend fun accessibilityGrantedCheck() {
-        if (nextAction == null) {
+        val activity = activity ?: return
+        if (permissionAlertDialog?.isShowing == true) {
             return
         }
-        if (nextAction != "requireAccessibility") {
+        if (NaviToTeslaAccessibilityService.isActive(activity)) {
+            nextAction = null
             return
         }
-        if (context == null) {
+        if (nextAction == "requireAccessibility") {
+            nextAction = null
+            permissionAlertDialog = AccessibilityDisclosure.show(activity) { refreshAccessibilityGuide() }
             return
         }
-        if (permissionAlertDialog != null && permissionAlertDialog!!.isShowing) {
-            return
+        if (AccessibilityDisclosure.shouldAutoShow(activity)) {
+            AccessibilityDisclosure.markAutoShown()
+            permissionAlertDialog = AccessibilityDisclosure.showTeaser(activity) { refreshAccessibilityGuide() }
         }
+    }
 
-        val active =
-            withContext(Dispatchers.IO) {
-                NaviToTeslaAccessibilityService.isActive(context)
-            }
-        if (active) {
-            return
-        }
-        permissionAlertDialog =
-            AlertDialog
-                .Builder(requireContext())
-                .setTitle(getString(R.string.requireAccessibility))
-                .setMessage(getString(R.string.guideRequireAccessibility))
-                .setPositiveButton(getString(R.string.confirm)) { _: DialogInterface?, _: Int -> }
-                .setCancelable(true)
-                .show()
-        nextAction = null
+    private fun showAccessibilityDisclosure() {
+        val activity = activity ?: return
+        permissionAlertDialog = AccessibilityDisclosure.show(activity) { refreshAccessibilityGuide() }
+    }
+
+    private fun refreshAccessibilityGuide() {
+        if (!isAdded) return
+        lifecycleScope.launch { bindAccessibilityGuide() }
+    }
+
+    private suspend fun bindAccessibilityGuide() {
+        val ctx = context ?: return
+        if (!isAdded) return
+        val active = NaviToTeslaAccessibilityService.isActive(ctx)
+        val installed = withContext(Dispatchers.IO) { AccessibilityDisclosure.isNaviInstalled(ctx) }
+        val showCard = !active && installed && !AccessibilityDisclosure.isDeclined()
+        val showBanner = !active && !installed && !AccessibilityDisclosure.isBannerDismissed()
+        binding.cardAccessibility.visibility = if (showCard) View.VISIBLE else View.GONE
+        binding.bannerAccessibility.visibility = if (showBanner) View.VISIBLE else View.GONE
     }
 
     private suspend fun permissionGrantedCheck() {
