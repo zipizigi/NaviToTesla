@@ -76,6 +76,7 @@ object AccessibilityDisclosure {
     /** 최초 실행 또는 업데이트 후 첫 실행에 한 번만 자동으로 띄운다. */
     suspend fun shouldAutoShow(context: Context): Boolean {
         if (isActiveAsync(context)) return false
+        if (isGuideDismissedSync()) return false
         if (withContext(Dispatchers.IO) { isNaviInstalled(context) }) {
             if (PreferencesUtil.getBoolean(KEY_DECLINED, false)) return false
             return PreferencesUtil.getLong(KEY_LAST_SHOWN_VERSION, 0L) < BuildConfig.VERSION_CODE
