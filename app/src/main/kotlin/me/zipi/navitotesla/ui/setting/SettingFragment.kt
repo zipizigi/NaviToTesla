@@ -69,6 +69,7 @@ class SettingFragment :
         binding.radioGroupConditionEnable.setOnCheckedChangeListener(this)
         binding.radioAccEnable.setOnClickListener { onAccEnableClicked() }
         binding.radioAccDisable.setOnClickListener { revokeAccessibilityConsent() }
+        binding.btnAccShowGuideAgain.setOnClickListener { showGuideAgain() }
         settingViewModel.isConditionEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedConditionEnabled(enabled) }
         settingViewModel.isAppEnabled
@@ -152,13 +153,45 @@ class SettingFragment :
 
         bindLogRow()
 
-        val anyFail = !(notiOk && listenerOk && overlayOk)
-        if (!diagnosticsUserToggled) {
-            applyDiagnosticsExpanded(anyFail)
-        }
         binding.diagHeader.setOnClickListener {
             diagnosticsUserToggled = true
             applyDiagnosticsExpanded(!diagnosticsExpanded)
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val anyFail = !(notiOk && listenerOk && overlayOk) || bindAccessibilityRow()
+            if (!diagnosticsUserToggled) {
+                applyDiagnosticsExpanded(anyFail)
+            }
+        }
+    }
+
+    /** 동의는 했는데 OS 에서 서비스가 꺼진 경우에만 노출한다. */
+    private suspend fun bindAccessibilityRow(): Boolean {
+        val ctx = context ?: return false
+        val row = binding.diagRowAccessibility
+        val installed = withContext(Dispatchers.IO) { AccessibilityDisclosure.isNaviInstalled(ctx) }
+        val needsFix =
+            installed &&
+                NaviToTeslaAccessibilityService.isConsented() &&
+                !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(ctx)
+        row.root.visibility = if (needsFix) View.VISIBLE else View.GONE
+        if (needsFix) {
+            bindDiagnosticRow(
+                row,
+                R.string.accessibilityService,
+                R.string.guideAccessibilityRevoked,
+                false,
+            ) { openAccessibilitySettings() }
+        }
+        return needsFix
+    }
+
+    /** 닫은 배너와 거부 기록을 되돌리고 전문을 다시 보여준다. */
+    private fun showGuideAgain() {
+        val activity = activity ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            AccessibilityDisclosure.resetGuideVisibility()
+            AccessibilityDisclosure.show(activity) { enabled -> setAccRadio(enabled) }
         }
     }
 

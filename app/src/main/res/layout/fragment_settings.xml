@@ -77,6 +77,14 @@
                         android:text="@string/disable" />
                 </RadioGroup>
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccShowGuideAgain"
+                    style="@style/Widget.NaviToTesla.HelpButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:text="@string/a11yShowGuideAgain" />
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -342,6 +350,12 @@
 
                     <include
                         android:id="@+id/diagRowOverlay"
+                        layout="@layout/view_diagnostic_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/diagRowAccessibility"
                         layout="@layout/view_diagnostic_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
