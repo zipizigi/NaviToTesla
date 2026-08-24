@@ -16,6 +16,62 @@
         android:paddingTop="@dimen/space_lg"
         android:paddingBottom="@dimen/bottomnav_safe_area">
 
+        <!-- Card: Accessibility integration -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAccessibility"
+            style="@style/Widget.NaviToTesla.Card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/space_md"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/a11yCardTitle"
+                        android:textAppearance="@style/TextAppearance.NaviToTesla.SectionTitle" />
+
+                    <ImageButton
+                        android:id="@+id/btnAccessibilityCardClose"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/close"
+                        android:src="@drawable/ic_baseline_clear_24" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/a11yCardBody"
+                    android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccessibilityDetail"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:text="@string/a11yDetail" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Card: Share mode -->
         <com.google.android.material.card.MaterialCardView
             style="@style/Widget.NaviToTesla.Card"

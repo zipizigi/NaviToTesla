@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import me.zipi.navitotesla.databinding.ActivityMainBinding
@@ -15,6 +17,8 @@ import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.RelaunchNotifier
 
 class MainActivity : AppCompatActivity() {
+    private var navController: NavController? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -23,8 +27,9 @@ class MainActivity : AppCompatActivity() {
         applyWindowInsets(binding)
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
-        val navController = navHostFragment.navController
-        setupWithNavController(binding.navView, navController)
+        val controller = navHostFragment.navController
+        navController = controller
+        setupWithNavController(binding.navView, controller)
         RelaunchNotifier.cancel(this)
         receivedNotification(intent)
     }
@@ -41,17 +46,38 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         RelaunchNotifier.cancel(this)
         receivedNotification(intent)
     }
 
+    /** 처리한 extra 는 지운다. 남겨두면 구성 변경으로 재생성될 때 다시 트리거된다. */
     private fun receivedNotification(intent: Intent) {
         val action = intent.getStringExtra("noti_action") ?: return
+        intent.removeExtra("noti_action")
         AnalysisUtil.log("received notification: $action")
         when (action) {
             "requireAccessibility" -> {
                 HomeFragment.nextAction = action
+                moveToHome()
             }
         }
+    }
+
+    /** 안내는 홈에서만 뜨므로 다른 탭에 있으면 홈으로 옮긴다. */
+    private fun moveToHome() {
+        val controller = navController ?: return
+        if (controller.currentDestination?.id == R.id.navigation_home) {
+            return
+        }
+        controller.navigate(
+            R.id.navigation_home,
+            null,
+            NavOptions
+                .Builder()
+                .setLaunchSingleTop(true)
+                .setPopUpTo(R.id.navigation_home, false)
+                .build(),
+        )
     }
 }

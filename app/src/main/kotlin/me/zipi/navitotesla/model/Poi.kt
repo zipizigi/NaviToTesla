@@ -31,14 +31,12 @@ data class Poi(
         private val COORDS_PATTERN = Regex("^-?\\d+(?:\\.\\d+)?,\\s*-?\\d+(?:\\.\\d+)?$")
     }
 
-    fun getRoadAddress(): String {
-        // roadAddress, address, gps
-        return if (!roadAddress.isNullOrEmpty()) {
+    fun getRoadAddress(): String =
+        if (!roadAddress.isNullOrEmpty()) {
             roadAddress
         } else {
             getAddress()
         }
-    }
 
     fun getAddress(): String =
         if (!address.isNullOrEmpty()) {

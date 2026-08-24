@@ -37,6 +37,7 @@ import me.zipi.navitotesla.R
 import me.zipi.navitotesla.databinding.FragmentSettingsBinding
 import me.zipi.navitotesla.service.NaviToTeslaAccessibilityService
 import me.zipi.navitotesla.ui.setting.ConditionRecyclerAdapter.OnDeleteButtonClicked
+import me.zipi.navitotesla.util.AccessibilityDisclosure
 import me.zipi.navitotesla.util.AnalysisUtil
 import me.zipi.navitotesla.util.EnablerUtil
 import me.zipi.navitotesla.util.PreferencesUtil
@@ -68,6 +69,9 @@ class SettingFragment :
         binding.radioGroupConditionEnable.setOnCheckedChangeListener(this)
         binding.radioAccEnable.setOnClickListener { onAccEnableClicked() }
         binding.radioAccDisable.setOnClickListener { revokeAccessibilityConsent() }
+        binding.btnAccShowGuideAgain.setOnClickListener { showGuideAgain() }
+        binding.btnAccShowGuideAgain.visibility =
+            if (AccessibilityDisclosure.isGuideDismissedSync()) View.VISIBLE else View.GONE
         settingViewModel.isConditionEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedConditionEnabled(enabled) }
         settingViewModel.isAppEnabled
@@ -151,14 +155,28 @@ class SettingFragment :
 
         bindLogRow()
 
-        val anyFail = !(notiOk && listenerOk && overlayOk)
-        if (!diagnosticsUserToggled) {
-            applyDiagnosticsExpanded(anyFail)
-        }
         binding.diagHeader.setOnClickListener {
             diagnosticsUserToggled = true
             applyDiagnosticsExpanded(!diagnosticsExpanded)
         }
+        bindShowGuideAgain()
+        val anyFail = !(notiOk && listenerOk && overlayOk)
+        if (!diagnosticsUserToggled) {
+            applyDiagnosticsExpanded(anyFail)
+        }
+    }
+
+    private fun showGuideAgain() =
+        viewLifecycleOwner.lifecycleScope.launch {
+            AccessibilityDisclosure.restoreGuide()
+            AnalysisUtil.makeToast(context, getString(R.string.a11yShowGuideAgainDone))
+            bindShowGuideAgain()
+        }
+
+    /** 홈 안내를 숨긴 사용자에게만 복구 수단을 보여준다. */
+    private fun bindShowGuideAgain() {
+        binding.btnAccShowGuideAgain.visibility =
+            if (AccessibilityDisclosure.isGuideDismissedSync()) View.VISIBLE else View.GONE
     }
 
     private fun applyDiagnosticsExpanded(expanded: Boolean) {
@@ -497,36 +515,14 @@ class SettingFragment :
     }
 
     private fun openAccessibilitySettings() {
-        try {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        } catch (_: ActivityNotFoundException) {
-            startActivity(Intent(Settings.ACTION_SETTINGS))
-        }
+        val activity = activity ?: return
+        AccessibilityDisclosure.openSettings(activity)
     }
 
     private fun showAccessibilityConsentDialog() {
         val activity = activity ?: return
-        AlertDialog
-            .Builder(activity)
-            .setTitle(getString(R.string.guide))
-            .setMessage(getString(R.string.accessibility_description))
-            .setCancelable(true)
-            .setPositiveButton(getString(R.string.allow)) { _: DialogInterface?, _: Int ->
-                grantAccessibilityConsent()
-            }.setNegativeButton(getString(R.string.deny)) { _: DialogInterface?, _: Int -> }
-            .create()
-            .show()
+        AccessibilityDisclosure.show(activity) { enabled -> setAccRadio(enabled) }
     }
-
-    private fun grantAccessibilityConsent() =
-        viewLifecycleOwner.lifecycleScope.launch {
-            NaviToTeslaAccessibilityService.setConsent(true)
-            if (NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(context)) {
-                setAccRadio(true)
-            } else {
-                openAccessibilitySettings()
-            }
-        }
 
     private fun showOverlayPermissionDialog() {
         if (activity == null) return
