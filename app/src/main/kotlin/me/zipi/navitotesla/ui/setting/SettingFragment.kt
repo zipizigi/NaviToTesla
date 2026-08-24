@@ -161,7 +161,8 @@ class SettingFragment :
         }
         bindShowGuideAgain()
         viewLifecycleOwner.lifecycleScope.launch {
-            val anyFail = !(notiOk && listenerOk && overlayOk) || bindAccessibilityRow()
+            val a11yFail = bindAccessibilityRow()
+            val anyFail = !(notiOk && listenerOk && overlayOk) || a11yFail
             if (!diagnosticsUserToggled) {
                 applyDiagnosticsExpanded(anyFail)
             }
@@ -172,11 +173,12 @@ class SettingFragment :
     private suspend fun bindAccessibilityRow(): Boolean {
         val ctx = context ?: return false
         val row = binding.diagRowAccessibility
-        val installed = withContext(Dispatchers.IO) { AccessibilityDisclosure.isNaviInstalled(ctx) }
         val needsFix =
-            installed &&
-                NaviToTeslaAccessibilityService.isConsented() &&
-                !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(ctx)
+            withContext(Dispatchers.IO) {
+                AccessibilityDisclosure.isNaviInstalled(ctx) &&
+                    !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(ctx)
+            } &&
+                NaviToTeslaAccessibilityService.isConsented()
         row.root.visibility = if (needsFix) View.VISIBLE else View.GONE
         if (needsFix) {
             bindDiagnosticRow(

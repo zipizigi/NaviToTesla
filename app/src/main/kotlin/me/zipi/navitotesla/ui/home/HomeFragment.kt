@@ -126,7 +126,7 @@ class HomeFragment :
             accessibilityGrantedCheck()
             bindAccessibilityGuide()
             permissionNotificationListenerGrantedCheck()
-            if (permissionAlertDialog?.isShowing != true) {
+            if (!isAnyDialogShowing()) {
                 AppUpdaterUtil.dialog(activity, false)
             }
         }
@@ -169,27 +169,29 @@ class HomeFragment :
     /** 알림 경로는 전문으로 직행하고, 그 외에는 버전당 한 번 1단계 안내를 띄운다. */
     private suspend fun accessibilityGrantedCheck() {
         val activity = activity ?: return
-        if (permissionAlertDialog?.isShowing == true) {
+        if (isAnyDialogShowing()) {
             return
         }
-        if (NaviToTeslaAccessibilityService.isActive(activity)) {
+        if (AccessibilityDisclosure.isActiveAsync(activity)) {
             nextAction = null
             return
         }
         if (nextAction == "requireAccessibility") {
             nextAction = null
-            permissionAlertDialog = AccessibilityDisclosure.show(activity) { refreshAccessibilityGuide() }
+            AccessibilityDisclosure.show(activity) { refreshAccessibilityGuide() }
             return
         }
         if (AccessibilityDisclosure.shouldAutoShow(activity)) {
             AccessibilityDisclosure.markAutoShown()
-            permissionAlertDialog = AccessibilityDisclosure.showTeaser(activity) { refreshAccessibilityGuide() }
+            AccessibilityDisclosure.showTeaser(activity) { refreshAccessibilityGuide() }
         }
     }
 
+    private fun isAnyDialogShowing(): Boolean = permissionAlertDialog?.isShowing == true || AccessibilityDisclosure.isShowing()
+
     private fun showAccessibilityTeaser() {
         val activity = activity ?: return
-        permissionAlertDialog = AccessibilityDisclosure.showTeaser(activity) { refreshAccessibilityGuide() }
+        AccessibilityDisclosure.showTeaser(activity) { refreshAccessibilityGuide() }
     }
 
     private fun refreshAccessibilityGuide() {
@@ -201,7 +203,7 @@ class HomeFragment :
         val ctx = context ?: return
         if (!isAdded) return
         val visible =
-            !NaviToTeslaAccessibilityService.isActive(ctx) && !AccessibilityDisclosure.isGuideDismissedSync()
+            !AccessibilityDisclosure.isActiveAsync(ctx) && !AccessibilityDisclosure.isGuideDismissedSync()
         binding.cardAccessibility.visibility = if (visible) View.VISIBLE else View.GONE
     }
 

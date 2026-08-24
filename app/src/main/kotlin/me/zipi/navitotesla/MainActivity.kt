@@ -46,12 +46,15 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         RelaunchNotifier.cancel(this)
         receivedNotification(intent)
     }
 
+    /** 처리한 extra 는 지운다. 남겨두면 구성 변경으로 재생성될 때 다시 트리거된다. */
     private fun receivedNotification(intent: Intent) {
         val action = intent.getStringExtra("noti_action") ?: return
+        intent.removeExtra("noti_action")
         AnalysisUtil.log("received notification: $action")
         when (action) {
             "requireAccessibility" -> {

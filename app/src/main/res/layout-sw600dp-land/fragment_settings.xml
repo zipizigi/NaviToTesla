@@ -226,7 +226,8 @@
                         android:id="@+id/diagRowAccessibility"
                         layout="@layout/view_diagnostic_row"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
 
                         <include
                             android:id="@+id/diagRowLogFile"
