@@ -146,6 +146,18 @@ object PreferencesUtil {
             defaultValue
         }
 
+    fun getBooleanSync(
+        key: String,
+        defaultValue: Boolean,
+    ): Boolean =
+        try {
+            prefs().getBoolean(key, defaultValue)
+        } catch (e: Exception) {
+            AnalysisUtil.warn("get boolean error", e)
+            AnalysisUtil.recordException(e)
+            defaultValue
+        }
+
     suspend fun getString(key: String): String? = getString(key, null)
 
     suspend fun getBoolean(

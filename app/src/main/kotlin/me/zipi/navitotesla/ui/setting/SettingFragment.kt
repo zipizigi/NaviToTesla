@@ -70,6 +70,8 @@ class SettingFragment :
         binding.radioAccEnable.setOnClickListener { onAccEnableClicked() }
         binding.radioAccDisable.setOnClickListener { revokeAccessibilityConsent() }
         binding.btnAccShowGuideAgain.setOnClickListener { showGuideAgain() }
+        binding.btnAccShowGuideAgain.visibility =
+            if (AccessibilityDisclosure.isGuideHiddenSync()) View.VISIBLE else View.GONE
         settingViewModel.isConditionEnabled
             .observe(viewLifecycleOwner) { enabled: Boolean -> onChangedConditionEnabled(enabled) }
         settingViewModel.isAppEnabled
@@ -157,8 +159,8 @@ class SettingFragment :
             diagnosticsUserToggled = true
             applyDiagnosticsExpanded(!diagnosticsExpanded)
         }
+        bindShowGuideAgain()
         viewLifecycleOwner.lifecycleScope.launch {
-            bindShowGuideAgain()
             val anyFail = !(notiOk && listenerOk && overlayOk) || bindAccessibilityRow()
             if (!diagnosticsUserToggled) {
                 applyDiagnosticsExpanded(anyFail)
@@ -195,9 +197,9 @@ class SettingFragment :
         }
 
     /** 홈 안내를 숨긴 사용자에게만 복구 수단을 보여준다. */
-    private suspend fun bindShowGuideAgain() {
-        val hidden = AccessibilityDisclosure.isBannerDismissed() || AccessibilityDisclosure.isDeclined()
-        binding.btnAccShowGuideAgain.visibility = if (hidden) View.VISIBLE else View.GONE
+    private fun bindShowGuideAgain() {
+        binding.btnAccShowGuideAgain.visibility =
+            if (AccessibilityDisclosure.isGuideHiddenSync()) View.VISIBLE else View.GONE
     }
 
     private fun applyDiagnosticsExpanded(expanded: Boolean) {

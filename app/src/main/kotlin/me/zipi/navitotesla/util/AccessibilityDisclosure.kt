@@ -80,6 +80,11 @@ object AccessibilityDisclosure {
 
     suspend fun isDeclined(): Boolean = PreferencesUtil.getBoolean(KEY_DECLINED, false)
 
+    /** 첫 프레임 레이아웃 흔들림 방지용 동기 조회. */
+    fun isGuideHiddenSync(): Boolean =
+        PreferencesUtil.getBooleanSync(KEY_BANNER_DISMISSED, false) ||
+            PreferencesUtil.getBooleanSync(KEY_DECLINED, false)
+
     suspend fun isBannerDismissed(): Boolean = PreferencesUtil.getBoolean(KEY_BANNER_DISMISSED, false)
 
     suspend fun dismissBanner() {
