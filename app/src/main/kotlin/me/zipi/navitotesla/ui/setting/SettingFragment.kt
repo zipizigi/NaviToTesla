@@ -160,35 +160,10 @@ class SettingFragment :
             applyDiagnosticsExpanded(!diagnosticsExpanded)
         }
         bindShowGuideAgain()
-        viewLifecycleOwner.lifecycleScope.launch {
-            val a11yFail = bindAccessibilityRow()
-            val anyFail = !(notiOk && listenerOk && overlayOk) || a11yFail
-            if (!diagnosticsUserToggled) {
-                applyDiagnosticsExpanded(anyFail)
-            }
+        val anyFail = !(notiOk && listenerOk && overlayOk)
+        if (!diagnosticsUserToggled) {
+            applyDiagnosticsExpanded(anyFail)
         }
-    }
-
-    /** 동의는 했는데 OS 에서 서비스가 꺼진 경우에만 노출한다. */
-    private suspend fun bindAccessibilityRow(): Boolean {
-        val ctx = context ?: return false
-        val row = binding.diagRowAccessibility
-        val needsFix =
-            withContext(Dispatchers.IO) {
-                AccessibilityDisclosure.isNaviInstalled(ctx) &&
-                    !NaviToTeslaAccessibilityService.isAccessibilityServiceEnabled(ctx)
-            } &&
-                NaviToTeslaAccessibilityService.isConsented()
-        row.root.visibility = if (needsFix) View.VISIBLE else View.GONE
-        if (needsFix) {
-            bindDiagnosticRow(
-                row,
-                R.string.accessibilityService,
-                R.string.guideAccessibilityRevoked,
-                false,
-            ) { openAccessibilitySettings() }
-        }
-        return needsFix
     }
 
     private fun showGuideAgain() =

@@ -127,7 +127,6 @@
     <string name="a11yTeaserTitle">접근성 서비스 연동 안내</string>
     <string name="a11yTeaserBody">일부 내비게이션은 접근성 서비스를 통해 목적지를 가져옵니다.\n\n지원 내비게이션\n  · 네이버지도\n  · 카카오내비\n\n접근성 서비스로 읽는 정보와 사용·공유 범위, 동의 여부는 [자세히 보기]에서 확인하실 수 있습니다.\n\nTMAP은 접근성 서비스 없이 사용할 수 있습니다.</string>
     <string name="a11yConsentTitle">접근성 서비스 데이터 이용 동의</string>
-    <string name="guideAccessibilityRevoked">접근성 서비스가 꺼져 있습니다.\nAndroid 설정에서 다시 켜주세요.</string>
     <string name="a11yShowGuideAgain">안내 다시 보기</string>
     <string name="later">나중에</string>
     <string name="a11yShowGuideAgainDone">홈 화면에 연동 안내를 다시 표시합니다.</string>
