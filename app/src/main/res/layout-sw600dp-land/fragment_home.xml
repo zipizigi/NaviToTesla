@@ -60,7 +60,7 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnAccessibilityDetail"
-                            style="@style/Widget.NaviToTesla.HelpButton"
+                            style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="end"
@@ -98,7 +98,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/space_sm"
                             android:layout_weight="1"
-                            android:text="@string/a11yBannerNotInstalled"
+                            android:text="@string/a11yCardBody"
                             android:textAppearance="@style/TextAppearance.NaviToTesla.Helper" />
 
                         <ImageButton

@@ -158,6 +158,7 @@ class SettingFragment :
             applyDiagnosticsExpanded(!diagnosticsExpanded)
         }
         viewLifecycleOwner.lifecycleScope.launch {
+            bindShowGuideAgain()
             val anyFail = !(notiOk && listenerOk && overlayOk) || bindAccessibilityRow()
             if (!diagnosticsUserToggled) {
                 applyDiagnosticsExpanded(anyFail)
@@ -186,12 +187,17 @@ class SettingFragment :
         return needsFix
     }
 
-    private fun showGuideAgain() {
-        val activity = activity ?: return
+    private fun showGuideAgain() =
         viewLifecycleOwner.lifecycleScope.launch {
             AccessibilityDisclosure.resetGuideVisibility()
-            AccessibilityDisclosure.show(activity) { enabled -> setAccRadio(enabled) }
+            AnalysisUtil.makeToast(context, getString(R.string.a11yShowGuideAgainDone))
+            bindShowGuideAgain()
         }
+
+    /** 홈 안내를 숨긴 사용자에게만 복구 수단을 보여준다. */
+    private suspend fun bindShowGuideAgain() {
+        val hidden = AccessibilityDisclosure.isBannerDismissed() || AccessibilityDisclosure.isDeclined()
+        binding.btnAccShowGuideAgain.visibility = if (hidden) View.VISIBLE else View.GONE
     }
 
     private fun applyDiagnosticsExpanded(expanded: Boolean) {

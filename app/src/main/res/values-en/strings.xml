@@ -122,13 +122,13 @@
     <string name="dialogClearTokenTitle">Clear Tesla token</string>
     <string name="dialogClearTokenMessage">Clear the Tesla token. To use API mode again you must register the token.</string>
     <string name="a11yCardTitle">Navigation integration</string>
-    <string name="a11yCardBody">NAVER Maps and Kakao Navi destinations can be obtained through the accessibility service.</string>
-    <string name="a11yBannerNotInstalled">Install NAVER Maps or Kakao Navi to obtain destinations automatically</string>
+    <string name="a11yCardBody">NAVER Maps and Kakao Navi can provide the destination through the accessibility service.</string>
     <string name="a11yDetail">See details</string>
     <string name="a11yTeaserTitle">About accessibility service integration</string>
     <string name="a11yTeaserBody">Some navigation apps can provide the destination through the accessibility service.\n\nSupported apps\n  \u00b7 NAVER Maps\n  \u00b7 Kakao Navi\n\nWhat is read, how it is used, and the consent step are shown under [See details].</string>
     <string name="a11yConsentTitle">Consent to accessibility service data use</string>
     <string name="guideAccessibilityRevoked">The accessibility service is off.\nTurn it back on in Android Settings.</string>
-    <string name="a11yShowGuideAgain">Show integration notice again</string>
+    <string name="a11yShowGuideAgain">Show the integration notice on Home again</string>
     <string name="later">Later</string>
+    <string name="a11yShowGuideAgainDone">The integration notice will appear on the Home screen again.</string>
 </resources>

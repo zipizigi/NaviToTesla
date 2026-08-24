@@ -79,11 +79,12 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAccShowGuideAgain"
-                    style="@style/Widget.NaviToTesla.HelpButton"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_xs"
-                    android:text="@string/a11yShowGuideAgain" />
+                    android:text="@string/a11yShowGuideAgain"
+                    android:visibility="gone" />
 
                 <View
                     android:layout_width="match_parent"
