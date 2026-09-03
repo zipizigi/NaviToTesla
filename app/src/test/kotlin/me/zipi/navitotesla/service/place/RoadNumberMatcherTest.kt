@@ -207,7 +207,7 @@ class RoadNumberMatcherTest {
         )
     }
 
-    // === 괄호 부가 토큰 정규화 (PoiFinder withLocalName 결과) ===
+    // === 괄호 부가 토큰 정규화 (레거시 즐겨찾기·사용자 입력) ===
 
     @Test
     fun `괄호 동이름 부가 토큰은 정규화로 제거됨`() {

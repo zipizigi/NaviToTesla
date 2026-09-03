@@ -28,7 +28,7 @@ class RoadNumberMatcher {
     companion object {
         private val WHITESPACE = Regex("\\s+")
 
-        // PoiFinder.getRoadAddressName(withLocalName=true) 의 "(동이름)" 부가 토큰 제거.
+        // 현행 PoiFinder 는 괄호 토큰 미생성 — 레거시 즐겨찾기·직접 입력 대비로 유지.
         private val PAREN_NOISE = Regex("""\([^)]*\)""")
     }
 }

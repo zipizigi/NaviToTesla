@@ -35,15 +35,14 @@ class TMapPoiFinder : PoiFinder {
             AnalysisUtil.warn("Tmap api error: " + response.errorBody()?.string().orEmpty())
         }
         if (response.isSuccessful && response.body()?.searchPoiInfo != null) {
-            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             for (item in response.body()!!.searchPoiInfo!!.pois.poi) {
                 val poi =
                     Poi(
                         poiName = item.name,
-                        roadAddress = item.getRoadAddress(withLocalName),
+                        roadAddress = item.getRoadAddress(),
                         address = item.address,
-                        longitude = item.latitude,
-                        latitude = item.longitude,
+                        longitude = item.longitude,
+                        latitude = item.latitude,
                     )
 
                 listPoi.add(poi)

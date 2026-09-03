@@ -31,12 +31,11 @@ class KakaoPoiFinder : PoiFinder {
             AnalysisUtil.warn("Kakao api error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.let { body ->
-            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName") // 법정동 포함 여부
             body.documents.forEach { place ->
                 poiList.add(
                     Poi(
                         poiName = place.placeName,
-                        roadAddress = place.getRoadAddressName(withLocalName),
+                        roadAddress = place.roadAddressName.orEmpty(),
                         address = place.addressName,
                         longitude = place.longitude,
                         latitude = place.latitude,
