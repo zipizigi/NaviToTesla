@@ -35,7 +35,7 @@ class TMap {
         @SerializedName("noorLon")
         var longitude: String? = null,
     ) {
-        fun getRoadAddress(withLocalName: Boolean): String {
+        fun getRoadAddress(): String {
             if (roadName.isNullOrEmpty() || firstBuildNo.isNullOrEmpty()) return ""
             val sb = StringBuilder()
             sb.append(upperAddrName)
@@ -43,12 +43,6 @@ class TMap {
             sb.append(" ").append(roadName)
             sb.append(" ").append(firstBuildNo)
             if (!secondBuildNo.isNullOrEmpty() && secondBuildNo != "0") sb.append("-").append(secondBuildNo)
-            if (!lowerAddrName.isNullOrEmpty() && withLocalName) {
-                val lastChar = lowerAddrName!!.last().toString()
-                if (lastChar == "동" || lastChar == "로" || lastChar == "가") {
-                    sb.append(" (").append(lowerAddrName).append(")")
-                }
-            }
             return sb.toString()
         }
 

@@ -25,13 +25,5 @@ class NaverMap {
 
         val latitude: String
             get() = mapy?.toLongOrNull()?.let { (it / 10_000_000.0).toString() } ?: ""
-
-        fun getRoadAddressName(withLocalName: Boolean): String {
-            if (!withLocalName || roadAddress == null) return roadAddress ?: ""
-            // address에서 동/읍/면 이름 추출 (끝에서 두 번째 구성요소)
-            val parts = address?.split(" ")
-            val localName = parts?.getOrNull(parts.size - 2)
-            return if (localName != null) "$roadAddress ($localName)" else roadAddress ?: ""
-        }
     }
 }

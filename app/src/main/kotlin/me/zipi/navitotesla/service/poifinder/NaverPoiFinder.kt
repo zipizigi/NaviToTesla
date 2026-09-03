@@ -43,12 +43,11 @@ class NaverPoiFinder : PoiFinder {
             AnalysisUtil.warn("naver api error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.items?.let { items ->
-            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName")
             items.forEach { place ->
                 poiList.add(
                     Poi(
                         poiName = place.name,
-                        roadAddress = place.getRoadAddressName(withLocalName),
+                        roadAddress = place.roadAddress.orEmpty(),
                         address = place.address,
                         longitude = place.longitude,
                         latitude = place.latitude,
@@ -67,12 +66,11 @@ class NaverPoiFinder : PoiFinder {
             AnalysisUtil.warn("naver fusion search error: " + response.errorBody()?.string().orEmpty())
         }
         response.body()?.items?.let { items ->
-            val withLocalName = RemoteConfigUtil.getBoolean("withLocalName")
             items.forEach { place ->
                 poiList.add(
                     Poi(
                         poiName = place.name,
-                        roadAddress = place.getRoadAddressName(withLocalName),
+                        roadAddress = place.roadAddress.orEmpty(),
                         address = place.address,
                         longitude = place.longitude?.toString(),
                         latitude = place.latitude?.toString(),

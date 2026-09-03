@@ -15,27 +15,7 @@ class KakaoMap {
         val longitude: String? = null,
         @SerializedName("y")
         val latitude: String? = null,
-    ) {
-        fun getRoadAddressName(withLocalName: Boolean): String {
-            // 시도 구군구 읍동면리 (산) 123(-2)
-            var address = roadAddressName ?: ""
-            val match = pattern.find(addressName ?: "")
-            if (match != null && withLocalName) {
-                val lowerAddrName = match.groupValues[1]
-                if (lowerAddrName.isNotEmpty()) {
-                    val lastChar = lowerAddrName.last().toString()
-                    if (lastChar == "동" || lastChar == "로" || lastChar == "가") {
-                        address += " ($lowerAddrName)"
-                    }
-                }
-            }
-            return address
-        }
-
-        companion object {
-            private val pattern = Regex("([^\\s]+)\\s(?:산\\s)?\\d+(?:-\\d)?$")
-        }
-    }
+    )
 
     data class Response<T>(
         var documents: List<T> = listOf(),

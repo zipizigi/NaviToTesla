@@ -14,12 +14,5 @@ class NaverFusionSearch {
         var roadAddress: String? = null,
         var latitude: Double? = null,
         var longitude: Double? = null,
-    ) {
-        fun getRoadAddressName(withLocalName: Boolean): String {
-            if (!withLocalName || roadAddress == null) return roadAddress ?: ""
-            val parts = address?.split(" ")
-            val localName = parts?.getOrNull(parts.size - 2)
-            return if (localName != null) "$roadAddress ($localName)" else roadAddress ?: ""
-        }
-    }
+    )
 }
