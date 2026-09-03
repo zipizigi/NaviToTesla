@@ -29,11 +29,9 @@ class NaverPoiFinder : PoiFinder {
     @Throws(IOException::class)
     override suspend fun listPoiAddress(poiName: String): List<Poi> {
         val ratio = RemoteConfigUtil.getString("naverApiRatio").toIntOrNull() ?: 100
-        return if (Random.nextInt(100) < ratio) {
-            listPoiAddressViaOpenApi(poiName)
-        } else {
-            listPoiAddressViaFusionSearch(poiName)
-        }
+        if (Random.nextInt(100) < ratio) return listPoiAddressViaOpenApi(poiName)
+        // fusion 은 비공개 API 라 토큰 스펙 변경으로 조용히 빈 결과가 될 수 있음 → 공식 API 로 폴백.
+        return listPoiAddressViaFusionSearch(poiName).ifEmpty { listPoiAddressViaOpenApi(poiName) }
     }
 
     private suspend fun listPoiAddressViaOpenApi(poiName: String): List<Poi> {
@@ -61,7 +59,8 @@ class NaverPoiFinder : PoiFinder {
 
     private suspend fun listPoiAddressViaFusionSearch(poiName: String): List<Poi> {
         val poiList = mutableListOf<Poi>()
-        val response = naverFusionSearchApi.search(poiName)
+        val credentials = NaverMobileWebTokenProvider.credentials(naverFusionSearchApi) ?: return poiList
+        val response = naverFusionSearchApi.search(credentials.cookieHeader, credentials.accessToken, poiName)
         if (!response.isSuccessful || response.body() == null) {
             AnalysisUtil.warn("naver fusion search error: " + response.errorBody()?.string().orEmpty())
         }

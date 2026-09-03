@@ -1,6 +1,14 @@
 package me.zipi.navitotesla.model
 
 class NaverFusionSearch {
+    data class TokenRequest(
+        val grantType: String,
+    )
+
+    data class TokenResponse(
+        var accessToken: String? = null,
+    )
+
     data class Response(
         var totalCount: Int = 0,
         var items: List<Place>? = null,
