@@ -18,10 +18,12 @@ class RoadNumberMatcher {
         }
     }
 
+    // Places 응답이 쉼표로 구분돼 오면 "539," != "539" 로 전부 미스가 되므로 구분자로 취급.
     private fun tokenize(s: String): List<String> =
         s
             .trim()
             .replace(PAREN_NOISE, " ")
+            .replace(",", " ")
             .split(WHITESPACE)
             .filter { it.isNotEmpty() }
 

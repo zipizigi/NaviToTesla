@@ -20,7 +20,7 @@ object DestinationAddressResolver {
 
     suspend fun classify(poi: Poi): Searchability {
         val poiName = poi.poiName ?: return Searchability.Unknown
-        val roadAddress = poi.getRoadAddress()
+        val roadAddress = RoadAddressNormalizer.normalize(poi.getRoadAddress())
 
         if (poi.isCoordsAddress()) {
             AnalysisUtil.debug("classify: coords detected ($roadAddress), not_searchable")
@@ -55,6 +55,14 @@ object DestinationAddressResolver {
 
             null -> {
             }
+        }
+
+        // 건물번호·번지가 없는 주소는 시군구/동 단위라 전역 캐시를 오염시키므로 조회·적립 전에 차단.
+        // 캐시 조회 뒤에 두어 이미 분류된 결과를 덮지 않고, markClassified 도 호출하지 않는다.
+        if (!RoadAddressNormalizer.isSpecific(roadAddress)) {
+            AnalysisUtil.debug("classify: address not specific ($roadAddress), unknown")
+            AnalysisUtil.logEvent("address_not_specific", eventParam)
+            return Searchability.Unknown
         }
 
         val firebaseDisabledFlavor = !BuildConfig.DEBUG && BuildConfig.BUILD_MODE != "playstore"
