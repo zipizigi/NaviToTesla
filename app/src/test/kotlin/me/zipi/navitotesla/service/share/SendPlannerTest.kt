@@ -51,6 +51,69 @@ class SendPlannerTest {
         locale = locale,
     )
 
+    // --- 불완전 주소 → 좌표 강등 (Naver 실측: "테슬라 슈퍼차저 여주") ---
+
+    private val vaguePoi =
+        Poi(
+            poiName = "여주 신세계프리미엄아울렛 수퍼차저",
+            roadAddress = "경기도 여주시",
+            address = "경기도 여주시 상거동",
+            latitude = "37.2402517",
+            longitude = "127.6137826",
+            packageName = "com.example",
+        )
+
+    @Test
+    fun `시군구 단위 도로명은 좌표가 있으면 GPS 로 강등`() {
+        val payload = SendPlanner.plan(vaguePoi, Searchability.Searchable, false, settings(SendMode.ROAD))
+        assertEquals(SendMode.GPS, payload.mode)
+        assertEquals("37.2402517,127.6137826", payload.sendText)
+        assertFalse(payload.viaUrl)
+    }
+
+    @Test
+    fun `동 단위 지번도 좌표가 있으면 GPS 로 강등`() {
+        val payload = SendPlanner.plan(vaguePoi, Searchability.Searchable, false, settings(SendMode.JIBUN))
+        assertEquals(SendMode.GPS, payload.mode)
+        assertEquals("37.2402517,127.6137826", payload.sendText)
+    }
+
+    @Test
+    fun `도로명이 불완전하고 지번이 특정되면 좌표 대신 지번으로 강등`() {
+        val jibunPoi = vaguePoi.copy(address = "경기도 여주시 상거동 375")
+        val payload = SendPlanner.plan(jibunPoi, Searchability.Searchable, false, settings(SendMode.ROAD))
+        assertEquals(SendMode.JIBUN, payload.mode)
+        assertEquals("경기도 여주시 상거동 375", payload.sendText)
+    }
+
+    @Test
+    fun `좌표로 강등되면 표시 문구는 POI 이름`() {
+        val payload = SendPlanner.plan(vaguePoi, Searchability.Searchable, false, settings(SendMode.ROAD))
+        assertEquals(SendMode.GPS, payload.mode)
+        assertEquals("37.2402517,127.6137826", payload.sendText)
+        assertEquals("여주 신세계프리미엄아울렛 수퍼차저", payload.displayText)
+    }
+
+    @Test
+    fun `불완전 주소라도 좌표가 없으면 강등하지 않음`() {
+        val noCoords = vaguePoi.copy(latitude = null, longitude = null)
+        val payload = SendPlanner.plan(noCoords, Searchability.Searchable, false, settings(SendMode.ROAD))
+        assertEquals(SendMode.ROAD, payload.mode)
+    }
+
+    @Test
+    fun `NAME 모드는 주소 완전성과 무관하게 유지`() {
+        val payload = SendPlanner.plan(vaguePoi, Searchability.Searchable, false, settings(SendMode.NAME))
+        assertEquals(SendMode.NAME, payload.mode)
+    }
+
+    @Test
+    fun `완전한 주소는 강등하지 않음`() {
+        val payload = SendPlanner.plan(poi, Searchability.Searchable, false, settings(SendMode.ROAD))
+        assertEquals(SendMode.ROAD, payload.mode)
+        assertEquals("서울특별시 중구 세종대로 110", payload.sendText)
+    }
+
     // --- 좌표 형식 (raw GPS payload, classify 결과 무관) ---
 
     @Test
