@@ -5,6 +5,7 @@ import me.zipi.navitotesla.model.SendMode
 import me.zipi.navitotesla.model.SendPayload
 import me.zipi.navitotesla.model.SendSettings
 import me.zipi.navitotesla.model.ShareTransport
+import me.zipi.navitotesla.service.place.RoadAddressNormalizer
 import me.zipi.navitotesla.service.place.Searchability
 import java.net.URLEncoder
 
@@ -48,11 +49,24 @@ object SendPlanner {
         if (mode == SendMode.GPS && !hasCoords(poi)) {
             mode = SendMode.ROAD
         }
+        // 주소가 시군구/동 단위면(예: "경기 여주시") 목적지를 특정하지 못함 → 지번, 없으면 좌표로 강등.
+        var demotedToCoords = false
+        if (addressOf(mode, poi)?.let { !isSpecific(it) } == true) {
+            if (mode == SendMode.ROAD && isSpecific(jibunOrRoad(poi))) {
+                mode = SendMode.JIBUN
+            } else if (hasCoords(poi)) {
+                mode = SendMode.GPS
+                demotedToCoords = true
+            }
+        }
 
+        // Searchable 판정은 정규화된 주소로 했으므로 전송도 같은 문자열이어야 함.
+        // 원문을 그대로 보내면 상세주소 꼬리("… 513 지하1층 O-107호 라운지") 때문에 차량 검색이 실패한다.
+        // 즐겨찾기는 사용자가 등록한 텍스트가 곧 destination 이라 예외.
         val rawByMode =
             when (mode) {
-                SendMode.ROAD -> poi.getRoadAddress()
-                SendMode.JIBUN -> jibunOrRoad(poi)
+                SendMode.ROAD -> poi.getRoadAddress().normalizedUnlessFavorite(poi)
+                SendMode.JIBUN -> jibunOrRoad(poi).normalizedUnlessFavorite(poi)
                 SendMode.NAME -> poi.poiName ?: poi.getRoadAddress()
                 SendMode.GPS -> "${poi.latitude},${poi.longitude}"
             }
@@ -70,13 +84,29 @@ object SendPlanner {
                 )
         val sendText =
             if (viaUrl) GOOGLE_MAPS_URL_PREFIX + URLEncoder.encode(rawByMode, "UTF-8") else rawByMode
+        // 자동으로 좌표로 강등된 경우 토스트에 좌표만 보이면 알아볼 수 없어 POI 이름을 쓴다.
         val displayText =
-            if (mode == SendMode.NAME) poi.poiName ?: rawByMode else rawByMode
+            if (mode == SendMode.NAME || demotedToCoords) poi.poiName ?: rawByMode else rawByMode
 
         return SendPayload(sendText = sendText, displayText = displayText, mode = mode, viaUrl = viaUrl)
     }
 
+    private fun String.normalizedUnlessFavorite(poi: Poi): String = if (poi.isFavorite) this else RoadAddressNormalizer.trimDetail(this)
+
     private fun hasCoords(poi: Poi): Boolean = !poi.latitude.isNullOrBlank() && !poi.longitude.isNullOrBlank()
+
+    // NAME 은 주소가 아니고 GPS 는 이미 좌표라 완전성 판정 대상이 아님.
+    private fun addressOf(
+        mode: SendMode,
+        poi: Poi,
+    ): String? =
+        when (mode) {
+            SendMode.ROAD -> poi.getRoadAddress()
+            SendMode.JIBUN -> jibunOrRoad(poi)
+            SendMode.NAME, SendMode.GPS -> null
+        }
+
+    private fun isSpecific(address: String): Boolean = RoadAddressNormalizer.isSpecific(RoadAddressNormalizer.normalize(address))
 
     // Poi.getAddress() 는 jibun 이 비어있으면 GPS 좌표로 폴백하므로,
     // 좌표 폴백을 감지해 road 로 다시 폴백한다.

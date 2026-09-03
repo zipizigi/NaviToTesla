@@ -207,6 +207,32 @@ class RoadNumberMatcherTest {
         )
     }
 
+    // === 쉼표 구분 응답 방어 ===
+
+    @Test
+    fun `쉼표로 구분된 응답도 토큰으로 분리해 match`() {
+        assertMatch(
+            input = "충북 충주시 충원대로 539",
+            description = "충원대로 539, 충주시, 충청북도, 대한민국",
+        )
+    }
+
+    @Test
+    fun `공백 구분 응답 match - 충주`() {
+        assertMatch(
+            input = "충북 충주시 충원대로 539",
+            description = "대한민국 충청북도 충주시 충원대로 539",
+        )
+    }
+
+    @Test
+    fun `쉼표 응답이라도 건물번호가 다르면 no match`() {
+        assertNoMatch(
+            input = "충북 충주시 충원대로 539",
+            description = "충원대로 530, 충주시, 충청북도, 대한민국",
+        )
+    }
+
     // === 괄호 부가 토큰 정규화 (레거시 즐겨찾기·사용자 입력) ===
 
     @Test

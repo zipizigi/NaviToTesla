@@ -34,7 +34,7 @@ class DestinationAddressResolverClassifyTest {
     private val poi =
         Poi(
             poiName = "서울특별시청",
-            roadAddress = "서울특별시 중구 세종대로 110",
+            roadAddress = "서울 중구 세종대로 110",
             address = "서울특별시 중구 태평로1가 31",
             latitude = null,
             longitude = null,
@@ -243,7 +243,7 @@ class DestinationAddressResolverClassifyTest {
             every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_ENABLED) } returns true
             every { RemoteConfigUtil.getBoolean(RemoteConfigUtil.KEY_GOOGLE_PLACE_PREFIX_ENABLED) } returns false
             every { RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO) } returns 100L
-            fakeMatcher.results["서울특별시 중구 세종대로 110"] =
+            fakeMatcher.results["서울 중구 세종대로 110"] =
                 AutocompleteResult(
                     listOf(PlacePrediction("대한민국 서울특별시 중구 세종대로 110", "pid")),
                     matched = true,
@@ -253,7 +253,7 @@ class DestinationAddressResolverClassifyTest {
             val result = DestinationAddressResolver.classify(poi)
 
             assertEquals(Searchability.Searchable, result)
-            assertEquals("서울특별시 중구 세종대로 110" to true, fakeCache.cached.single())
+            assertEquals("서울 중구 세종대로 110" to true, fakeCache.cached.single())
             assertEquals("pid", fakeCache.cachedPlacesId.single())
             // prefix-disabled 경로는 형제 캐싱을 하지 않는다.
             assertTrue(fakeCache.siblingBatches.isEmpty())
@@ -293,7 +293,7 @@ class DestinationAddressResolverClassifyTest {
                 RemoteConfigUtil.getLong(RemoteConfigUtil.KEY_GOOGLE_PLACE_CHECK_UPDATE_RATIO)
             } returns 100L
             fakeCache.lookupResult = PlaceAutocompleteCacheEntry.PermissionDenied
-            fakeMatcher.results["서울특별시 중구 세종대로 110"] =
+            fakeMatcher.results["서울 중구 세종대로 110"] =
                 AutocompleteResult(
                     listOf(PlacePrediction("대한민국 서울특별시 중구 세종대로 110", "pid")),
                     matched = true,
@@ -367,7 +367,7 @@ class DestinationAddressResolverClassifyTest {
     private val numberPoi =
         Poi(
             poiName = "목적지",
-            roadAddress = "서울특별시 강남구 영동대로 1234",
+            roadAddress = "서울 강남구 영동대로 1234",
             address = "",
             latitude = null,
             longitude = null,
@@ -378,8 +378,8 @@ class DestinationAddressResolverClassifyTest {
     fun `prefix hit caches target and siblings as searchable`() =
         runBlocking {
             enablePrefixFlow()
-            // 1차 prefix "서울특별시 강남구 영동대로 123" 응답에 타깃 포함 + 형제
-            fakeMatcher.results["서울특별시 강남구 영동대로 123"] =
+            // 1차 prefix "서울 강남구 영동대로 123" 응답에 타깃 포함 + 형제
+            fakeMatcher.results["서울 강남구 영동대로 123"] =
                 AutocompleteResult(
                     listOf(
                         PlacePrediction("대한민국 서울특별시 강남구 영동대로 1234", "p1"),
@@ -392,9 +392,9 @@ class DestinationAddressResolverClassifyTest {
             val result = DestinationAddressResolver.classify(numberPoi)
 
             assertEquals(Searchability.Searchable, result)
-            assertEquals(listOf("서울특별시 강남구 영동대로 123"), fakeMatcher.queried) // 1호출만
+            assertEquals(listOf("서울 강남구 영동대로 123"), fakeMatcher.queried) // 1호출만
             assertEquals(2, fakeCache.siblingBatches.single().size)
-            assertEquals("서울특별시 강남구 영동대로 1234" to true, fakeCache.cached.single())
+            assertEquals("서울 강남구 영동대로 1234" to true, fakeCache.cached.single())
             assertEquals("p1", fakeCache.cachedPlacesId.single())
         }
 
@@ -403,7 +403,7 @@ class DestinationAddressResolverClassifyTest {
         runBlocking {
             enablePrefixFlow()
             // prefix 미매칭(건수 무관) → 절단됐으므로 항상 2차 full. full 도 미매칭(미설정=빈결과) → NotSearchable.
-            fakeMatcher.results["서울특별시 강남구 영동대로 123"] =
+            fakeMatcher.results["서울 강남구 영동대로 123"] =
                 AutocompleteResult(
                     List(4) { PlacePrediction("대한민국 서울특별시 강남구 영동대로 12${it}0", "p$it") },
                     matched = false,
@@ -414,10 +414,10 @@ class DestinationAddressResolverClassifyTest {
 
             assertEquals(Searchability.NotSearchable, result)
             assertEquals(
-                listOf("서울특별시 강남구 영동대로 123", "서울특별시 강남구 영동대로 1234"),
+                listOf("서울 강남구 영동대로 123", "서울 강남구 영동대로 1234"),
                 fakeMatcher.queried,
             ) // 1차 미스 → 2차 full = 2호출
-            assertEquals("서울특별시 강남구 영동대로 1234" to false, fakeCache.cached.single())
+            assertEquals("서울 강남구 영동대로 1234" to false, fakeCache.cached.single())
             assertEquals(null, fakeCache.cachedPlacesId.single())
             // 1차(4건)+2차(0건) 모두 형제 캐싱 시도.
             assertEquals(2, fakeCache.siblingBatches.size)
@@ -429,14 +429,14 @@ class DestinationAddressResolverClassifyTest {
         runBlocking {
             enablePrefixFlow()
             // 1차 prefix 미매칭(건수와 무관) → 절단됐으므로 2차 full 로 확인
-            fakeMatcher.results["서울특별시 강남구 영동대로 123"] =
+            fakeMatcher.results["서울 강남구 영동대로 123"] =
                 AutocompleteResult(
                     List(5) { PlacePrediction("대한민국 서울특별시 강남구 영동대로 12${it}9", "p$it") },
                     matched = false,
                     matchedPlaceId = null,
                 )
             // 2차 full: 타깃 매칭
-            fakeMatcher.results["서울특별시 강남구 영동대로 1234"] =
+            fakeMatcher.results["서울 강남구 영동대로 1234"] =
                 AutocompleteResult(
                     listOf(PlacePrediction("대한민국 서울특별시 강남구 영동대로 1234", "pT")),
                     matched = true,
@@ -447,7 +447,7 @@ class DestinationAddressResolverClassifyTest {
 
             assertEquals(Searchability.Searchable, result)
             assertEquals(
-                listOf("서울특별시 강남구 영동대로 123", "서울특별시 강남구 영동대로 1234"),
+                listOf("서울 강남구 영동대로 123", "서울 강남구 영동대로 1234"),
                 fakeMatcher.queried,
             ) // 2호출
             assertEquals(2, fakeCache.siblingBatches.size) // 1차+2차 형제 캐싱
@@ -460,20 +460,20 @@ class DestinationAddressResolverClassifyTest {
         runBlocking {
             enablePrefixFlow()
             // 1차: 정확히 5건 + 타깃 미포함 → 모호 → 2차 full 시도
-            fakeMatcher.results["서울특별시 강남구 영동대로 123"] =
+            fakeMatcher.results["서울 강남구 영동대로 123"] =
                 AutocompleteResult(
                     List(5) { PlacePrediction("대한민국 서울특별시 강남구 영동대로 12${it}9", "p$it") },
                     matched = false,
                     matchedPlaceId = null,
                 )
             // 2차 full 질의는 예외 → Unknown
-            fakeMatcher.throwForInput["서울특별시 강남구 영동대로 1234"] = RuntimeException("boom")
+            fakeMatcher.throwForInput["서울 강남구 영동대로 1234"] = RuntimeException("boom")
 
             val result = DestinationAddressResolver.classify(numberPoi)
 
             assertEquals(Searchability.Unknown, result)
             assertEquals(
-                listOf("서울특별시 강남구 영동대로 123", "서울특별시 강남구 영동대로 1234"),
+                listOf("서울 강남구 영동대로 123", "서울 강남구 영동대로 1234"),
                 fakeMatcher.queried,
             ) // 정확히 2호출
         }
@@ -481,7 +481,7 @@ class DestinationAddressResolverClassifyTest {
     private val singleDigitPoi =
         Poi(
             poiName = "목적지",
-            roadAddress = "서울특별시 강남구 영동대로 5",
+            roadAddress = "서울 강남구 영동대로 5",
             address = "",
             latitude = null,
             longitude = null,
@@ -493,7 +493,7 @@ class DestinationAddressResolverClassifyTest {
         runBlocking {
             enablePrefixFlow()
             // 단자리 번지 → prefix 절단 없음(isTruncated=false). 5건 반환 + 미매칭 → 2차 없이 NotSearchable.
-            fakeMatcher.results["서울특별시 강남구 영동대로 5"] =
+            fakeMatcher.results["서울 강남구 영동대로 5"] =
                 AutocompleteResult(
                     List(5) { PlacePrediction("대한민국 서울특별시 강남구 영동대로 ${it}9", "p$it") },
                     matched = false,
@@ -503,8 +503,118 @@ class DestinationAddressResolverClassifyTest {
             val result = DestinationAddressResolver.classify(singleDigitPoi)
 
             assertEquals(Searchability.NotSearchable, result)
-            assertEquals(listOf("서울특별시 강남구 영동대로 5"), fakeMatcher.queried) // 1호출
-            assertEquals("서울특별시 강남구 영동대로 5" to false, fakeCache.cached.single())
+            assertEquals(listOf("서울 강남구 영동대로 5"), fakeMatcher.queried) // 1호출
+            assertEquals("서울 강남구 영동대로 5" to false, fakeCache.cached.single())
+        }
+
+    // === 내비별 표기 차이 정규화 (RoadAddressNormalizer 연동) ===
+
+    private fun poiWithAddress(road: String) =
+        Poi(
+            poiName = "코엑스",
+            roadAddress = road,
+            address = "",
+            latitude = null,
+            longitude = null,
+            packageName = "com.example",
+        )
+
+    @Test
+    fun `naver 상세주소 꼬리가 lookup 조회 query 캐시키 전부에서 제거됨`() =
+        runBlocking {
+            enablePrefixFlow()
+            fakeMatcher.results["서울 강남구 영동대로 51"] =
+                AutocompleteResult(
+                    listOf(PlacePrediction("대한민국 서울특별시 강남구 영동대로 513", "pid")),
+                    matched = true,
+                    matchedPlaceId = "pid",
+                )
+
+            val result =
+                DestinationAddressResolver.classify(
+                    poiWithAddress("서울특별시 강남구 영동대로 513 지하1층 O-107호 라운지"),
+                )
+
+            assertEquals(Searchability.Searchable, result)
+            assertEquals("서울 강남구 영동대로 513", fakeCache.lookedUp.single())
+            assertEquals(listOf("서울 강남구 영동대로 51"), fakeMatcher.queried)
+            assertEquals("서울 강남구 영동대로 513" to true, fakeCache.cached.single())
+        }
+
+    @Test
+    fun `건물번호 없는 주소는 firestore places 조회 없이 Unknown`() =
+        runBlocking {
+            enablePrefixFlow()
+
+            val result = DestinationAddressResolver.classify(poiWithAddress("경기도 여주시"))
+
+            assertEquals(Searchability.Unknown, result)
+            assertEquals(0, fakeCache.lookupCount)
+            assertEquals(emptyList<String>(), fakeMatcher.queried)
+            assertEquals(0, fakeCache.cached.size)
+        }
+
+    /** 게이트가 로컬 캐시보다 앞에 있으면 이미 분류된 결과를 지운다. 캐시가 우선해야 함. */
+    @Test
+    fun `불완전 주소라도 로컬 캐시에 분류 결과가 있으면 그것을 사용`() =
+        runBlocking {
+            enablePrefixFlow()
+            coEvery { dao.findPoiByPackage(any(), any()) } returns entity(searchable = true, registered = false)
+
+            val result = DestinationAddressResolver.classify(poiWithAddress("경기도 여주시"))
+
+            assertEquals(Searchability.Searchable, result)
+            assertEquals(0, fakeCache.lookupCount)
+        }
+
+    @Test
+    fun `불완전 주소는 분류 결과를 덮어쓰지 않음`() =
+        runBlocking {
+            enablePrefixFlow()
+
+            DestinationAddressResolver.classify(poiWithAddress("경기도 여주시"))
+
+            io.mockk.coVerify(exactly = 0) { repo.markClassified(any(), any()) }
+        }
+
+    @Test
+    fun `동 단위 주소도 조회 없이 Unknown`() =
+        runBlocking {
+            enablePrefixFlow()
+
+            val result = DestinationAddressResolver.classify(poiWithAddress("부산광역시 해운대구 우동"))
+
+            assertEquals(Searchability.Unknown, result)
+            assertEquals(0, fakeCache.lookupCount)
+            assertEquals(emptyList<String>(), fakeMatcher.queried)
+        }
+
+    @Test
+    fun `3사 표기가 달라도 동일한 캐시키와 query 로 수렴`() =
+        runBlocking {
+            val observed =
+                listOf(
+                    "서울 강남구 영동대로 513",
+                    "서울특별시 강남구 영동대로 513",
+                    "서울특별시 강남구 영동대로 513 지하1층 O-107호 라운지",
+                )
+            observed.forEach { road ->
+                fakeCache = FakeCacheClient()
+                fakeMatcher = FakeMatcher()
+                DestinationAddressResolver.cacheClient = fakeCache
+                DestinationAddressResolver.matcher = fakeMatcher
+                enablePrefixFlow()
+
+                DestinationAddressResolver.classify(poiWithAddress(road))
+
+                assertEquals(road, "서울 강남구 영동대로 513", fakeCache.lookedUp.single())
+                // prefix 미매칭 → 절단됐으므로 2차 full. 두 query 모두 정규화된 형태여야 함.
+                assertEquals(
+                    road,
+                    listOf("서울 강남구 영동대로 51", "서울 강남구 영동대로 513"),
+                    fakeMatcher.queried,
+                )
+            }
         }
 
     private fun entity(
@@ -516,7 +626,7 @@ class DestinationAddressResolverClassifyTest {
         id = 1,
         poi = "서울특별시청",
         packageName = "com.example",
-        roadAddress = "서울특별시 중구 세종대로 110",
+        roadAddress = "서울 중구 세종대로 110",
         jibunAddress = "서울특별시 중구 태평로1가 31",
         latitude = null,
         longitude = null,
@@ -530,12 +640,14 @@ class DestinationAddressResolverClassifyTest {
     private class FakeCacheClient : PlaceAutocompleteCacheClient {
         var lookupResult: PlaceAutocompleteCacheEntry? = null
         var lookupCount: Int = 0
+        val lookedUp = mutableListOf<String>()
         val cached = mutableListOf<Pair<String, Boolean>>()
         val cachedPlacesId = mutableListOf<String?>()
         val siblingBatches = mutableListOf<List<PlacePrediction>>()
 
         override suspend fun lookup(address: String): PlaceAutocompleteCacheEntry? {
             lookupCount++
+            lookedUp += address
             return lookupResult
         }
 
