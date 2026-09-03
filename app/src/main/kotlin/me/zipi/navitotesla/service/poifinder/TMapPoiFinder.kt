@@ -41,8 +41,8 @@ class TMapPoiFinder : PoiFinder {
                         poiName = item.name,
                         roadAddress = item.getRoadAddress(),
                         address = item.address,
-                        longitude = item.latitude,
-                        latitude = item.longitude,
+                        longitude = item.longitude,
+                        latitude = item.latitude,
                     )
 
                 listPoi.add(poi)
