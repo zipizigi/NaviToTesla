@@ -47,15 +47,18 @@ class KakaoPoiFinder : PoiFinder {
         return poiList
     }
 
-    override fun isIgnore(
+    override fun ignoreReason(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean {
-        if (notificationTitle !in GUIDANCE_TITLES) return true
-        if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) return false
-        if (destination.isNullOrEmpty()) return true
-        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
-        return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
+    ): IgnoreReason? {
+        // 안전운전 모드는 알림 제목으로 확정 구분된다 — 화면 판정보다 우선.
+        if (notificationTitle in SAFE_TITLES) return IgnoreReason.SAFE_TITLE
+        if (notificationTitle !in GUIDANCE_TITLES) return IgnoreReason.TITLE_MISMATCH
+        if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) return null
+        if (destination.isNullOrEmpty()) return IgnoreReason.NO_CAPTURE
+        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return IgnoreReason.TTL_EXPIRED
+        if (driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE) return IgnoreReason.SAFE_DRIVE
+        return null
     }
 
     override fun consumeCapturedDestination() = clearDestination()
@@ -63,8 +66,11 @@ class KakaoPoiFinder : PoiFinder {
     companion object {
         private const val LEGACY_DESTINATION_PREFIX = "목적지 : "
 
-        /** 보험 ON 이면 제목이 바뀐다. */
+        /** 보험 ON 이면 제목이 바뀐다. (noti_drive_title / noti_drive_insurance_title) */
         private val GUIDANCE_TITLES = setOf("길안내 주행 중", "보험을 켜고 길안내 주행 중")
+
+        /** 목적지 없는 주행 모드. (noti_safety_drive_title / noti_safety_drive_insurance_title) */
+        private val SAFE_TITLES = setOf("안전운전 주행 중", "보험을 켜고 안전운전 주행 중")
 
         private const val DESTINATION_TTL_MS = 60_000L
 

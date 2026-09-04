@@ -155,4 +155,35 @@ class KakaoPoiFinderTest {
         assertTrue(KakaoPoiFinder.hasLegacyDestination("목적지 : 송파구청"))
         assertFalse(KakaoPoiFinder.hasLegacyDestination("빠르고 즐거운 운전, 카카오내비"))
     }
+
+    // === 무시 사유 (무성 실패 원인 구분) ===
+
+    @Test
+    fun `ignoreReason 안전운전 제목은 SAFE_TITLE`() {
+        KakaoPoiFinder.addDestination("정자역")
+        assertEquals(IgnoreReason.SAFE_TITLE, finder.ignoreReason("안전운전 주행 중", "빠르고 즐거운 운전, 카카오내비"))
+        assertEquals(
+            IgnoreReason.SAFE_TITLE,
+            finder.ignoreReason("보험을 켜고 안전운전 주행 중", "빠르고 즐거운 운전, 카카오내비"),
+        )
+    }
+
+    @Test
+    fun `ignoreReason 화이트리스트 밖 제목은 TITLE_MISMATCH`() {
+        KakaoPoiFinder.addDestination("정자역")
+        assertEquals(IgnoreReason.TITLE_MISMATCH, finder.ignoreReason("길안내 종료 중", "빠르고 즐거운 운전, 카카오내비"))
+        assertEquals(IgnoreReason.TITLE_MISMATCH, finder.ignoreReason("", "빠르고 즐거운 운전, 카카오내비"))
+    }
+
+    @Test
+    fun `ignoreReason 캡처 없으면 NO_CAPTURE`() {
+        assertEquals(IgnoreReason.NO_CAPTURE, finder.ignoreReason("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
+    }
+
+    @Test
+    fun `ignoreReason 정상 경로는 null`() {
+        KakaoPoiFinder.addDestination("정자역")
+        assertEquals(null, finder.ignoreReason("길안내 주행 중", "빠르고 즐거운 운전, 카카오내비"))
+        assertEquals(null, finder.ignoreReason("길안내 주행 중", "목적지 : 송파구청"))
+    }
 }

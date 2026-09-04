@@ -26,10 +26,16 @@ interface PoiFinder {
     @Throws(IOException::class)
     suspend fun listPoiAddress(poiName: String): List<Poi>
 
+    /** null 이면 처리, 그 외에는 건너뛴 사유. */
+    fun ignoreReason(
+        notificationTitle: String,
+        notificationText: String,
+    ): IgnoreReason?
+
     fun isIgnore(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean
+    ): Boolean = ignoreReason(notificationTitle, notificationText) != null
 
     /** 접근성으로 모아 둔 목적지를 버린다. */
     fun consumeCapturedDestination() {}

@@ -18,6 +18,7 @@ import me.zipi.navitotesla.model.TeslaRefreshTokenRequest
 import me.zipi.navitotesla.model.Token
 import me.zipi.navitotesla.model.Vehicle
 import me.zipi.navitotesla.service.place.DestinationAddressResolver
+import me.zipi.navitotesla.service.poifinder.IgnoreReason
 import me.zipi.navitotesla.service.poifinder.PoiFinderFactory
 import me.zipi.navitotesla.service.share.SendPlanner
 import me.zipi.navitotesla.service.share.TeslaShareByApi
@@ -121,7 +122,8 @@ class NaviToTeslaService(
                 text = context.getString(R.string.sendDestinationFail) + "\n" + context.getString(R.string.unsupportedNavi),
                 level = AnalysisUtil.ToastLevel.WARN,
             )
-        } catch (_: IgnorePoiException) {
+        } catch (e: IgnorePoiException) {
+            eventParam.putString("reason", e.reason.name)
             AnalysisUtil.logEvent("ignore_address", eventParam)
         } catch (e: ForbiddenException) {
             makeToast(
@@ -213,14 +215,15 @@ class NaviToTeslaService(
         eventParam.putString("package", packageName)
         val poiFinder = PoiFinderFactory.getPoiFinder(packageName)
         val poiName = poiFinder.parseDestination(notificationText ?: "")
-        if (poiName.isEmpty() ||
-            poiFinder.isIgnore(
-                notificationTitle ?: "",
-                notificationText ?: "",
-            )
-        ) {
+        // 단축평가로 사유가 뭉개지지 않도록 ignoreReason 을 먼저 확정한다.
+        val ignoreReason =
+            poiFinder.ignoreReason(notificationTitle ?: "", notificationText ?: "")
+                ?: IgnoreReason.EMPTY_DESTINATION.takeIf { poiName.isEmpty() }
+        if (ignoreReason != null) {
+            AnalysisUtil.log("ignore poi ~ pkg: $packageName reason: $ignoreReason title: $notificationTitle")
+            eventParam.putString("reason", ignoreReason.name)
             AnalysisUtil.logEvent("address_ignore_or_not_found", eventParam)
-            throw IgnorePoiException(packageName)
+            throw IgnorePoiException(packageName, ignoreReason)
         }
         val poiAddressEntity = appRepository.getPoiSync(poiName, packageName)
         val poi: Poi

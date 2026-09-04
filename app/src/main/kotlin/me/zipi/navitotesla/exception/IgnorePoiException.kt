@@ -1,6 +1,8 @@
 package me.zipi.navitotesla.exception
 
-@Suppress("unused")
+import me.zipi.navitotesla.service.poifinder.IgnoreReason
+
 class IgnorePoiException(
     packageName: String,
-) : RuntimeException(packageName)
+    val reason: IgnoreReason,
+) : RuntimeException("$packageName: $reason")

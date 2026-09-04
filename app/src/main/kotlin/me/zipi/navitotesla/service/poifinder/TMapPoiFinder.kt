@@ -52,10 +52,15 @@ class TMapPoiFinder : PoiFinder {
         return listPoi
     }
 
-    override fun isIgnore(
+    override fun ignoreReason(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean = notificationText == "안심주행" || notificationTitle != "경로주행"
+    ): IgnoreReason? =
+        when {
+            notificationText == "안심주행" -> IgnoreReason.SAFE_TITLE
+            notificationTitle != "경로주행" -> IgnoreReason.TITLE_MISMATCH
+            else -> null
+        }
 
     companion object {
         private val tMapApi =
