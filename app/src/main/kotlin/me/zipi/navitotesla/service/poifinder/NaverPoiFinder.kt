@@ -101,7 +101,7 @@ class NaverPoiFinder : PoiFinder {
                 .Builder()
                 .connectTimeout(120, TimeUnit.SECONDS)
                 .readTimeout(120, TimeUnit.SECONDS)
-                .addInterceptor(HttpRetryInterceptor(10))
+                .addInterceptor(HttpRetryInterceptor(3))
                 .build()
 
         private val naverMapApi =

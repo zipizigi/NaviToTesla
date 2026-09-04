@@ -51,7 +51,7 @@ class KakaoPoiFinder : PoiFinder {
         notificationTitle: String,
         notificationText: String,
     ): IgnoreReason? {
-        // 안전운전 모드는 알림 제목으로 확정 구분된다 — 화면 판정보다 우선.
+        // 안전운전은 알림 제목으로 확정 구분 — 화면 판정보다 우선.
         if (notificationTitle in SAFE_TITLES) return IgnoreReason.SAFE_TITLE
         if (notificationTitle !in GUIDANCE_TITLES) return IgnoreReason.TITLE_MISMATCH
         if (notificationText.contains(LEGACY_DESTINATION_PREFIX)) return null
@@ -66,10 +66,10 @@ class KakaoPoiFinder : PoiFinder {
     companion object {
         private const val LEGACY_DESTINATION_PREFIX = "목적지 : "
 
-        /** 보험 ON 이면 제목이 바뀐다. (noti_drive_title / noti_drive_insurance_title) */
+        /** 보험 ON 이면 제목이 바뀐다. */
         private val GUIDANCE_TITLES = setOf("길안내 주행 중", "보험을 켜고 길안내 주행 중")
 
-        /** 목적지 없는 주행 모드. (noti_safety_drive_title / noti_safety_drive_insurance_title) */
+        /** 목적지 없는 주행 모드. */
         private val SAFE_TITLES = setOf("안전운전 주행 중", "보험을 켜고 안전운전 주행 중")
 
         private const val DESTINATION_TTL_MS = 60_000L
@@ -123,7 +123,7 @@ class KakaoPoiFinder : PoiFinder {
                                         ).build()
                                 chain.proceed(request)
                             },
-                        ).addInterceptor(HttpRetryInterceptor(10))
+                        ).addInterceptor(HttpRetryInterceptor(3))
                         .build(),
                 ).build()
                 .create(KakaoMapApi::class.java)

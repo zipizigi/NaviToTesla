@@ -42,7 +42,7 @@ object AppUpdaterUtil {
                     .Builder()
                     .connectTimeout(60, TimeUnit.SECONDS)
                     .readTimeout(60, TimeUnit.SECONDS)
-                    .addInterceptor(HttpRetryInterceptor(10))
+                    .addInterceptor(HttpRetryInterceptor(3))
                     .build(),
             ).build()
             .create(GithubApi::class.java)

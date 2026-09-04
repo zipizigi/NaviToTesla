@@ -92,7 +92,7 @@ class TMapPoiFinder : PoiFinder {
                                         ).build()
                                 chain.proceed(request)
                             },
-                        ).addInterceptor(HttpRetryInterceptor(10))
+                        ).addInterceptor(HttpRetryInterceptor(3))
                         .build(),
                 ).build()
                 .create(TMapApi::class.java)

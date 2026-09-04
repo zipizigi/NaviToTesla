@@ -215,7 +215,7 @@ class NaviToTeslaService(
         eventParam.putString("package", packageName)
         val poiFinder = PoiFinderFactory.getPoiFinder(packageName)
         val poiName = poiFinder.parseDestination(notificationText ?: "")
-        // 단축평가로 사유가 뭉개지지 않도록 ignoreReason 을 먼저 확정한다.
+        // 단축평가로 사유가 뭉개지지 않도록 먼저 확정.
         val ignoreReason =
             poiFinder.ignoreReason(notificationTitle ?: "", notificationText ?: "")
                 ?: IgnoreReason.EMPTY_DESTINATION.takeIf { poiName.isEmpty() }
