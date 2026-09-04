@@ -10,13 +10,19 @@ import java.util.Locale
 class HttpRetryInterceptor(
     private val maxRetryCount: Int = 0,
 ) : Interceptor {
+    private companion object {
+        const val MAX_SLEEP_MS = 2_000L
+
+        // 시간이 지나면 풀리는 4xx. 나머지 4xx 는 재시도로 결과가 바뀌지 않음.
+        val RETRYABLE_4XX = setOf(408, 425, 429)
+    }
+
     private fun sleep(
         retry: Int,
         chain: Interceptor.Chain,
     ) {
         try {
-            var sleep = retry * retry * 100L / 2
-            sleep = if (sleep > 3000) 3000 else sleep
+            val sleep = if (retry <= 0) 0L else (300L shl (retry - 1)).coerceAtMost(MAX_SLEEP_MS)
             if (sleep > 0) {
                 Thread.sleep(sleep)
                 AnalysisUtil.log(
@@ -50,7 +56,7 @@ class HttpRetryInterceptor(
             }
             if (isSuccess) {
                 break
-            } else if (response != null && response.code >= 400 && response.code <= 405) {
+            } else if (response != null && response.code in 400..499 && response.code !in RETRYABLE_4XX) {
                 AnalysisUtil.warn("Http call 4xx error!: " + response.code)
                 break
             } else if (retry >= maxRetryCount) {

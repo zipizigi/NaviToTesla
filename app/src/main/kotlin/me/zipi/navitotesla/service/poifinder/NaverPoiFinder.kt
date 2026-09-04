@@ -81,15 +81,16 @@ class NaverPoiFinder : PoiFinder {
         return poiList
     }
 
-    override fun isIgnore(
+    override fun ignoreReason(
         notificationTitle: String,
         notificationText: String,
-    ): Boolean {
+    ): IgnoreReason? {
         // 안내가 시작될 경우 도착지를 이용하여 전송한다. 목적지가 입력된지 특정 시간 내에만 동작한다.
-        if (notificationText != GUIDANCE_TEXT) return true
-        if (destination.isNullOrEmpty()) return true
-        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return true
-        return driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE
+        if (notificationText != GUIDANCE_TEXT) return IgnoreReason.TEXT_MISMATCH
+        if (destination.isNullOrEmpty()) return IgnoreReason.NO_CAPTURE
+        if (System.currentTimeMillis() - savedTime > DESTINATION_TTL_MS) return IgnoreReason.TTL_EXPIRED
+        if (driveModeProvider?.invoke() == NaviDriveMode.SAFE_DRIVE) return IgnoreReason.SAFE_DRIVE
+        return null
     }
 
     override fun consumeCapturedDestination() = clearDestination()
@@ -100,7 +101,7 @@ class NaverPoiFinder : PoiFinder {
                 .Builder()
                 .connectTimeout(120, TimeUnit.SECONDS)
                 .readTimeout(120, TimeUnit.SECONDS)
-                .addInterceptor(HttpRetryInterceptor(10))
+                .addInterceptor(HttpRetryInterceptor(3))
                 .build()
 
         private val naverMapApi =

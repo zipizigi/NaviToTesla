@@ -52,4 +52,11 @@ class TMapPoiFinderTest {
         assertTrue(finder.isIgnore("일반 알림", "내 위치 > 강남역"))
         assertTrue(finder.isIgnore("", "내 위치 > 강남역"))
     }
+
+    @Test
+    fun `ignoreReason 사유 구분`() {
+        assertEquals(IgnoreReason.SAFE_TITLE, finder.ignoreReason("경로주행", "안심주행"))
+        assertEquals(IgnoreReason.TITLE_MISMATCH, finder.ignoreReason("일반 알림", "내 위치 > 강남역"))
+        assertEquals(null, finder.ignoreReason("경로주행", "내 위치 > 강남역"))
+    }
 }

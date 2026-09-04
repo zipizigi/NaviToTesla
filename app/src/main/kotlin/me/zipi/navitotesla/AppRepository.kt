@@ -52,7 +52,7 @@ class AppRepository private constructor(
                         }.apply {
                             level = HttpLoggingInterceptor.Level.BASIC
                         },
-                    ).addInterceptor(HttpRetryInterceptor(20))
+                    ).addInterceptor(HttpRetryInterceptor(5))
                     .build(),
             ).build()
             .create()
@@ -83,7 +83,7 @@ class AppRepository private constructor(
                         }.apply {
                             level = HttpLoggingInterceptor.Level.BASIC
                         },
-                    ).addInterceptor(HttpRetryInterceptor(20))
+                    ).addInterceptor(HttpRetryInterceptor(5))
                     .build(),
             ).build()
             .create()

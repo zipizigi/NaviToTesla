@@ -81,11 +81,14 @@ class PoiAddressRecyclerAdapter(
         }
 
         override fun onClick(view: View) {
+            // 목록 갱신 중 탭하면 수신측 list.get(-1) 에서 크래시.
+            val position = bindingAdapterPosition
+            if (position == RecyclerView.NO_POSITION) return
             listenerRef.get()?.let {
                 if (view.id == shareButton.id) {
-                    it.onShareClick(bindingAdapterPosition)
+                    it.onShareClick(position)
                 } else {
-                    it.onClick(bindingAdapterPosition)
+                    it.onClick(position)
                 }
             }
         }

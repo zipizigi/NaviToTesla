@@ -72,7 +72,8 @@ class KakaoDestinationReader : DestinationReader {
         const val ROUTE_SUMMARY_ID = "com.locnall.KimGiSa:id/route_result_trip"
         val ROUTE_ANCHOR = Regex("^출발\\s+.+?,\\s*도착\\s+(.+)$")
 
-        val SAFE_MARKERS = listOf("안전운전 종료", "교통상황", "신호등 정보")
-        val GUIDANCE_MARKERS = listOf("전체경로", "경로 새로고침", "남음")
+        // 부분문자열 매칭이라 길안내 화면 문구와 겹치면 안 됨 — "교통상황" 은 재탐색 토스트와 충돌.
+        val SAFE_MARKERS = listOf("안전운전 종료")
+        val GUIDANCE_MARKERS = listOf("전체경로", "남음")
     }
 }

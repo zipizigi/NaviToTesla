@@ -601,8 +601,12 @@ class HomeFragment :
     private fun refreshTokenButtonEnabled() {
         if (!isAdded || view == null) return
         val useApi = binding.radioGroupShareMode.checkedButtonId == binding.radioUsingTeslaApi.id
-        val hasToken = PreferencesUtil.loadTokenSync() != null
-        binding.btnTokenClear.isEnabled = useApi && hasToken
+        // loadTokenSync 는 초기화 대기로 메인을 막을 수 있음.
+        lifecycleScope.launch {
+            val hasToken = PreferencesUtil.loadToken() != null
+            if (!isAdded || view == null) return@launch
+            binding.btnTokenClear.isEnabled = useApi && hasToken
+        }
     }
 
     private fun overlayPermissionGrantedCheck() {
