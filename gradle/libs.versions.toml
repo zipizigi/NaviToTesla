@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 ktlint-cli = "1.8.0"
 room = "2.8.5"
 androidx-navigation = "2.10.2"
